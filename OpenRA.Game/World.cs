@@ -96,12 +96,20 @@ namespace OpenRA
 			SharedRandom = new XRandom(orderManager.LobbyInfo.GlobalSettings.RandomSeed);
 
 			WorldActor = CreateActor( "World", new TypeDictionary() );
-			LocalShroud = WorldActor.Trait<Shroud>();
+			// LocalShroud = WorldActor.Trait<Shroud>();
 			ActorMap = new ActorMap(this);
 
 			// Add players
 			foreach (var cmp in WorldActor.TraitsImplementing<ICreatePlayers>())
 				cmp.CreatePlayers(this);
+				
+			// Set the LocalShroud
+			if (LocalPlayer != null) {
+				LocalShroud = LocalPlayer.Shroud;
+			}
+			else {
+				LocalShroud = Players.FirstOrDefault().Shroud;
+			}
 
 			// Set defaults for any unset stances
 			foreach (var p in Players)
