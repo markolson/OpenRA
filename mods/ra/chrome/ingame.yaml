@@ -94,6 +94,15 @@ Container@INGAME_ROOT:
 			Text:Developer Mode
 			Visible:false
 			Font:Bold
+		DropDownButton@OBSERVEAS_DROPDOWN:
+			Id:OBSERVEAS_DROPDOWN
+			Logic:ObserveAsLogic
+			X:0
+			Y:27
+			Width:160
+			Height:25
+			Font:Regular
+			Text:Observer
 		RadarBin@INGAME_RADAR_BIN:
 			Id:INGAME_RADAR_BIN
 			WorldInteractionController:INTERACTION_CONTROLLER
