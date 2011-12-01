@@ -74,6 +74,7 @@ namespace OpenRA.Mods.RA
 			var target = ScanForTarget(self, null);
 			if (target != null)
 			{
+				Log.Write("mylog", "I CAN SEE YOU YOU LITTLE FUCKER");
 				self.SetTargetLine(Target.FromActor(target), Color.Red, false);
 				self.QueueActivity(attack.GetAttackActivity(self,
 					Target.FromActor(target),
@@ -124,7 +125,7 @@ namespace OpenRA.Mods.RA
     				.Where(a => a.AppearsHostileTo(self))
     				.Where(a => !a.HasTrait<AutoTargetIgnore>())
     				.Where(a => attack.HasAnyValidWeapons(Target.FromActor(a)))
-    				.Where(a => self.World.LocalShroud.IsVisible(a))
+    				.Where(a => self.Owner.Shroud.IsVisible(a))
     				.ClosestTo( self.CenterLocation ); 
 			}
 		}

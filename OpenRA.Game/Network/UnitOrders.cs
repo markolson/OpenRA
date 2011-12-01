@@ -186,7 +186,7 @@ namespace OpenRA.Network
 			var oldStance = p.Stances[target];
 			p.Stances[target] = s;
 			if (target == w.LocalPlayer)
-				w.WorldActor.Trait<Shroud>().UpdatePlayerStance(w, p, oldStance, s);
+				p.Shroud.UpdatePlayerStance(w, p, oldStance, s);
 
 			foreach (var nsc in w.ActorsWithTrait<INotifyStanceChanged>())
 				nsc.Trait.StanceChanged(nsc.Actor, p, target, oldStance, s);

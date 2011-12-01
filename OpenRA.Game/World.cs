@@ -105,9 +105,11 @@ namespace OpenRA
 				
 			// Set the LocalShroud
 			if (LocalPlayer != null) {
+				Log.Write("mylog", "Using the LocalPlayer's Shroud");
 				LocalShroud = LocalPlayer.Shroud;
 			}
 			else {
+				Log.Write("mylog", "Using a different shroud?");
 				LocalShroud = Players.FirstOrDefault().Shroud;
 			}
 

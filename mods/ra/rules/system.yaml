@@ -234,7 +234,6 @@ World:
 	EvaAlerts:
 	SpatialBins:
 		BinSize: 4
-	Shroud:
 	PathFinder:
 	ValidateOrder:
 

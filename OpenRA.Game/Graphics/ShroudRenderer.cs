@@ -10,6 +10,7 @@
 
 using System.Drawing;
 using OpenRA.Traits;
+using System.Runtime.CompilerServices;
 
 namespace OpenRA.Graphics
 {
@@ -29,7 +30,11 @@ namespace OpenRA.Graphics
 
 			sprites = new Sprite[map.MapSize.X, map.MapSize.Y];
 			fogSprites = new Sprite[map.MapSize.X, map.MapSize.Y];
-			shroud.Dirty += () => dirty = true;
+			shroud.Dirty += (Shroud s) => {
+				Log.Write("mylog", "Local: {0} Caller: {1}", RuntimeHelpers.GetHashCode(world.LocalShroud), RuntimeHelpers.GetHashCode(s));
+				if (s == world.LocalShroud)
+					dirty = true;
+			};
 		}
 
 		static readonly byte[][] SpecialShroudTiles =
@@ -113,6 +118,8 @@ namespace OpenRA.Graphics
 				for (int i = map.Bounds.Left; i < map.Bounds.Right; i++)
 					for (int j = map.Bounds.Top; j < map.Bounds.Bottom; j++)
 						fogSprites[i, j] = ChooseFog(i, j);
+						
+				Log.Write("mylog", "Revealing {0}", RuntimeHelpers.GetHashCode(shroud));
 			}
 
 			var clipRect = Game.viewport.WorldBounds(wr.world);

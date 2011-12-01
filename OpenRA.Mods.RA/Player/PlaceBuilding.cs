@@ -26,6 +26,7 @@ namespace OpenRA.Mods.RA
 			{
 				self.World.AddFrameEndTask(w =>
 				{
+					Log.Write("mylog", "Starting building placement");
 					var prevItems = GetNumBuildables(self.Owner);
 
 					// Find the queue with the target actor
@@ -84,6 +85,8 @@ namespace OpenRA.Mods.RA
 						w.Add(new DelayedAction(10,
 							() => Sound.PlayToPlayer(order.Player,
 								w.WorldActor.Info.Traits.Get<EvaAlertsInfo>().NewOptions)));
+								
+					Log.Write("mylog", "Done");
 				});
 			}
 		}

@@ -250,6 +250,7 @@ namespace OpenRA
 			Log.AddChannel("perf", "perf.log");
 			Log.AddChannel("debug", "debug.log");
 			Log.AddChannel("sync", "syncreport.log");
+			Log.AddChannel("mylog", "mylog.log");
 
 			FileSystem.Mount("."); // Needed to access shaders
 			Renderer.Initialize( Game.Settings.Graphics.Mode );

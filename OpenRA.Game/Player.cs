@@ -36,7 +36,7 @@ namespace OpenRA
 		public readonly PlayerReference PlayerReference;
 		public bool IsBot;
 
-		public readonly Shroud Shroud;
+		public Shroud Shroud;
 		public World World { get; private set; }
 
 		static CountryInfo ChooseCountry(World world, string name)
