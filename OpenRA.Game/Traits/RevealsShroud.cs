@@ -35,8 +35,6 @@ namespace OpenRA.Traits
 			if (previousLocation != self.Location)
 			{
 				previousLocation = self.Location;
-				Log.Write("mylog", "Unit {0} moved for player: {1} at tick {2}", self.Info.Name, self.Owner.PlayerName, Game.LocalTick);
-				Log.Write("mylog", "{0}", RuntimeHelpers.GetHashCode(self.Owner.Shroud));
 				self.Owner.Shroud.UpdateActor(self);
 			}
 		}

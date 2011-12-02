@@ -25,6 +25,7 @@ namespace OpenRA.Traits
 	{
 		Map map;
 		World world;
+		Player owner;
 
 		public int[,] visibleCells;
 		public bool[,] exploredCells;
@@ -33,7 +34,7 @@ namespace OpenRA.Traits
 		public bool Disabled
 		{
 			get { return disabled || world.LocalPlayer == null; }
-			set { disabled = value; Dirty(this); }
+			set { disabled = value; Shroud.Dirty(this); }
 		}
 
 		public Rectangle? Bounds
@@ -41,17 +42,21 @@ namespace OpenRA.Traits
 			get { return Disabled ? null : exploredBounds; }
 		}
 
-		public event Action<Shroud> Dirty = s => {};
+		public static event Action<Shroud> Dirty = s => {};
 
 		public Shroud(World world)
 		{
-			Log.Write("mylog", "Shroud Created");
 			this.world = world;
 			map = world.Map;
 			visibleCells = new int[map.MapSize.X, map.MapSize.Y];
 			exploredCells = new bool[map.MapSize.X, map.MapSize.Y];
 			world.ActorAdded += AddActor;
 			world.ActorRemoved += RemoveActor;
+		}
+		
+		public void setOwner(Player owner)
+		{
+			this.owner = owner;
 		}
 
 		// cache of positions that were added, so no matter what crazy trait code does, it
@@ -79,9 +84,8 @@ namespace OpenRA.Traits
 			if (!a.HasTrait<RevealsShroud>())
 				return;
 
-			Log.Write("mylog", "Updating {0}'s shroud - adding {1} at tick {2}", a.Owner.PlayerName, a.Info.Name, Game.LocalTick);
 
-			if (a.Owner == null) 
+			if (a.Owner == null || owner != a.Owner || owner.Stances[a.Owner] != Stance.Ally) 
 				return;
 
 			if (vis.ContainsKey(a))
@@ -89,7 +93,10 @@ namespace OpenRA.Traits
 				Game.Debug("Warning: Actor {0}:{1} at {2} bad vis".F(a.Info.Name, a.ActorID, a.Location));
 				RemoveActor(a);
 			}
-
+			
+			Log.Write("mylog", "{3}: adding {0}'s {1} at tick {2}", a.Owner.PlayerName, a.Info.Name, Game.LocalTick, RuntimeHelpers.GetHashCode(this).ToString("X"));
+			
+			
 			var v = new ActorVisibility
 			{
 				range = a.Trait<RevealsShroud>().RevealRange,
@@ -98,24 +105,27 @@ namespace OpenRA.Traits
 
 			if (v.range == 0) return;		// don't bother for things that can't see
 
+			int addedVisible = 0;
 			foreach (var p in v.vis)
 			{
 				foreach (var q in FindVisibleTiles(a.World, p, v.range))
 				{
+					++addedVisible;
 					++visibleCells[q.X, q.Y];
 					exploredCells[q.X, q.Y] = true;
 				}
-
 				var box = new Rectangle(p.X - v.range, p.Y - v.range, 2 * v.range + 1, 2 * v.range + 1);
 				exploredBounds = (exploredBounds.HasValue) ? Rectangle.Union(exploredBounds.Value, box) : box;
 			}
+			Log.Write("mylog", "-- Added {0} visible tiles", addedVisible);
 
 			vis[a] = v;
-
-			Log.Write("mylog", "AddActor"); 
-			
-			if (!Disabled)
-				Dirty(this);
+			if (!Disabled) {
+				Log.Write("mylog", "Dirtying");
+				Shroud.Dirty(this);
+			} else {
+				Log.Write("mylog", "-- Disabled; not dirtying");
+			}
 		}
 
 		public void UpdatePlayerStance(World w, Player player, Stance oldStance, Stance newStance)
@@ -166,16 +176,16 @@ namespace OpenRA.Traits
 					--visibleCells[q.X, q.Y];
 
 			vis.Remove(a);
-
 			if (!Disabled)
-				Dirty(this);
+				Shroud.Dirty(this);
 		}
 
 		public void UpdateActor(Actor a)
 		{
 			if (a.Owner == null) 
 				return;
-
+				
+			Log.Write("mylog", "{3}: Unit {0} moved for player: {1} at tick {2}", a.Info.Name, a.Owner.PlayerName, Game.LocalTick, RuntimeHelpers.GetHashCode(this).ToString("X"));
 			RemoveActor(a); AddActor(a);
 		}
 
@@ -189,7 +199,7 @@ namespace OpenRA.Traits
 			exploredBounds = (exploredBounds.HasValue) ? Rectangle.Union(exploredBounds.Value, box) : box;
 
 			if (!Disabled)
-				Dirty(this);
+				Shroud.Dirty(this);
 		}
 
 		public void ExploreAll(World world)
@@ -200,7 +210,7 @@ namespace OpenRA.Traits
 			exploredBounds = world.Map.Bounds;
 			
 			if (!Disabled)
-				Dirty(this);
+				Shroud.Dirty(this);
 		}
 
 		public void ResetExploration()		// for `hide map` crate
@@ -210,7 +220,7 @@ namespace OpenRA.Traits
 					exploredCells[i, j] = visibleCells[i, j] > 0;
 					
 			if (!Disabled)
-				Dirty(this);
+				Shroud.Dirty(this);
 		}
 
 		public bool IsExplored(int2 xy) { return IsExplored(xy.X, xy.Y); }

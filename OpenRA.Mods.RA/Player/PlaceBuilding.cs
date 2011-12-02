@@ -86,7 +86,6 @@ namespace OpenRA.Mods.RA
 							() => Sound.PlayToPlayer(order.Player,
 								w.WorldActor.Info.Traits.Get<EvaAlertsInfo>().NewOptions)));
 								
-					Log.Write("mylog", "Done");
 				});
 			}
 		}

@@ -13,6 +13,7 @@ using System.Linq;
 using OpenRA.FileFormats;
 using OpenRA.Network;
 using OpenRA.Traits;
+using System.Runtime.CompilerServices;
 
 namespace OpenRA
 {
@@ -77,6 +78,8 @@ namespace OpenRA
 			}
 			PlayerActor = world.CreateActor("Player", new TypeDictionary { new OwnerInit(this) });
 			Shroud = PlayerActor.Trait<Shroud>();
+			Shroud.setOwner(this);
+			Log.Write("mylog", "Created Shroud #{0} for #{1}", RuntimeHelpers.GetHashCode(Shroud).ToString("X"), PlayerName);
 
 			// Enable the bot logic on the host
 			IsBot = botType != null;
