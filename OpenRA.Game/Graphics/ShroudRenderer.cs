@@ -16,7 +16,7 @@ namespace OpenRA.Graphics
 {
 	public class ShroudRenderer
 	{
-		Traits.Shroud shroud;
+		public Traits.Shroud shroud;
 		Sprite[] shadowBits = Game.modData.SpriteLoader.LoadAllSprites("shadow");
 		Sprite[,] sprites, fogSprites;
 
@@ -31,7 +31,7 @@ namespace OpenRA.Graphics
 			sprites = new Sprite[map.MapSize.X, map.MapSize.Y];
 			fogSprites = new Sprite[map.MapSize.X, map.MapSize.Y];
 			Shroud.Dirty += (Shroud s) => {
-				Log.Write("mylog", "{0}: Sent Dirty call to renderer while {1} is active", RuntimeHelpers.GetHashCode(s).ToString("X"), RuntimeHelpers.GetHashCode(this.shroud).ToString("X"));
+				//Log.Write("mylog", "{0}: Sent Dirty call to renderer while {1} is active", RuntimeHelpers.GetHashCode(s).ToString("X"), RuntimeHelpers.GetHashCode(this.shroud).ToString("X"));
 				if (s == this.shroud)
 					dirty = true;
 			};
@@ -65,7 +65,7 @@ namespace OpenRA.Graphics
 
 		Sprite ChooseShroud(int i, int j)
 		{
-			if( !this.shroud.IsExplored( i, j ) ) return shadowBits[ 0xf ];
+			if( !shroud.IsExplored( i, j ) ) return shadowBits[ 0xf ];
 
 			// bits are for unexploredness: up, right, down, left
 			var v = 0;
@@ -89,8 +89,8 @@ namespace OpenRA.Graphics
 
 		Sprite ChooseFog(int i, int j)
 		{
-			if (!this.shroud.IsVisible(i,j)) return shadowBits[0xf];
-			if (!this.shroud.IsExplored(i, j)) return shadowBits[0xf];
+			if (!shroud.IsVisible(i,j)) return shadowBits[0xf];
+			if (!shroud.IsExplored(i, j)) return shadowBits[0xf];
 
 			// bits are for unexploredness: up, right, down, left
 			var v = 0;
@@ -116,7 +116,6 @@ namespace OpenRA.Graphics
 		{
 			if (dirty)
 			{
-				Log.Write("mylog", "#{0}: Redrawing", RuntimeHelpers.GetHashCode(this.shroud).ToString("X"));
 				dirty = false;
 				for (int i = map.Bounds.Left; i < map.Bounds.Right; i++)
 					for (int j = map.Bounds.Top; j < map.Bounds.Bottom; j++)
@@ -125,6 +124,9 @@ namespace OpenRA.Graphics
 				for (int i = map.Bounds.Left; i < map.Bounds.Right; i++)
 					for (int j = map.Bounds.Top; j < map.Bounds.Bottom; j++)
 						fogSprites[i, j] = ChooseFog(i, j);
+						
+				Log.Write("mylog", "{0}: Redrawing", RuntimeHelpers.GetHashCode(this.shroud).ToString("X"));
+				Log.Write("mylog", " -- {0} explored cells, {1} visible", this.shroud.ExploredCells(), this.shroud.VisibleCells());
 			}
 
 			var clipRect = Game.viewport.WorldBounds(wr.world);

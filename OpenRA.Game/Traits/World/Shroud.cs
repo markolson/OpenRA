@@ -25,7 +25,7 @@ namespace OpenRA.Traits
 	{
 		Map map;
 		World world;
-		Player owner;
+		public Player owner;
 
 		public int[,] visibleCells;
 		public bool[,] exploredCells;
@@ -85,7 +85,7 @@ namespace OpenRA.Traits
 				return;
 
 
-			if (a.Owner == null || owner != a.Owner || owner.Stances[a.Owner] != Stance.Ally) 
+			if (a.Owner == null || a.Owner != owner) 
 				return;
 
 			if (vis.ContainsKey(a))
@@ -94,7 +94,11 @@ namespace OpenRA.Traits
 				RemoveActor(a);
 			}
 			
-			Log.Write("mylog", "{3}: adding {0}'s {1} at tick {2}", a.Owner.PlayerName, a.Info.Name, Game.LocalTick, RuntimeHelpers.GetHashCode(this).ToString("X"));
+			Log.Write("mylog", "{3}: adding {0}'s {1} at tick {2} (vis is {4}/{5})", a.Owner.PlayerName, 
+				a.Info.Name, Game.LocalTick, 
+				RuntimeHelpers.GetHashCode(this).ToString("X"),
+				RuntimeHelpers.GetHashCode(vis).ToString("X"), 
+				RuntimeHelpers.GetHashCode(visibleCells).ToString("X"));
 			
 			
 			var v = new ActorVisibility
@@ -105,26 +109,25 @@ namespace OpenRA.Traits
 
 			if (v.range == 0) return;		// don't bother for things that can't see
 
-			int addedVisible = 0;
 			foreach (var p in v.vis)
 			{
 				foreach (var q in FindVisibleTiles(a.World, p, v.range))
 				{
-					++addedVisible;
 					++visibleCells[q.X, q.Y];
 					exploredCells[q.X, q.Y] = true;
 				}
 				var box = new Rectangle(p.X - v.range, p.Y - v.range, 2 * v.range + 1, 2 * v.range + 1);
 				exploredBounds = (exploredBounds.HasValue) ? Rectangle.Union(exploredBounds.Value, box) : box;
+				Log.Write("mylog", " -- Explored: {0}", exploredBounds);
 			}
-			Log.Write("mylog", "-- Added {0} visible tiles", addedVisible);
-
+			
 			vis[a] = v;
+				
 			if (!Disabled) {
 				Log.Write("mylog", "Dirtying");
 				Shroud.Dirty(this);
 			} else {
-				Log.Write("mylog", "-- Disabled; not dirtying");
+				Log.Write("mylog", " -- Disabled; not dirtying");
 			}
 		}
 
@@ -202,6 +205,25 @@ namespace OpenRA.Traits
 				Shroud.Dirty(this);
 		}
 
+		public int ExploredCells() 
+		{
+			int c = 0;
+			for (int i = map.Bounds.Left; i < map.Bounds.Right; i++)
+				for (int j = map.Bounds.Top; j < map.Bounds.Bottom; j++)
+					if(exploredCells[i, j]) { ++c; }
+			return c;
+		}
+		
+		public int VisibleCells() 
+		{
+			int c = 0;
+			for (int i = map.Bounds.Left; i < map.Bounds.Right; i++)
+				for (int j = map.Bounds.Top; j < map.Bounds.Bottom; j++)
+					if(visibleCells[i, j] > 0) { ++c; }
+			return c;
+		}
+		
+
 		public void ExploreAll(World world)
 		{
 			for (int i = map.Bounds.Left; i < map.Bounds.Right; i++)
@@ -255,7 +277,7 @@ namespace OpenRA.Traits
 			if (a.TraitsImplementing<IVisibilityModifier>().Any(t => !t.IsVisible(a)))
 				return false;
 
-			return Disabled || a.Owner == a.World.LocalPlayer || GetVisOrigins(a).Any(o => IsExplored(o));
+			return Disabled || a.Owner == a.World.RenderedShroud.owner || GetVisOrigins(a).Any(o => IsExplored(o));
 		}
 	}
 }

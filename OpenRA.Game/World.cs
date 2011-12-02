@@ -41,6 +41,9 @@ namespace OpenRA
 		public void AddPlayer(Player p) { Players.Add(p); }
 		public Player LocalPlayer { get; private set; }
 		public readonly Shroud LocalShroud;
+		public Shroud RenderedShroud {
+			get { return Game.worldRenderer.shroudRenderer.shroud; }
+		}
 
 		public void SetLocalPlayer(string pr)
 		{
