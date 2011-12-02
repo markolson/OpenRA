@@ -81,7 +81,7 @@ namespace OpenRA.Traits
 
 			Log.Write("mylog", "Updating {0}'s shroud - adding {1} at tick {2}", a.Owner.PlayerName, a.Info.Name, Game.LocalTick);
 
-			if (a.Owner == null || a.Owner != world.LocalPlayer) 
+			if (a.Owner == null) 
 				return;
 
 			if (vis.ContainsKey(a))
@@ -154,7 +154,7 @@ namespace OpenRA.Traits
 		{
 			ActorVisibility v;
 			
-			if (a.Owner == null || a.Owner != world.LocalPlayer) 
+			if (a.Owner == null) 
 				return;
 			
 			if (!vis.TryGetValue(a, out v)) return;

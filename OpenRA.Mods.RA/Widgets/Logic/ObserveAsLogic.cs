@@ -45,7 +45,7 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 			Func<string, ScrollItemWidget, ScrollItemWidget> setupItem = (o, itemTemplate) =>
 			{
 				// params: dropdown id, "selected", "onclick action"
-				var item = ScrollItemWidget.Setup(itemTemplate, () => false, null );
+				var item = ScrollItemWidget.Setup(itemTemplate, () => false, () => Game.worldRenderer.shroudRenderer.SwitchShroud(options[o].Shroud) );
 				item.GetWidget<LabelWidget>("LABEL").GetText = () => o;
 				return item;
 			};

@@ -36,6 +36,11 @@ namespace OpenRA.Graphics
 					dirty = true;
 			};
 		}
+		
+		public void SwitchShroud(Shroud s) {
+			this.shroud = s;
+			dirty = true;
+		}
 
 		static readonly byte[][] SpecialShroudTiles =
 		{
