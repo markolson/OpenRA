@@ -271,6 +271,13 @@ namespace OpenRA.Traits
 			return visibleCells[x,y] != 0;
 		}
 
+		public bool IsTargetable(Actor a) {
+			if (a.TraitsImplementing<IVisibilityModifier>().Any(t => !t.IsVisible(a)))
+				return false;
+				
+			return GetVisOrigins(a).Any(o => IsExplored(o));
+		}
+
 		// Actors are hidden under shroud, but not under fog by default
 		public bool IsVisible(Actor a)
 		{
