@@ -94,13 +94,6 @@ namespace OpenRA.Traits
 				RemoveActor(a);
 			}
 			
-			Log.Write("mylog", "{3}: adding {0}'s {1} at tick {2} (vis is {4}/{5})", a.Owner.PlayerName, 
-				a.Info.Name, Game.LocalTick, 
-				RuntimeHelpers.GetHashCode(this).ToString("X"),
-				RuntimeHelpers.GetHashCode(vis).ToString("X"), 
-				RuntimeHelpers.GetHashCode(visibleCells).ToString("X"));
-			
-			
 			var v = new ActorVisibility
 			{
 				range = a.Trait<RevealsShroud>().RevealRange,
@@ -118,16 +111,12 @@ namespace OpenRA.Traits
 				}
 				var box = new Rectangle(p.X - v.range, p.Y - v.range, 2 * v.range + 1, 2 * v.range + 1);
 				exploredBounds = (exploredBounds.HasValue) ? Rectangle.Union(exploredBounds.Value, box) : box;
-				Log.Write("mylog", " -- Explored: {0}", exploredBounds);
 			}
 			
 			vis[a] = v;
 				
 			if (!Disabled) {
-				Log.Write("mylog", "Dirtying");
 				Shroud.Dirty(this);
-			} else {
-				Log.Write("mylog", " -- Disabled; not dirtying");
 			}
 		}
 
@@ -188,7 +177,6 @@ namespace OpenRA.Traits
 			if (a.Owner == null) 
 				return;
 				
-			Log.Write("mylog", "{3}: Unit {0} moved for player: {1} at tick {2}", a.Info.Name, a.Owner.PlayerName, Game.LocalTick, RuntimeHelpers.GetHashCode(this).ToString("X"));
 			RemoveActor(a); AddActor(a);
 		}
 

@@ -74,7 +74,6 @@ namespace OpenRA.Mods.RA
 			var target = ScanForTarget(self, null);
 			if (target != null)
 			{
-				Log.Write("mylog", "I CAN SEE YOU YOU LITTLE FUCKER");
 				self.SetTargetLine(Target.FromActor(target), Color.Red, false);
 				self.QueueActivity(attack.GetAttackActivity(self,
 					Target.FromActor(target),

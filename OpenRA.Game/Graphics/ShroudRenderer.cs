@@ -31,14 +31,12 @@ namespace OpenRA.Graphics
 			sprites = new Sprite[map.MapSize.X, map.MapSize.Y];
 			fogSprites = new Sprite[map.MapSize.X, map.MapSize.Y];
 			Shroud.Dirty += (Shroud s) => {
-				//Log.Write("mylog", "{0}: Sent Dirty call to renderer while {1} is active", RuntimeHelpers.GetHashCode(s).ToString("X"), RuntimeHelpers.GetHashCode(this.shroud).ToString("X"));
 				if (s == this.shroud)
 					dirty = true;
 			};
 		}
 		
 		public void SwitchShroud(Shroud s) {
-			Log.Write("mylog", "Switching to Shroud #{0}", RuntimeHelpers.GetHashCode(s).ToString("X"));
 			this.shroud = s;
 			dirty = true;
 		}
@@ -124,9 +122,6 @@ namespace OpenRA.Graphics
 				for (int i = map.Bounds.Left; i < map.Bounds.Right; i++)
 					for (int j = map.Bounds.Top; j < map.Bounds.Bottom; j++)
 						fogSprites[i, j] = ChooseFog(i, j);
-						
-				Log.Write("mylog", "{0}: Redrawing", RuntimeHelpers.GetHashCode(this.shroud).ToString("X"));
-				Log.Write("mylog", " -- {0} explored cells, {1} visible", this.shroud.ExploredCells(), this.shroud.VisibleCells());
 			}
 
 			var clipRect = Game.viewport.WorldBounds(wr.world);

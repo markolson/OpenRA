@@ -26,7 +26,6 @@ namespace OpenRA.Mods.RA
 			{
 				self.World.AddFrameEndTask(w =>
 				{
-					Log.Write("mylog", "Starting building placement");
 					var prevItems = GetNumBuildables(self.Owner);
 
 					// Find the queue with the target actor
