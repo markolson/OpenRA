@@ -1,7 +1,5 @@
 var RAMAP = {};
-
 RAMAP.BYTE_MAX_VALUE = 255;
-
 
 RAMAP.sizeX;
 RAMAP.sizeY;
@@ -10,7 +8,7 @@ RAMAP.byteSize;
 RAMAP.mapTiles;
 RAMAP.resourceTiles;
 
-RAMAP.fileURI;
+RAMAP.tileSprites = new Array(65535);
 
 RAMAP.errorHandler = function(e) {
   var msg = '';
@@ -58,6 +56,7 @@ RAMAP.onInitFs = function(fs) {
           fileWriter.onwriteend = function(e) {
             console.log('Write completed.');
             $('#uploadPreview').html("<a href='"+fileEntry.toURL()+"'> Click to Download </a>");
+            RAMAP.drawMap();
           };
 
           fileWriter.onerror = function(e) {
@@ -242,8 +241,41 @@ RAMAP.getTile = function( i , j ){
   console.log( "tile: " + RAMAP.mapTiles[i][j].tile + "index: " + RAMAP.mapTiles[i][j].index);
 };
 
+/**
+ * Returns an array of image objects for all the tile pngs.
+ */
+RAMAP.getTileImages = function(){
+  var img = new Image();   // Create new img element
+  img.src = '/images/ramap/Snow/clear1.png'; // Set source path
+  RAMAP.tileSprites[65535] = img; 
+};
+
+RAMAP.drawMap = function() {
+ var canvas = document.getElementById("canvas");
+ var ctx = canvas.getContext("2d");
+
+ var canvasSize = 30; 
+ for( i = 0; i < canvasSize; i++){
+  for( j = 0; j < canvasSize; j++){
+    ctx.fillText(RAMAP.mapTiles[i][j].tile, i*30, j*30+10);
+    ctx.fillText(RAMAP.mapTiles[i][j].index, i*30+1, j*30+20);
+    ctx.strokeRect(i*30, j*30, 30, 30);
+
+    if( RAMAP.mapTiles[i][j].tile === 65535 && RAMAP.mapTiles[i][j].index === 0 ){
+      console.log("drawing image");
+      img.onload = function(){  
+        ctx.drawImage(img,i*30,j*30);
+      }
+    }
+  }
+ }
+ 
+};
+
+
 // Setup the dnd listeners.
 var dropZone = document //.getElementById('drop_zone');
 dropZone.addEventListener('dragover', RAMAP.handleDragOver, false);
 dropZone.addEventListener('drop', RAMAP.handleFileDrop, false);
-
+//start loading tile pngs
+RAMAP.getTileImages();
