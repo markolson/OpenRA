@@ -52,7 +52,7 @@ RAMAP.handleDragOver = function (evt) {
 };
 
 RAMAP.onInitFs = function(fs) {
-  fs.root.getFile('map.bin', {create: true, exclusive: false}, function(fileEntry) {
+  fs.root.getFile('blah.bin', {create: true, exclusive: false}, function(fileEntry) {
     fileEntry.createWriter(function(fileWriter) {
 
           fileWriter.onwriteend = function(e) {
@@ -175,17 +175,19 @@ RAMAP.getMapBuffer = function(){
     dw.write8(file_data, 1);
     dw.write16(file_data, RAMAP.sizeX);
     dw.write16(file_data, RAMAP.sizeY);
-    console.log( file_data.byteLength );
+    console.log( "Writing: " + file_data.byteLength );
+
     //mapTiles
-    console.log("mapTiles");
+    console.log("write mapTiles");
     for( i = 0; i < RAMAP.sizeX; i ++){
       for( j = 0; j < RAMAP.sizeY; j ++){
         dw.write16( file_data, RAMAP.mapTiles[i][j].tile );
-        //TODO pickany code ( % 4)
+        console.log("writing tile: " + RAMAP.mapTiles[i][j].tile + " at " + i + " " + j);
+        //TODO pickany code ( % 4) (for cnc?)
         dw.write8( file_data, RAMAP.mapTiles[i][j].index );
       } 
     }
-    console.log("resourceTiles");
+    console.log("write resourceTiles");
     //resourceTiles
     for( i = 0; i < RAMAP.sizeX; i ++){
       for( j = 0; j < RAMAP.sizeY; j ++){
@@ -193,6 +195,7 @@ RAMAP.getMapBuffer = function(){
         dw.write8( file_data, RAMAP.resourceTiles[i][j].index );
       } 
     }
+
     return file_buff;
 };
 
@@ -221,37 +224,26 @@ RAMAP.dataWriter = (function(){
     var byteOffset = 0;
     return {
         write8: function(dataView, value){
-          var value = dataView.setUint8(byteOffset, value );  
+          dataView.setUint8(byteOffset, value );  
           byteOffset += 1;
-          return value;  
         },
-        write16: function(dataView){
-          var value = dataView.setUint16(byteOffset, value, true);  
+        write16: function(dataView, value){
+          dataView.setUint16(byteOffset, value, true);  
           byteOffset += 2;
-          return value;  
         },
-        write32: function(dataView){
-          var value = dataView.setUint32(byteOffset, value, true);  
+        write32: function(dataView, value){
+          dataView.setUint32(byteOffset, value, true);  
           byteOffset += 4;
-          return value;  
         }
     }
 }());
 
 RAMAP.getTile = function( i , j ){
   console.log( "tile: " + RAMAP.mapTiles[i][j].tile + "index: " + RAMAP.mapTiles[i][j].index);
-}
+};
 
-/**
-  function readHeaderIndex( dataView ){
-    console.log( "ID: " + read32(dataView) );
-    console.log( "Start: " + read32(dataView) );
-    console.log( "Size: " + read32(dataView) );
-  }
-*/
-
-  // Setup the dnd listeners.
-  var dropZone = document //.getElementById('drop_zone');
-  dropZone.addEventListener('dragover', RAMAP.handleDragOver, false);
-  dropZone.addEventListener('drop', RAMAP.handleFileDrop, false);
+// Setup the dnd listeners.
+var dropZone = document //.getElementById('drop_zone');
+dropZone.addEventListener('dragover', RAMAP.handleDragOver, false);
+dropZone.addEventListener('drop', RAMAP.handleFileDrop, false);
 
