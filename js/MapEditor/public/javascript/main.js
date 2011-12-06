@@ -8,8 +8,6 @@ RAMAP.byteSize;
 RAMAP.mapTiles;
 RAMAP.resourceTiles;
 
-RAMAP.tileSprites = new Array(65535);
-
 RAMAP.errorHandler = function(e) {
   var msg = '';
 
@@ -181,7 +179,7 @@ RAMAP.getMapBuffer = function(){
     for( i = 0; i < RAMAP.sizeX; i ++){
       for( j = 0; j < RAMAP.sizeY; j ++){
         dw.write16( file_data, RAMAP.mapTiles[i][j].tile );
-        console.log("writing tile: " + RAMAP.mapTiles[i][j].tile + " at " + i + " " + j);
+        //console.log("writing tile: " + RAMAP.mapTiles[i][j].tile + " at " + i + " " + j);
         //TODO pickany code ( % 4) (for cnc?)
         dw.write8( file_data, RAMAP.mapTiles[i][j].index );
       } 
@@ -241,35 +239,39 @@ RAMAP.getTile = function( i , j ){
   console.log( "tile: " + RAMAP.mapTiles[i][j].tile + "index: " + RAMAP.mapTiles[i][j].index);
 };
 
-/**
- * Returns an array of image objects for all the tile pngs.
- */
-RAMAP.getTileImages = function(){
-  var img = new Image();   // Create new img element
-  img.src = '/images/ramap/Snow/clear1.png'; // Set source path
-  RAMAP.tileSprites[65535] = img; 
-};
-
 RAMAP.drawMap = function() {
  var canvas = document.getElementById("canvas");
  var ctx = canvas.getContext("2d");
-
+ 
  var canvasSize = 30; 
  for( i = 0; i < canvasSize; i++){
   for( j = 0; j < canvasSize; j++){
-    ctx.fillText(RAMAP.mapTiles[i][j].tile, i*30, j*30+10);
-    ctx.fillText(RAMAP.mapTiles[i][j].index, i*30+1, j*30+20);
+    var tile = RAMAP.mapTiles[i][j].tile;
+    var index = RAMAP.mapTiles[i][j].index;
+    ctx.fillText( tile, i*30, j*30+10);
+    ctx.fillText( index, i*30+1, j*30+20);
     ctx.strokeRect(i*30, j*30, 30, 30);
-
-    if( RAMAP.mapTiles[i][j].tile === 65535 && RAMAP.mapTiles[i][j].index === 0 ){
+    
+    /**
+     * going to have to do this differently, put all drawImages in a for loop with positions.
+    if( tile === 65535 && index === 0 ){
+      var img = new Image(); 
       console.log("drawing image");
       img.onload = function(){  
-        ctx.drawImage(img,i*30,j*30);
+        ctx.drawImage(img,i*30,j*30, 30, 30);
       }
-    }
+      img.src = '/images/ramap/Snow/clear1.png';
+    }*/
   }
  }
  
+  var img = new Image();   // Create new img element
+  img.onload = function(){  
+        console.log("loaded");
+        ctx.drawImage(img,0,0,30,30);
+      }
+  img.src = '/images/ramap/Snow/b1.png'; // Set source path
+
 };
 
 
@@ -277,5 +279,3 @@ RAMAP.drawMap = function() {
 var dropZone = document //.getElementById('drop_zone');
 dropZone.addEventListener('dragover', RAMAP.handleDragOver, false);
 dropZone.addEventListener('drop', RAMAP.handleFileDrop, false);
-//start loading tile pngs
-RAMAP.getTileImages();
