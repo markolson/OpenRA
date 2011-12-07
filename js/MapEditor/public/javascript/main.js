@@ -1,7 +1,8 @@
 var RAMAP = {};
 RAMAP.BYTE_MAX_VALUE = 255;
-RAMAP.chunkSize = 6;
-RAMAP.SCALE = 24;
+RAMAP.CHUNK_SIZE = 6;
+RAMAP.SCALE = 6;
+RAMAP.CANVAS_SIZE = 128;
 
 RAMAP.sizeX;
 RAMAP.sizeY;
@@ -264,17 +265,11 @@ function newSourceImage(){ //image used to create tile
     return SourceImage;
 }
 
-function loadSources(){
+function loadTemplates(){
   RAMAP.templateMap[65535] = { "id":65535, "width": 4, "height": 4, "path":'/images/ramap/Snow/clear1.png' }; 
-
-  var source = newSourceImage();
-  source.init(RAMAP.templateMap[65535].path);
-  RAMAP.sources[65535] = source;
-  console.log("source image loaded");
-
-
-  var template = newTemplate();
-  template.init(65535);
+  //for each key in template map 
+    var template = newTemplate();
+    template.init(65535); //init with key
 }
 
 RAMAP.newTile = function(){
@@ -289,20 +284,19 @@ RAMAP.newTile = function(){
       Tile.x = x;
       Tile.y = y;
       },
-    render: function(ctx){
+    render: function(ctx, scale){
       var template = RAMAP.templates[Tile.templateID];
       if( template !== undefined){
         var chunk = template.chunks[Tile.index];
-        var scale = RAMAP.SCALE;
-        ctx.drawImage(template.source.image, chunk.x, chunk.y, RAMAP.chunkSize, RAMAP.chunkSize, Tile.x*scale,Tile.y*scale, scale, scale);
+        ctx.drawImage(template.source.image, chunk.x, chunk.y, RAMAP.CHUNK_SIZE, RAMAP.CHUNK_SIZE, Tile.x*scale,Tile.y*scale, scale, scale);
 
         /** Use this in case of loading problems
         var image = new Image(); //template.source.image;
         image.onload = (function(ctx, image, x, y, chunk, scale){  
             return function () {
-              ctx.drawImage(image, chunk.x, chunk.y, RAMAP.chunkSize, RAMAP.chunkSize, x*scale, y*scale, scale, scale);
+              ctx.drawImage(image, chunk.x, chunk.y, RAMAP.CHUNK_SIZE, RAMAP.CHUNK_SIZE, x*scale, y*scale, scale, scale);
             }
-        })(ctx, image ,Tile.x, Tile.y, chunk, RAMAP.SCALE);
+        })(ctx, image ,Tile.x, Tile.y, chunk, scale);
         image.src = template.source.image.src
         */
       }else{
@@ -324,7 +318,9 @@ function newTemplate(){
       Template.width = RAMAP.templateMap[id].width;
       Template.height = RAMAP.templateMap[id].height;
       Template.chunks = getChunks(Template.width, Template.height);
-      Template.source = RAMAP.sources[id]
+      Template.source = newSourceImage();
+      Template.source.init(RAMAP.templateMap[id].path)
+      RAMAP.sources[id] = Template.source;
       RAMAP.templates[id] = Template;
     }
   }
@@ -338,7 +334,7 @@ function getChunks( tempWidth, tempHeight){
   for ( var i = 0; i < numChunks; i++){
     var row = Math.floor( i / tempWidth );
     var column = i % tempWidth;
-    chunks.push( { "id": i, "x": column*RAMAP.chunkSize, "y": row*RAMAP.chunkSize} );
+    chunks.push( { "id": i, "x": column*RAMAP.CHUNK_SIZE, "y": row*RAMAP.CHUNK_SIZE} );
   }
     return chunks; 
 }
@@ -355,14 +351,21 @@ function getChunkPos( tempWidth, tempHeight, index){
 RAMAP.drawMap = function(scale) {
  var canvas = document.getElementById("canvas");
  var ctx = canvas.getContext("2d");
+ //clear in case of redraw
+ ctx.clearRect ( 0 , 0 , 900 , 900 );
  
- var canvasSize = 128; 
- var tileScale = 6;
- //var gridScale = Math.round( tileScale / 4 );
+ if ( scale !== undefined && scale !== 0 && scale !== null ){
+  console.log("changing scale: " + scale );
+  var scale = Number(scale);
+ }else{
+  var scale = RAMAP.SCALE; 
+ }
+ 
+ var canvasSize = RAMAP.CANVAS_SIZE; 
  for( i = 0; i < canvasSize; i++){
   for( j = 0; j < canvasSize; j++){
     var tile = RAMAP.mapTiles[i][j];
-    tile.render(ctx);
+    tile.render(ctx,scale);
     //ctx.fillText( tile, i*tileScale, j*tileScale+10);
     //ctx.fillText( index, i*tileScale+1, j*tileScale+20);
     //ctx.strokeRect(i*tileScale, j*tileScale, tileScale, tileScale);
@@ -404,4 +407,4 @@ RAMAP.drawMap = function(scale) {
 var dropZone = document //.getElementById('drop_zone');
 dropZone.addEventListener('dragover', RAMAP.handleDragOver, false);
 dropZone.addEventListener('drop', RAMAP.handleFileDrop, false);
-loadSources();
+loadTemplates();
