@@ -1,7 +1,7 @@
 var RAMAP = {};
 RAMAP.BYTE_MAX_VALUE = 255;
 RAMAP.CHUNK_SIZE = 6;
-RAMAP.SCALE = 6;
+RAMAP.SCALE = 15;
 RAMAP.CANVAS_SIZE = 128;
 
 RAMAP.sizeX;
@@ -14,6 +14,53 @@ RAMAP.resourceTiles;
 RAMAP.templateMap = new Array(65535);
 RAMAP.templates = new Array(65535);
 RAMAP.sources = new Array(65535);
+
+$(document).ready( function(){
+  RAMAP.canvas = document.getElementById("canvas");
+  RAMAP.ctx = RAMAP.canvas.getContext("2d");
+
+  var isDown = false; // whether mouse is pressed
+  var startCoords = []; // 'grab' coordinates when pressing mouse
+  var last = [0, 0]; // previous coordinates of mouse release
+
+  RAMAP.canvas.onmousedown = function(e) {
+    isDown = true;
+
+    startCoords = [
+        e.offsetX - last[0], // set start coordinates
+        e.offsetY - last[1]
+   ];
+  };
+
+  RAMAP.canvas.onmouseup   = function(e) {
+      isDown = false;
+
+      last = [
+          e.offsetX - startCoords[0], // set last coordinates
+          e.offsetY - startCoords[1]
+      ];
+  };
+
+  RAMAP.canvas.onmousemove = function(e)
+  {
+      if(!isDown) return; // don't pan if mouse is not pressed
+
+      var x = e.offsetX;
+      var y = e.offsetY;
+
+      // set the canvas' transformation matrix by setting the amount of movement:
+      // 1  0  dx
+      // 0  1  dy
+      // 0  0  1
+
+      RAMAP.ctx.setTransform(1, 0, 0, 1,
+                       x - startCoords[0], y - startCoords[1]);
+
+      RAMAP.drawMap(); // render to show changes
+
+  }
+
+});
 
 RAMAP.errorHandler = function(e) {
   var msg = '';
@@ -300,7 +347,7 @@ RAMAP.newTile = function(){
         image.src = template.source.image.src
         */
       }else{
-        console.log("Unrecongized template ID: " + Tile.templateID );
+        //console.log("Unrecongized template ID: " + Tile.templateID );
       }
     }
   }
@@ -349,10 +396,13 @@ function getChunkPos( tempWidth, tempHeight, index){
 */
 
 RAMAP.drawMap = function(scale) {
- var canvas = document.getElementById("canvas");
- var ctx = canvas.getContext("2d");
+ //var canvas = document.getElementById("canvas");
+ //var ctx = canvas.getContext("2d");
+ 
  //clear in case of redraw
- ctx.clearRect ( 0 , 0 , 900 , 900 );
+ RAMAP.ctx.clearRect ( -1200 , -1200 , 3600, 3600 );
+ //RAMAP.ctx.clip();
+ //RAMAP.canvas.width = RAMAP.canvas.width;
  
  if ( scale !== undefined && scale !== 0 && scale !== null ){
   console.log("changing scale: " + scale );
@@ -365,7 +415,7 @@ RAMAP.drawMap = function(scale) {
  for( i = 0; i < canvasSize; i++){
   for( j = 0; j < canvasSize; j++){
     var tile = RAMAP.mapTiles[i][j];
-    tile.render(ctx,scale);
+    tile.render(RAMAP.ctx,scale);
     //ctx.fillText( tile, i*tileScale, j*tileScale+10);
     //ctx.fillText( index, i*tileScale+1, j*tileScale+20);
     //ctx.strokeRect(i*tileScale, j*tileScale, tileScale, tileScale);
@@ -401,6 +451,13 @@ RAMAP.drawMap = function(scale) {
   ctx.drawImage(img,0,0,30,30);
 */
 };
+
+
+
+
+
+
+
 
 
 // Setup the dnd listeners.
