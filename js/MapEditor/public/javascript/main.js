@@ -1,5 +1,7 @@
 var RAMAP = {};
 RAMAP.BYTE_MAX_VALUE = 255;
+RAMAP.chunkSize = 6;
+RAMAP.SCALE = 24;
 
 RAMAP.sizeX;
 RAMAP.sizeY;
@@ -7,6 +9,10 @@ RAMAP.byteSize;
 
 RAMAP.mapTiles;
 RAMAP.resourceTiles;
+
+RAMAP.templateMap = new Array(65535);
+RAMAP.templates = new Array(65535);
+RAMAP.sources = new Array(65535);
 
 RAMAP.errorHandler = function(e) {
   var msg = '';
@@ -123,14 +129,17 @@ RAMAP.readMapBin = function(map_bin){
 
     for ( var i = 0; i < mapSizeX; i++){
       for ( var j = 0; j < mapSizeY; j++){
-        var tile = dr.read16(map_data);
+        var templateID = dr.read16(map_data);
         var index = dr.read8(map_data);
         if (index === RAMAP.BYTE_MAX_VALUE){
           index = (i % 4 + (j % 4) * 4);
           console.log("byte max value"+ i + " " + j);
         }
         //console.log( "X: " + i + " Y: " + j + " Tile: " + tile + " Index: " + index); 
-        RAMAP.mapTiles[i][j] = { "tile": tile, "index": index }
+        //RAMAP.mapTiles[i][j] = { "tile": templateID, "index": index }
+        var tile = RAMAP.newTile();
+        tile.init( templateID, index, i, j );
+        RAMAP.mapTiles[i][j] = tile;
       }
     }
 
@@ -239,39 +248,155 @@ RAMAP.getTile = function( i , j ){
   console.log( "tile: " + RAMAP.mapTiles[i][j].tile + "index: " + RAMAP.mapTiles[i][j].index);
 };
 
-RAMAP.drawMap = function() {
+
+function newSourceImage(){ //image used to create tile 
+    var SourceImage = {
+        imageFilename: 0, //filename for image
+        image: 0, //dom image object
+        isready: 0, //is image loaded and ready to be drawn
+        init: function(file){
+            SourceImage.imageFilename = file;
+            SourceImage.isready = false;
+            SourceImage.image = new Image();  //create new image object
+            SourceImage.image.src = file; //load file into image object
+        }
+    };
+    return SourceImage;
+}
+
+function loadSources(){
+  RAMAP.templateMap[65535] = { "id":65535, "width": 4, "height": 4, "path":'/images/ramap/Snow/clear1.png' }; 
+
+  var source = newSourceImage();
+  source.init(RAMAP.templateMap[65535].path);
+  RAMAP.sources[65535] = source;
+  console.log("source image loaded");
+
+
+  var template = newTemplate();
+  template.init(65535);
+}
+
+RAMAP.newTile = function(){
+  var Tile = {
+    templateID: 0,
+    index: 0,
+    x: 0,
+    y: 0,
+    init: function(templateID, index, x, y){
+      Tile.templateID = templateID;
+      Tile.index = index;
+      Tile.x = x;
+      Tile.y = y;
+      },
+    render: function(ctx){
+      var template = RAMAP.templates[Tile.templateID];
+      if( template !== undefined){
+        var chunk = template.chunks[Tile.index];
+        var scale = RAMAP.SCALE;
+        ctx.drawImage(template.source.image, chunk.x, chunk.y, RAMAP.chunkSize, RAMAP.chunkSize, Tile.x*scale,Tile.y*scale, scale, scale);
+
+        /** Use this in case of loading problems
+        var image = new Image(); //template.source.image;
+        image.onload = (function(ctx, image, x, y, chunk, scale){  
+            return function () {
+              ctx.drawImage(image, chunk.x, chunk.y, RAMAP.chunkSize, RAMAP.chunkSize, x*scale, y*scale, scale, scale);
+            }
+        })(ctx, image ,Tile.x, Tile.y, chunk, RAMAP.SCALE);
+        image.src = template.source.image.src
+        */
+      }else{
+        console.log("Unrecongized template ID: " + Tile.templateID );
+      }
+    }
+  }
+  return Tile;
+}
+
+function newTemplate(){
+  var Template = {
+    id: 0,
+    width: 0,
+    height: 0,
+    chunks: 0,
+    source: 0,
+    init: function(id){
+      Template.width = RAMAP.templateMap[id].width;
+      Template.height = RAMAP.templateMap[id].height;
+      Template.chunks = getChunks(Template.width, Template.height);
+      Template.source = RAMAP.sources[id]
+      RAMAP.templates[id] = Template;
+    }
+  }
+  return Template;
+}
+
+
+function getChunks( tempWidth, tempHeight){
+  var numChunks = tempWidth * tempHeight;
+  var chunks = [];
+  for ( var i = 0; i < numChunks; i++){
+    var row = Math.floor( i / tempWidth );
+    var column = i % tempWidth;
+    chunks.push( { "id": i, "x": column*RAMAP.chunkSize, "y": row*RAMAP.chunkSize} );
+  }
+    return chunks; 
+}
+
+/**
+function getChunkPos( tempWidth, tempHeight, index){
+  var numChunks = tempWidth * tempHeight;
+  var row = Math.floor( index / tempWidth );
+  var column = index % tempWidth;
+  return { "x": column*6, "y": row*6}
+}
+*/
+
+RAMAP.drawMap = function(scale) {
  var canvas = document.getElementById("canvas");
  var ctx = canvas.getContext("2d");
  
- var canvasSize = 30; 
+ var canvasSize = 128; 
+ var tileScale = 6;
+ //var gridScale = Math.round( tileScale / 4 );
  for( i = 0; i < canvasSize; i++){
   for( j = 0; j < canvasSize; j++){
-    var tile = RAMAP.mapTiles[i][j].tile;
-    var index = RAMAP.mapTiles[i][j].index;
-    ctx.fillText( tile, i*30, j*30+10);
-    ctx.fillText( index, i*30+1, j*30+20);
-    ctx.strokeRect(i*30, j*30, 30, 30);
+    var tile = RAMAP.mapTiles[i][j];
+    tile.render(ctx);
+    //ctx.fillText( tile, i*tileScale, j*tileScale+10);
+    //ctx.fillText( index, i*tileScale+1, j*tileScale+20);
+    //ctx.strokeRect(i*tileScale, j*tileScale, tileScale, tileScale);
     
+    //  going to have to do this differently, put all drawImages in a for loop with positions.
     /**
-     * going to have to do this differently, put all drawImages in a for loop with positions.
-    if( tile === 65535 && index === 0 ){
-      var img = new Image(); 
-      console.log("drawing image");
-      img.onload = function(){  
-        ctx.drawImage(img,i*30,j*30, 30, 30);
-      }
-      img.src = '/images/ramap/Snow/clear1.png';
-    }*/
+    if( tile === 65535 ){
+      RAMAP.sourceImages.unshift(new Image()); 
+      var sd = getChunkPos( 4, 4, index);
+      RAMAP.sourceImages[0].onload = (function(a, b, sd){  
+        return function () {
+          console.log("drawing image");
+          
+          ctx.drawImage(RAMAP.sourceImages[0], sd.x, sd.y, 6, 6, a*tileScale,b*tileScale, tileScale, tileScale);
+          console.log( sd.x + " " + sd.y + " " + a + " " + b );
+        }
+      })(i,j,sd);
+
+      RAMAP.sourceImages[0].src = '/images/ramap/Snow/clear1.png';
+    
+    }
+    */
   }
  }
- 
+/** 
   var img = new Image();   // Create new img element
   img.onload = function(){  
         console.log("loaded");
-        ctx.drawImage(img,0,0,30,30);
+        //ctx.drawImage(img,0,0,30,30);
       }
   img.src = '/images/ramap/Snow/b1.png'; // Set source path
-
+  console.log("drawing image");
+  ctx.drawImage(img,0,0,30,30);
+*/
 };
 
 
@@ -279,3 +404,4 @@ RAMAP.drawMap = function() {
 var dropZone = document //.getElementById('drop_zone');
 dropZone.addEventListener('dragover', RAMAP.handleDragOver, false);
 dropZone.addEventListener('drop', RAMAP.handleFileDrop, false);
+loadSources();
