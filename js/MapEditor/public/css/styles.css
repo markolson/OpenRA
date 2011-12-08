@@ -67,24 +67,26 @@ h3 {
   color: #F4F1EA;
 }
 
-#menu span{
+#menu button{
   margin-left: .1em;
-  font-size: .5em;
+  font-size: .75em;
   color:#3A4E57;
-  padding: 0 1% 0 1%;
 
   cursor: pointer;
-  /**
-  -moz-border-bottom-left-radius: 10px;
-  border-bottom-left-radius: 10px;
-  -moz-border-bottom-right-radius: 10px;
-  border-bottom-right-radius: 10px;
-
-  -moz-box-shadow: 0px 5px 0px #87807B;
-  -webkit-box-shadow: 0px 5px 0px #87807B;
-  box-shadow: 0px 5px 0px #87807B;
-  */
 }
+
+#download{
+  background: #FFF; 
+  color: #000;
+  font-size: 1em;
+  cursor: pointer;
+}
+/**
+#tile_picker{
+  width: 300px;
+}*/
+
+/**
 
 #wrapper{
   padding: 50px 10% 100px 5%;
@@ -176,7 +178,6 @@ h3 {
   color: #F4F1EA;
   margin-left: 20px;
   padding: 5px;
-  /*background: #B4A79F;*/
   background: #954F98;
   
   -moz-border-top-left-radius: 15px;
@@ -189,6 +190,8 @@ h3 {
   box-shadow: 2px 2px 2px #333;
 
 }
+*/
+
 /**
 .row_1 {
   padding: 4px 10px 4px 10px;

@@ -16,9 +16,9 @@ RAMAP.byteSize;
 RAMAP.mapTiles;
 RAMAP.resourceTiles;
 
-RAMAP.templateMap = new Array(65535);
-RAMAP.templates = new Array(65535);
-RAMAP.sources = new Array(65535);
+RAMAP.templateMap = new Object();
+RAMAP.templates = new Object();
+RAMAP.sources = new Object();
 
 //RAMAP.shiftX = 0;
 //RAMAP.shiftY = 0;
@@ -136,7 +136,7 @@ RAMAP.onInitFs = function(fs) {
 
           fileWriter.onwriteend = function(e) {
             console.log('Write completed.');
-            $('#uploadPreview').html("<a href='"+fileEntry.toURL()+"'> Click to Download </a>");
+            $('#download').html("<a href='"+fileEntry.toURL()+"'> Download </a>");
             RAMAP.drawMap();
           };
 
@@ -207,6 +207,9 @@ RAMAP.readMapBin = function(map_bin){
     for ( var i = 0; i < mapSizeX; i++){
       for ( var j = 0; j < mapSizeY; j++){
         var templateID = dr.read16(map_data);
+        if( templateID !== 65535 ){
+          console.log( templateID );
+        }
         var index = dr.read8(map_data);
         if (index === RAMAP.BYTE_MAX_VALUE){
           index = (i % 4 + (j % 4) * 4);
@@ -342,11 +345,23 @@ function newSourceImage(){ //image used to create tile
 }
 
 function loadTemplates(){
-  RAMAP.templateMap[65535] = { "id":65535, "width": 4, "height": 4, "path":'/images/ramap/Snow/clear1.png' }; 
+  $.getJSON('ajax/snow.json', function(data) {
+    $.each(data, function(key, val) {
+      RAMAP.templateMap[key] = val
+      //console.log( key + " " + val["path"] );
+      //items.push( val["path"] + ".png" );
+      var template = newTemplate();
+      template.init(key);
+    });
+  });
+}
+/**
+function loadTemplates(){
+  //RAMAP.templateMap[65535] = { "id":65535, "width": 4, "height": 4, "path":'/images/ramap/Snow/clear1.png' }; 
   //for each key in template map 
     var template = newTemplate();
     template.init(65535); //init with key
-}
+}*/
 
 RAMAP.newTile = function(){
   var Tile = {
@@ -364,7 +379,11 @@ RAMAP.newTile = function(){
       var template = RAMAP.templates[Tile.templateID];
       if( template !== undefined){
         var chunk = template.chunks[Tile.index];
-        ctx.drawImage(template.source.image, chunk.x, chunk.y, RAMAP.CHUNK_SIZE, RAMAP.CHUNK_SIZE, posX*scale, posY*scale, scale, scale);
+        if (chunk !== undefined){
+          ctx.drawImage(template.source.image, chunk.x, chunk.y, RAMAP.CHUNK_SIZE, RAMAP.CHUNK_SIZE, posX*scale, posY*scale, scale, scale);
+        }else{
+          console.log( "Truffle shuffle: " + Tile.templateID + "index: " + Tile.index);
+        }
 
         /** Use this in case of loading problems
         var image = new Image(); //template.source.image;
@@ -395,7 +414,7 @@ function newTemplate(){
       Template.height = RAMAP.templateMap[id].height;
       Template.chunks = getChunks(Template.width, Template.height);
       Template.source = newSourceImage();
-      Template.source.init(RAMAP.templateMap[id].path)
+      Template.source.init( "/images/ramap/Snow/" + RAMAP.templateMap[id].path + ".png")
       RAMAP.sources[id] = Template.source;
       RAMAP.templates[id] = Template;
     }
