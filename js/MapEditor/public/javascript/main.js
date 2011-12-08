@@ -1,10 +1,13 @@
 var RAMAP = {};
 RAMAP.BYTE_MAX_VALUE = 255;
 RAMAP.CHUNK_SIZE = 6;
-RAMAP.SCALE = 12;
+RAMAP.scale = 12;
 RAMAP.CANVAS_SIZE = 128;
 RAMAP.CANVAS_WIDTH = 900;
 RAMAP.CANVAS_HEIGHT = 900;
+
+RAMAP.MAX_ZOOM = 42;
+RAMAP.MIN_ZOOM = 3;
 
 RAMAP.sizeX;
 RAMAP.sizeY;
@@ -62,17 +65,17 @@ $(document).ready( function(){
       //RAMAP.ctx.setTransform(1, 0, 0, 1,
       //                 x - startCoords[0], y - startCoords[1]);
       //console.log( "dx: " + (x - startCoords[0]) + "dy: " + (y - startCoords[1]) );
-      var shiftX = Math.floor( (( x - startCoords[0] ) / RAMAP.SCALE) / 2);
-      var shiftY = Math.floor( (( y - startCoords[1] ) / RAMAP.SCALE) / 2);
+      RAMAP.shiftX = Math.floor( (( x - startCoords[0] ) / RAMAP.scale) / 2);
+      RAMAP.shiftY = Math.floor( (( y - startCoords[1] ) / RAMAP.scale) / 2);
 
 
-      console.log( "shiftX: "+ shiftX + "shiftY: " + shiftY );
+      //console.log( "shiftX: "+ shiftX + "shiftY: " + shiftY );
 
       //RAMAP.shiftX = RAMAP.getShift(RAMAP.shiftX - shiftX);
       //RAMAP.shiftY = RAMAP.getShift(RAMAP.shiftY - shiftY);
 
       //console.log( "RA.shiftX: "+ RAMAP.shiftX + "RA.shiftY: " + RAMAP.shiftY );
-      RAMAP.drawMap( shiftX, shiftY, RAMAP.SCALE); // render to show changes
+      RAMAP.drawMap( RAMAP.shiftX, RAMAP.shiftY, RAMAP.scale); // render to show changes
 
   }
   /** 
@@ -84,7 +87,7 @@ $(document).ready( function(){
         value = -RAMAP.CANVAS_SIZE;
       }
     return value;
-  }*//
+  }*/
 
 });
 
@@ -432,6 +435,23 @@ RAMAP.fitToMap = function( mapIndex ){
   return mapIndex;
 }*/
 
+RAMAP.zoomIn = function(){
+  RAMAP.scale = RAMAP.scale + 3;
+  if( RAMAP.scale > RAMAP.MAX_ZOOM){
+    RAMAP.scale = RAMAP.MAX_ZOOM; 
+  }
+  
+  RAMAP.drawMap( RAMAP.shiftX, RAMAP.shiftY, RAMAP.scale); // render to show changes
+}
+
+RAMAP.zoomOut = function(){
+  RAMAP.scale = RAMAP.scale - 3;
+  if( RAMAP.scale < RAMAP.MIN_ZOOM){
+    RAMAP.scale = RAMAP.MIN_ZOOM; 
+  }
+  RAMAP.drawMap( RAMAP.shiftX, RAMAP.shiftY, RAMAP.scale); // render to show changes
+}
+
 RAMAP.drawMap = function(shiftX, shiftY, scale) {
  //var canvas = document.getElementById("canvas");
  //var ctx = canvas.getContext("2d");
@@ -455,7 +475,7 @@ RAMAP.drawMap = function(shiftX, shiftY, scale) {
   console.log("changing scale: " + scale );
   var scale = Math.round( Number(scale) );
  }else{
-  var scale = RAMAP.SCALE; 
+  var scale = RAMAP.scale; 
  }
 
  //how many tiles fit on canvas
@@ -467,7 +487,7 @@ RAMAP.drawMap = function(shiftX, shiftY, scale) {
  //var endI = RAMAP.fitToMap(-shiftX + drawWidth);
  //var endJ = RAMAP.fitToMap(-shiftY + drawHeight);
 
- console.log( startI + " " + startJ + " " + endI + " " + endJ);
+ //console.log( startI + " " + startJ + " " + endI + " " + endJ);
 
  for( i = 0; i < drawWidth; i++){
   for( j = 0; j < drawHeight; j++){
