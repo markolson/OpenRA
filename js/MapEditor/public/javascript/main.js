@@ -1,8 +1,10 @@
 var RAMAP = {};
 RAMAP.BYTE_MAX_VALUE = 255;
 RAMAP.CHUNK_SIZE = 6;
-RAMAP.SCALE = 15;
+RAMAP.SCALE = 12;
 RAMAP.CANVAS_SIZE = 128;
+RAMAP.CANVAS_WIDTH = 900;
+RAMAP.CANVAS_HEIGHT = 900;
 
 RAMAP.sizeX;
 RAMAP.sizeY;
@@ -14,6 +16,10 @@ RAMAP.resourceTiles;
 RAMAP.templateMap = new Array(65535);
 RAMAP.templates = new Array(65535);
 RAMAP.sources = new Array(65535);
+
+//RAMAP.shiftX = 0;
+//RAMAP.shiftY = 0;
+
 
 $(document).ready( function(){
   RAMAP.canvas = document.getElementById("canvas");
@@ -53,12 +59,32 @@ $(document).ready( function(){
       // 0  1  dy
       // 0  0  1
 
-      RAMAP.ctx.setTransform(1, 0, 0, 1,
-                       x - startCoords[0], y - startCoords[1]);
+      //RAMAP.ctx.setTransform(1, 0, 0, 1,
+      //                 x - startCoords[0], y - startCoords[1]);
+      //console.log( "dx: " + (x - startCoords[0]) + "dy: " + (y - startCoords[1]) );
+      var shiftX = Math.floor( (( x - startCoords[0] ) / RAMAP.SCALE) / 2);
+      var shiftY = Math.floor( (( y - startCoords[1] ) / RAMAP.SCALE) / 2);
 
-      RAMAP.drawMap(); // render to show changes
+
+      console.log( "shiftX: "+ shiftX + "shiftY: " + shiftY );
+
+      //RAMAP.shiftX = RAMAP.getShift(RAMAP.shiftX - shiftX);
+      //RAMAP.shiftY = RAMAP.getShift(RAMAP.shiftY - shiftY);
+
+      //console.log( "RA.shiftX: "+ RAMAP.shiftX + "RA.shiftY: " + RAMAP.shiftY );
+      RAMAP.drawMap( shiftX, shiftY, RAMAP.SCALE); // render to show changes
 
   }
+  /** 
+  RAMAP.getShift = function(value){
+    if ( value > RAMAP.CANVAS_SIZE ){
+        value = RAMAP.CANVAS_SIZE;
+      }
+      else if ( value < -RAMAP.CANVAS_SIZE ) {
+        value = -RAMAP.CANVAS_SIZE;
+      }
+    return value;
+  }*//
 
 });
 
@@ -331,11 +357,11 @@ RAMAP.newTile = function(){
       Tile.x = x;
       Tile.y = y;
       },
-    render: function(ctx, scale){
+    render: function(ctx, posX, posY, scale){
       var template = RAMAP.templates[Tile.templateID];
       if( template !== undefined){
         var chunk = template.chunks[Tile.index];
-        ctx.drawImage(template.source.image, chunk.x, chunk.y, RAMAP.CHUNK_SIZE, RAMAP.CHUNK_SIZE, Tile.x*scale,Tile.y*scale, scale, scale);
+        ctx.drawImage(template.source.image, chunk.x, chunk.y, RAMAP.CHUNK_SIZE, RAMAP.CHUNK_SIZE, posX*scale, posY*scale, scale, scale);
 
         /** Use this in case of loading problems
         var image = new Image(); //template.source.image;
@@ -395,7 +421,18 @@ function getChunkPos( tempWidth, tempHeight, index){
 }
 */
 
-RAMAP.drawMap = function(scale) {
+/**
+RAMAP.fitToMap = function( mapIndex ){
+  if( mapIndex > RAMAP.CANVAS_SIZE ){
+    mapIndex = RAMAP.CANVAS_SIZE;
+  }
+  else if( mapIndex < 0 ){
+    mapIndex = 0;
+  }
+  return mapIndex;
+}*/
+
+RAMAP.drawMap = function(shiftX, shiftY, scale) {
  //var canvas = document.getElementById("canvas");
  //var ctx = canvas.getContext("2d");
  
@@ -404,61 +441,45 @@ RAMAP.drawMap = function(scale) {
  //RAMAP.ctx.clip();
  //RAMAP.canvas.width = RAMAP.canvas.width;
  
+ if ( shiftX !== undefined && shiftX !== 0 && shiftX !== null ){
+  var shiftX = Math.round( Number(shiftX) );
+ }else{
+  var shiftX = 0; 
+ }
+ if ( shiftY !== undefined && shiftY !== 0 && shiftY !== null ){
+  var shiftY = Math.round( Number(shiftY) );
+ }else{
+  var shiftY = 0; 
+ }
  if ( scale !== undefined && scale !== 0 && scale !== null ){
   console.log("changing scale: " + scale );
-  var scale = Number(scale);
+  var scale = Math.round( Number(scale) );
  }else{
   var scale = RAMAP.SCALE; 
  }
- 
- var canvasSize = RAMAP.CANVAS_SIZE; 
- for( i = 0; i < canvasSize; i++){
-  for( j = 0; j < canvasSize; j++){
-    var tile = RAMAP.mapTiles[i][j];
-    tile.render(RAMAP.ctx,scale);
-    //ctx.fillText( tile, i*tileScale, j*tileScale+10);
-    //ctx.fillText( index, i*tileScale+1, j*tileScale+20);
-    //ctx.strokeRect(i*tileScale, j*tileScale, tileScale, tileScale);
-    
-    //  going to have to do this differently, put all drawImages in a for loop with positions.
-    /**
-    if( tile === 65535 ){
-      RAMAP.sourceImages.unshift(new Image()); 
-      var sd = getChunkPos( 4, 4, index);
-      RAMAP.sourceImages[0].onload = (function(a, b, sd){  
-        return function () {
-          console.log("drawing image");
-          
-          ctx.drawImage(RAMAP.sourceImages[0], sd.x, sd.y, 6, 6, a*tileScale,b*tileScale, tileScale, tileScale);
-          console.log( sd.x + " " + sd.y + " " + a + " " + b );
-        }
-      })(i,j,sd);
 
-      RAMAP.sourceImages[0].src = '/images/ramap/Snow/clear1.png';
-    
+ //how many tiles fit on canvas
+ var drawWidth = Math.round( RAMAP.CANVAS_WIDTH / scale ); 
+ var drawHeight = Math.round( RAMAP.CANVAS_HEIGHT / scale ); 
+
+ //var startI = RAMAP.fitToMap(-shiftX);
+ //var startJ = RAMAP.fitToMap(-shiftY);
+ //var endI = RAMAP.fitToMap(-shiftX + drawWidth);
+ //var endJ = RAMAP.fitToMap(-shiftY + drawHeight);
+
+ console.log( startI + " " + startJ + " " + endI + " " + endJ);
+
+ for( i = 0; i < drawWidth; i++){
+  for( j = 0; j < drawHeight; j++){
+    var indexI = ( i - shiftX );  
+    var indexJ = ( j - shiftY );  
+    if ( indexI >= 0 && indexI < RAMAP.CANVAS_SIZE &&  indexJ >= 0 && indexJ < RAMAP.CANVAS_SIZE){
+      var tile = RAMAP.mapTiles[indexI][indexJ];
+      tile.render(RAMAP.ctx, indexI+shiftX, indexJ+shiftY, scale);
     }
-    */
   }
  }
-/** 
-  var img = new Image();   // Create new img element
-  img.onload = function(){  
-        console.log("loaded");
-        //ctx.drawImage(img,0,0,30,30);
-      }
-  img.src = '/images/ramap/Snow/b1.png'; // Set source path
-  console.log("drawing image");
-  ctx.drawImage(img,0,0,30,30);
-*/
 };
-
-
-
-
-
-
-
-
 
 // Setup the dnd listeners.
 var dropZone = document //.getElementById('drop_zone');
