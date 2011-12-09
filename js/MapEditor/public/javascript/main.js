@@ -23,7 +23,7 @@ RAMAP.sources = new Object();
 RAMAP.DEBUG = 0;
 //RAMAP.shiftX = 0;
 //RAMAP.shiftY = 0;
-
+RAMAP.TERRAIN_ID = 65535;
 
 $(document).ready( function(){
   RAMAP.canvas = document.getElementById("canvas");
@@ -380,7 +380,12 @@ RAMAP.newTile = function(){
     render: function(ctx, posX, posY, scale){
       var template = RAMAP.templates[Tile.templateID];
       if( template !== undefined){
-        var chunk = template.chunks[Tile.index];
+        //special casing this because I don't want to figure this out right now.
+        if ( Tile.templateID === RAMAP.TERRAIN_ID ){
+          var chunk = template.chunks[0];
+        }else{
+          var chunk = template.chunks[Tile.index];
+        }
         if (chunk !== undefined){
           //console.log( template.chunks );
           //console.log( Tile.templateID + " " + template.source.image.src + " " + Tile.index + " chunk:" + chunk.x + " " + chunk.y + "scale " + RAMAP.CHUNK_SIZE );
