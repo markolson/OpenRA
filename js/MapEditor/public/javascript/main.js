@@ -16,9 +16,9 @@ RAMAP.byteSize;
 RAMAP.mapTiles;
 RAMAP.resourceTiles;
 
-RAMAP.templateMap = new Object();
-RAMAP.templates = new Object();
-RAMAP.sources = new Object();
+RAMAP.templateMap = {};
+RAMAP.templates = {};
+RAMAP.sources = {};
 
 RAMAP.DEBUG = 0;
 //RAMAP.shiftX = 0;
@@ -28,6 +28,9 @@ RAMAP.TERRAIN_ID = 65535;
 $(document).ready( function(){
   RAMAP.canvas = document.getElementById("canvas");
   RAMAP.ctx = RAMAP.canvas.getContext("2d");
+  
+  RAMAP.picker_canvas = document.getElementById("template_picker");
+  RAMAP.picker_ctx = RAMAP.picker_canvas.getContext("2d");
 
   var isDown = false; // whether mouse is pressed
   var startCoords = []; // 'grab' coordinates when pressing mouse
@@ -89,7 +92,7 @@ $(document).ready( function(){
       }
     return value;
   }*/
-
+  loadTemplates(imagesLoaded);
 });
 
 RAMAP.errorHandler = function(e) {
@@ -346,24 +349,78 @@ function newSourceImage(){ //image used to create tile
     return SourceImage;
 }
 
-function loadTemplates(){
+RAMAP.newTemplatePicker = function(){
+  var TemplatePicker = {
+    canvas: 0,
+    ctx: 0,
+    init: function(canvas){
+      TemplatePicker.canvas = canvas;
+      TemplatePicker.ctx = canvas.getContext('2d');
+    },
+    add: function(template){
+      
+    },
+    render: function(){
+      console.log("render");
+      /**
+      $H(RAMAP.templates).each(function(pair){
+        var template = pair.value;
+        
+      });
+      */
+      //console.log( RAMAP.templates );
+      //console.log(Object.getOwnPropertyNames(RAMAP.templates));
+      //console.log( RAMAP.templates.hasOwnProperty("id_1"));
+
+      for( var key in RAMAP.templates){
+        //console.log(key);
+        //console.log( RAMAP.templates[key] );
+      }
+
+      $.each( RAMAP.templates, function(key, value){
+         // console.log( key + " " + value );
+      });
+    }
+  };
+  return TemplatePicker;
+}
+
+function imagesLoaded(){
+  //add template to template picker
+  var spacing = 0;
+  for ( key in RAMAP.templates ){
+    console.log(RAMAP.templates[key]);
+    var template = RAMAP.templates[key];
+    RAMAP.picker_ctx.drawImage( template.source.image, 0, spacing, template.width*24, template.height*24);
+    spacing = spacing + template.height*24 + 5;
+  }
+}
+
+function loadTemplates(callback){
+  console.log("loading templates");
   $.getJSON('ajax/snow.json', function(data) {
+    console.log(Object.keys(data).length);
+    var imageCount = Object.keys(data).length;
+    var loadedCount = 0; 
     $.each(data, function(key, val) {
       RAMAP.templateMap[key] = val
       //console.log( key + " " + val["path"] );
       //items.push( val["path"] + ".png" );
       var template = newTemplate();
       template.init(key);
+      template.source.image.onload = function(){
+        //console.log("loaded");
+        //console.log(template.source.image);
+        loadedCount++
+        if ( loadedCount == imageCount ){
+          //imagesLoaded();
+          callback.call(this);
+        }
+      }
     });
   });
+  
 }
-/**
-function loadTemplates(){
-  //RAMAP.templateMap[65535] = { "id":65535, "width": 4, "height": 4, "path":'/images/ramap/Snow/clear1.png' }; 
-  //for each key in template map 
-    var template = newTemplate();
-    template.init(65535); //init with key
-}*/
 
 RAMAP.newTile = function(){
   var Tile = {
@@ -419,9 +476,9 @@ function newTemplate(){
     chunks: 0,
     source: 0,
     init: function(id){
-      Template.id = id;
-      Template.width = RAMAP.templateMap[id].width;
-      Template.height = RAMAP.templateMap[id].height;
+      Template.id = Number(id);
+      Template.width = Number(RAMAP.templateMap[id].width);
+      Template.height = Number(RAMAP.templateMap[id].height);
       //console.log( id + " " + Template.width + " " + Template.height );
       Template.chunks = getChunks(Template.width, Template.height);
       Template.source = newSourceImage();
@@ -556,4 +613,4 @@ RAMAP.drawMap = function(shiftX, shiftY, scale) {
 var dropZone = document //.getElementById('drop_zone');
 dropZone.addEventListener('dragover', RAMAP.handleDragOver, false);
 dropZone.addEventListener('drop', RAMAP.handleFileDrop, false);
-loadTemplates();
+
