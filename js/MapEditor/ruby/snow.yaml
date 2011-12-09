@@ -72,7 +72,7 @@ Templates:
 	Template@65535:
 		Id: 65535
 		Image: clear1
-		Size: 4,4
+		Size: 1,1
 		Tiles:
 			0: Clear
 			1: Clear

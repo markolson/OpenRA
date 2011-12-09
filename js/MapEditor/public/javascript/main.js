@@ -1,6 +1,6 @@
 var RAMAP = {};
 RAMAP.BYTE_MAX_VALUE = 255;
-RAMAP.CHUNK_SIZE = 6;
+RAMAP.CHUNK_SIZE = 24;
 RAMAP.scale = 12;
 RAMAP.CANVAS_SIZE = 128;
 RAMAP.CANVAS_WIDTH = 900;
@@ -20,6 +20,7 @@ RAMAP.templateMap = new Object();
 RAMAP.templates = new Object();
 RAMAP.sources = new Object();
 
+RAMAP.DEBUG = 0;
 //RAMAP.shiftX = 0;
 //RAMAP.shiftY = 0;
 
@@ -163,9 +164,9 @@ RAMAP.handleFiles =  function (input) {
     if("map.bin" in files){
       console.log("map.bin dropped");
       var fr = new FileReader();
-      console.log("what what");
+      //console.log("what what");
       fr.readAsArrayBuffer( files["map.bin"]);
-      console.log("in the");
+      //console.log("in the");
       fr.onloadend = function (frEvent) {  
         //console.log(frEvent.target.result);
         var map_bin = frEvent.target.result;
@@ -207,13 +208,14 @@ RAMAP.readMapBin = function(map_bin){
     for ( var i = 0; i < mapSizeX; i++){
       for ( var j = 0; j < mapSizeY; j++){
         var templateID = dr.read16(map_data);
+        /**
         if( templateID !== 65535 ){
           console.log( templateID );
-        }
+        }*/
         var index = dr.read8(map_data);
         if (index === RAMAP.BYTE_MAX_VALUE){
           index = (i % 4 + (j % 4) * 4);
-          console.log("byte max value"+ i + " " + j);
+          //console.log("byte max value"+ i + " " + j);
         }
         //console.log( "X: " + i + " Y: " + j + " Tile: " + tile + " Index: " + index); 
         //RAMAP.mapTiles[i][j] = { "tile": templateID, "index": index }
@@ -380,6 +382,8 @@ RAMAP.newTile = function(){
       if( template !== undefined){
         var chunk = template.chunks[Tile.index];
         if (chunk !== undefined){
+          //console.log( template.chunks );
+          //console.log( Tile.templateID + " " + template.source.image.src + " " + Tile.index + " chunk:" + chunk.x + " " + chunk.y + "scale " + RAMAP.CHUNK_SIZE );
           ctx.drawImage(template.source.image, chunk.x, chunk.y, RAMAP.CHUNK_SIZE, RAMAP.CHUNK_SIZE, posX*scale, posY*scale, scale, scale);
         }else{
           console.log( "Truffle shuffle: " + Tile.templateID + "index: " + Tile.index);
@@ -410,8 +414,10 @@ function newTemplate(){
     chunks: 0,
     source: 0,
     init: function(id){
+      Template.id = id;
       Template.width = RAMAP.templateMap[id].width;
       Template.height = RAMAP.templateMap[id].height;
+      //console.log( id + " " + Template.width + " " + Template.height );
       Template.chunks = getChunks(Template.width, Template.height);
       Template.source = newSourceImage();
       Template.source.init( "/images/ramap/Snow/" + RAMAP.templateMap[id].path + ".png")
@@ -426,9 +432,15 @@ function newTemplate(){
 function getChunks( tempWidth, tempHeight){
   var numChunks = tempWidth * tempHeight;
   var chunks = [];
+  //chunks.push( { "id": 0, "x": 0, "y": 0} );
   for ( var i = 0; i < numChunks; i++){
     var row = Math.floor( i / tempWidth );
+
     var column = i % tempWidth;
+    /**
+    if ( column === 0 ){
+      column = tempWidth;
+    }*/
     chunks.push( { "id": i, "x": column*RAMAP.CHUNK_SIZE, "y": row*RAMAP.CHUNK_SIZE} );
   }
     return chunks; 
@@ -471,6 +483,12 @@ RAMAP.zoomOut = function(){
   RAMAP.drawMap( RAMAP.shiftX, RAMAP.shiftY, RAMAP.scale); // render to show changes
 }
 
+RAMAP.onDebug = function(){
+  RAMAP.DEBUG = RAMAP.DEBUG^1
+  console.log( RAMAP.DEBUG );
+  RAMAP.drawMap();
+}
+
 RAMAP.drawMap = function(shiftX, shiftY, scale) {
  //var canvas = document.getElementById("canvas");
  //var ctx = canvas.getContext("2d");
@@ -491,7 +509,7 @@ RAMAP.drawMap = function(shiftX, shiftY, scale) {
   var shiftY = 0; 
  }
  if ( scale !== undefined && scale !== 0 && scale !== null ){
-  console.log("changing scale: " + scale );
+  //console.log("changing scale: " + scale );
   var scale = Math.round( Number(scale) );
  }else{
   var scale = RAMAP.scale; 
@@ -514,7 +532,16 @@ RAMAP.drawMap = function(shiftX, shiftY, scale) {
     var indexJ = ( j - shiftY );  
     if ( indexI >= 0 && indexI < RAMAP.CANVAS_SIZE &&  indexJ >= 0 && indexJ < RAMAP.CANVAS_SIZE){
       var tile = RAMAP.mapTiles[indexI][indexJ];
-      tile.render(RAMAP.ctx, indexI+shiftX, indexJ+shiftY, scale);
+
+      if (RAMAP.DEBUG === 0 || RAMAP.DEBUG === undefined){
+        tile.render(RAMAP.ctx, indexI+shiftX, indexJ+shiftY, scale);
+      }
+      else{
+        RAMAP.ctx.fillText( tile.templateID, indexI*scale, indexJ*scale+10);
+        RAMAP.ctx.fillText( tile.index, indexI*scale+1, indexJ*scale+20);
+        RAMAP.ctx.strokeRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
+      }
+      
     }
   }
  }
