@@ -1,0 +1,14 @@
+/**
+#scroll_pane:hover canvas{
+  -webkit-transition: all 3s ease-in;
+  -webkit-transform: translate(0px,-2300px); 
+}*/
+#template_picker{
+  background: #CCC;
+}
+#scroll_pane {
+  width:500px;
+  height:900px;
+  overflow:hidden;
+  float: left;
+}

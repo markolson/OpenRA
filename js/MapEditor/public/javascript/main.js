@@ -28,10 +28,8 @@ RAMAP.TERRAIN_ID = 65535;
 $(document).ready( function(){
   RAMAP.canvas = document.getElementById("canvas");
   RAMAP.ctx = RAMAP.canvas.getContext("2d");
-  
-  RAMAP.picker_canvas = document.getElementById("template_picker");
-  RAMAP.picker_ctx = RAMAP.picker_canvas.getContext("2d");
 
+  
   var isDown = false; // whether mouse is pressed
   var startCoords = []; // 'grab' coordinates when pressing mouse
   var last = [0, 0]; // previous coordinates of mouse release
@@ -92,7 +90,11 @@ $(document).ready( function(){
       }
     return value;
   }*/
-  loadTemplates(imagesLoaded);
+  $.getScript('javascript/template_picker.js', function( data, textStatus) {  
+    RAMAP.picker = RAMAP.newTemplatePicker();
+    RAMAP.picker.init("template_picker");
+    loadTemplates(imagesLoaded);
+  });
 });
 
 RAMAP.errorHandler = function(e) {
@@ -126,6 +128,7 @@ RAMAP.handleFileDrop = function (evt) {
     evt.stopPropagation();
     evt.preventDefault();
     var files = evt.dataTransfer.files; // FileList object.
+    console.log( evt.dataTransfer.getData("image") );
     RAMAP.handleFiles(files);
 };
 
@@ -160,8 +163,10 @@ RAMAP.onInitFs = function(fs) {
 RAMAP.handleFiles =  function (input) {
     // files is a FileList of File objects. List some properties.
     console.log("Dropped File");
+    console.log(input);
     files = []
     for (var i = 0, f; f = input[i]; i++) {
+      console.log(f);
       files[f.name] = f;  
     }
     if("map.bin" in files){
@@ -387,12 +392,24 @@ RAMAP.newTemplatePicker = function(){
 
 function imagesLoaded(){
   //add template to template picker
-  var spacing = 0;
+  var spacingX = 0;
+  var spacingY = 0;
+  var largestHeightOnRow = 0;
   for ( key in RAMAP.templates ){
-    console.log(RAMAP.templates[key]);
+    //console.log(RAMAP.templates[key]);
     var template = RAMAP.templates[key];
-    RAMAP.picker_ctx.drawImage( template.source.image, 0, spacing, template.width*24, template.height*24);
-    spacing = spacing + template.height*24 + 5;
+    //$("#template_picker").append('<img src="' + template.source.image.src + '">');
+    //console.log(template.source.image);
+    if ( ( spacingX + template.width*RAMAP.CHUNK_SIZE) > 500 ){
+      spacingX = 0;
+      spacingY = spacingY + largestHeightOnRow + 1;
+      largestHeightOnRow = 0;
+    }
+    RAMAP.picker.ctx.drawImage( template.source.image, spacingX, spacingY, template.width*RAMAP.CHUNK_SIZE, template.height*RAMAP.CHUNK_SIZE);
+    if ( template.height*RAMAP.CHUNK_SIZE > largestHeightOnRow ){
+      largestHeightOnRow = template.height*RAMAP.CHUNK_SIZE;
+    }
+    spacingX = spacingX + template.width*RAMAP.CHUNK_SIZE+ 1;
   }
 }
 

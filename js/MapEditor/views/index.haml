@@ -1,3 +1,5 @@
+%script(type="text/javascript" src="/javascript/main.js")
+%link(rel="stylesheet" href="/css/template_picker.css")
 #drop_zone
   Drop it like it's hot
 #menu
@@ -5,8 +7,11 @@
     %button(onclick="RAMAP.zoomIn();") [+]
     %button(onclick="RAMAP.zoomOut();") [-]
     %button(onclick="RAMAP.onDebug();") Debug
+    %button(onclick="RAMAP.picker.scrollDown();") Page Down
+    %button(onclick="RAMAP.picker.scrollUp();") Page Up 
     %span(id="download")
 %span(id="picker_window")
-  %canvas( id="template_picker" width="300px" height="900px")
+  #scroll_pane
+    %canvas( id="template_picker" width="500px" height="3200px")
 %span(id="map_window")  
   %canvas( id="canvas" width="900px" height="900px")
