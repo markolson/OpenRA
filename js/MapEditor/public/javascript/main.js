@@ -29,7 +29,6 @@ $(document).ready( function(){
   RAMAP.canvas = document.getElementById("canvas");
   RAMAP.ctx = RAMAP.canvas.getContext("2d");
 
-  
   var isDown = false; // whether mouse is pressed
   var startCoords = []; // 'grab' coordinates when pressing mouse
   var last = [0, 0]; // previous coordinates of mouse release
@@ -353,7 +352,7 @@ function newSourceImage(){ //image used to create tile
     };
     return SourceImage;
 }
-
+/**
 RAMAP.newTemplatePicker = function(){
   var TemplatePicker = {
     canvas: 0,
@@ -367,12 +366,10 @@ RAMAP.newTemplatePicker = function(){
     },
     render: function(){
       console.log("render");
-      /**
       $H(RAMAP.templates).each(function(pair){
         var template = pair.value;
         
       });
-      */
       //console.log( RAMAP.templates );
       //console.log(Object.getOwnPropertyNames(RAMAP.templates));
       //console.log( RAMAP.templates.hasOwnProperty("id_1"));
@@ -389,7 +386,7 @@ RAMAP.newTemplatePicker = function(){
   };
   return TemplatePicker;
 }
-
+*/
 function imagesLoaded(){
   //add template to template picker
   var spacingX = 0;
@@ -565,7 +562,7 @@ RAMAP.zoomOut = function(){
 RAMAP.onDebug = function(){
   RAMAP.DEBUG = RAMAP.DEBUG^1
   console.log( RAMAP.DEBUG );
-  RAMAP.drawMap();
+  RAMAP.drawMap( RAMAP.shiftX, RAMAP.shiftY, RAMAP.scale); // render to show changes
 }
 
 RAMAP.drawMap = function(shiftX, shiftY, scale) {
@@ -616,8 +613,8 @@ RAMAP.drawMap = function(shiftX, shiftY, scale) {
         tile.render(RAMAP.ctx, indexI+shiftX, indexJ+shiftY, scale);
       }
       else{
-        RAMAP.ctx.fillText( tile.templateID, indexI*scale, indexJ*scale+10);
-        RAMAP.ctx.fillText( tile.index, indexI*scale+1, indexJ*scale+20);
+        RAMAP.ctx.fillText( tile.templateID, (indexI +shiftX)*scale, (indexJ+shiftY)*scale+10);
+        RAMAP.ctx.fillText( tile.index, (indexI+shiftX)*scale+1, (indexJ+shiftY)*scale+20);
         RAMAP.ctx.strokeRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
       }
       
