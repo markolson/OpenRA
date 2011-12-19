@@ -21,8 +21,6 @@ RAMAP.templates = {};
 RAMAP.sources = {};
 
 RAMAP.DEBUG = 0;
-//RAMAP.shiftX = 0;
-//RAMAP.shiftY = 0;
 RAMAP.TERRAIN_ID = 65535;
 
 $(document).ready( function(){
@@ -98,7 +96,6 @@ $(document).ready( function(){
 
     loadTemplates(imagesLoaded);
   });
-  //loadTemplates(imagesLoaded);
 });
 
 RAMAP.errorHandler = function(e) {
@@ -357,41 +354,7 @@ function newSourceImage(){ //image used to create tile
     };
     return SourceImage;
 }
-/**
-RAMAP.newMapView = function(){
-  var MapView = {
-    canvas: 0,
-    ctx: 0,
-    init: function(canvas){
-      MapView.canvas = canvas;
-      MapView.ctx = canvas.getContext('2d');
-    },
-    add: function(template){
-      
-    },
-    render: function(){
-      console.log("render");
-      $H(RAMAP.templates).each(function(pair){
-        var template = pair.value;
-        
-      });
-      //console.log( RAMAP.templates );
-      //console.log(Object.getOwnPropertyNames(RAMAP.templates));
-      //console.log( RAMAP.templates.hasOwnProperty("id_1"));
 
-      for( var key in RAMAP.templates){
-        //console.log(key);
-        //console.log( RAMAP.templates[key] );
-      }
-
-      $.each( RAMAP.templates, function(key, value){
-         // console.log( key + " " + value );
-      });
-    }
-  };
-  return MapView;
-}
-*/
 function setCursor(key){
   var template = RAMAP.templates[key];
   RAMAP.mapView.setDragImg(key, template.source.image, 0, 0);
@@ -403,26 +366,10 @@ function mapClick(){
 }
 function imagesLoaded(){
   //add template to template picker
-  var spacingX = 0;
-  var spacingY = 0;
-  var largestHeightOnRow = 0;
   for ( key in RAMAP.templates ){
     //console.log(RAMAP.templates[key]);
     var template = RAMAP.templates[key];
     $("#template_picker").append('<input type="image" src="' + template.source.image.src + '" id="'+key+'" onclick="setCursor('+key+')" >');
-    //console.log(template.source.image);
-    /**
-    if ( ( spacingX + template.width*RAMAP.CHUNK_SIZE) > 500 ){
-      spacingX = 0;
-      spacingY = spacingY + largestHeightOnRow + 1;
-      largestHeightOnRow = 0;
-    }
-    //RAMAP.picker.ctx.drawImage( template.source.image, spacingX, spacingY, template.width*RAMAP.CHUNK_SIZE, template.height*RAMAP.CHUNK_SIZE);
-    if ( template.height*RAMAP.CHUNK_SIZE > largestHeightOnRow ){
-      largestHeightOnRow = template.height*RAMAP.CHUNK_SIZE;
-    }
-    spacingX = spacingX + template.width*RAMAP.CHUNK_SIZE+ 1;
-    */
   }
 }
 
@@ -529,34 +476,10 @@ function getChunks( tempWidth, tempHeight){
     var row = Math.floor( i / tempWidth );
 
     var column = i % tempWidth;
-    /**
-    if ( column === 0 ){
-      column = tempWidth;
-    }*/
     chunks.push( { "id": i, "x": column*RAMAP.CHUNK_SIZE, "y": row*RAMAP.CHUNK_SIZE} );
   }
     return chunks; 
 }
-
-/**
-function getChunkPos( tempWidth, tempHeight, index){
-  var numChunks = tempWidth * tempHeight;
-  var row = Math.floor( index / tempWidth );
-  var column = index % tempWidth;
-  return { "x": column*6, "y": row*6}
-}
-*/
-
-/**
-RAMAP.fitToMap = function( mapIndex ){
-  if( mapIndex > RAMAP.CANVAS_SIZE ){
-    mapIndex = RAMAP.CANVAS_SIZE;
-  }
-  else if( mapIndex < 0 ){
-    mapIndex = 0;
-  }
-  return mapIndex;
-}*/
 
 RAMAP.zoomIn = function(){
   RAMAP.scale = RAMAP.scale + 3;
@@ -582,13 +505,9 @@ RAMAP.onDebug = function(){
 }
 
 RAMAP.drawMap = function(shiftX, shiftY, scale) {
- //var canvas = document.getElementById("canvas");
- //var ctx = canvas.getContext("2d");
  
  //clear in case of redraw
  RAMAP.ctx.clearRect ( -1200 , -1200 , 3600, 3600 );
- //RAMAP.ctx.clip();
- //RAMAP.canvas.width = RAMAP.canvas.width;
  
  if ( shiftX !== undefined && shiftX !== 0 && shiftX !== null ){
   var shiftX = Math.round( Number(shiftX) );
@@ -611,13 +530,7 @@ RAMAP.drawMap = function(shiftX, shiftY, scale) {
  var drawWidth = Math.round( RAMAP.CANVAS_WIDTH / scale ); 
  var drawHeight = Math.round( RAMAP.CANVAS_HEIGHT / scale ); 
 
- //var startI = RAMAP.fitToMap(-shiftX);
- //var startJ = RAMAP.fitToMap(-shiftY);
- //var endI = RAMAP.fitToMap(-shiftX + drawWidth);
- //var endJ = RAMAP.fitToMap(-shiftY + drawHeight);
-
  //console.log( startI + " " + startJ + " " + endI + " " + endJ);
-
  for( i = 0; i < drawWidth; i++){
   for( j = 0; j < drawHeight; j++){
     var indexI = ( i - shiftX );  
@@ -640,7 +553,7 @@ RAMAP.drawMap = function(shiftX, shiftY, scale) {
 };
 
 // Setup the dnd listeners.
-var dropZone = document //.getElementById('drop_zone');
+var dropZone = document; //.getElementById('drop_zone');
 dropZone.addEventListener('dragover', RAMAP.handleDragOver, false);
 dropZone.addEventListener('drop', RAMAP.handleFileDrop, false);
 
