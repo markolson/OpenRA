@@ -184,6 +184,24 @@ Kinetic.Stage.prototype.addEventListener = function(type, func){
 };
 
 /*
+ * remove event listener from stage (which is essentially
+ * the container DOM)
+ */
+Kinetic.Stage.prototype.removeEventListener = function(type, func){
+    this.container.removeEventListener(type, func);
+};
+
+/*
+ * remove event listener from stage (which is essentially
+ * the container DOM)
+ */
+Kinetic.Stage.prototype.removeEventListenerType = function(type){
+    if (this.container.events && this.container.events[type]){
+      delete this.container.events[type];
+    }
+};
+
+/*
  * add shape to stage
  */
 Kinetic.Stage.prototype.add = function(shape){

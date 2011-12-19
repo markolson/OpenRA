@@ -391,7 +391,7 @@ RAMAP.newTemplatePicker = function(){
 */
 function setCursor(key){
   var template = RAMAP.templates[key];
-  RAMAP.picker.setDragImg(template.source.image, 0, 0);
+  RAMAP.picker.setDragImg(key, template.source.image, 0, 0);
 }
 function imagesLoaded(){
   //add template to template picker

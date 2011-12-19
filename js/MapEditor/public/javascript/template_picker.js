@@ -12,6 +12,8 @@ RAMAP.newTemplatePicker = function(){
     posY: 0,
     posX: 0,
     draggingRect: false,
+    dragImg: 0,
+    currTempID: 0,
     init: function(id, width, height){
       TemplatePicker.stage = new Kinetic.Stage(id, width, height);
       TemplatePicker.canvas = TemplatePicker.stage.getCanvas();
@@ -44,30 +46,31 @@ RAMAP.newTemplatePicker = function(){
         $(TemplatePicker.canvas).css(updated_css);
       }
     },
-    setDragImg: function(imgObj, posX, posY){
+    setDragImg: function(id, imgObj, posX, posY){
         console.log(imgObj);
+        TemplatePicker.currTempID = id;
         TemplatePicker.stage.removeAll();
+        TemplatePicker.stage.removeEventListenerType("mousedown", TemplatePicker.clicked);
+        TemplatePicker.stage.removeEventListenerType("mousemove", TemplatePicker.mousemoved);
         var drawImg = Kinetic.drawImage(imgObj, posX, posY);
-        var dragImg = new Kinetic.Shape(drawImg); 
-        dragImg.setScale(RAMAP.scale/RAMAP.CHUNK_SIZE);
+        TemplatePicker.dragImg = new Kinetic.Shape(drawImg); 
+        TemplatePicker.dragImg.setScale(RAMAP.scale/RAMAP.CHUNK_SIZE);
         TemplatePicker.draggingRect = true;
-        TemplatePicker.stage.add(dragImg);
-        dragImg.addEventListener("mousedown", function(){
-            alert("place template");
-            //TemplatePicker.draggingRect = false;
-          });
-        TemplatePicker.stage.addEventListener("mousemove", function(){
-          console.log(TemplatePicker.draggingRect );
-          var mousePos = TemplatePicker.stage.getMousePos();
-          //console.log("mouseMove");
-          //console.log(PickerImg.draggingRect);
-            //console.log("dragging");
-            dragImg.setScale(RAMAP.scale/RAMAP.CHUNK_SIZE);
-            dragImg.x = Math.floor((mousePos.x - 500) / RAMAP.scale) * RAMAP.scale;
-            dragImg.y = Math.floor((mousePos.y) / RAMAP.scale) * RAMAP.scale;
-            TemplatePicker.stage.draw();
-        }, false);
-
+        TemplatePicker.stage.add(TemplatePicker.dragImg);
+        TemplatePicker.stage.addEventListener("mousedown", TemplatePicker.clicked);
+        TemplatePicker.stage.addEventListener("mousemove", TemplatePicker.mousemoved, false);
+    },
+    clicked: function(){
+      console.log(TemplatePicker.currTempID);
+      //TemplatePicker.draggingRect = false;
+    },
+    mousemoved: function(){
+      var mousePos = TemplatePicker.stage.getMousePos();
+      //console.log("mouseMove");
+      TemplatePicker.dragImg.setScale(RAMAP.scale/RAMAP.CHUNK_SIZE);
+      TemplatePicker.dragImg.x = Math.floor((mousePos.x - 500) / RAMAP.scale) * RAMAP.scale;
+      TemplatePicker.dragImg.y = Math.floor((mousePos.y ) / RAMAP.scale) * RAMAP.scale;
+      TemplatePicker.stage.draw();
     }
   }
   return TemplatePicker;
