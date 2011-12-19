@@ -2,91 +2,95 @@ $(document).ready( function (){
 
 });
 
-RAMAP.newTemplatePicker = function(){
-  var TemplatePicker = {
+RAMAP.newMapView = function(){
+  var MapView = {
     stage: 0,
     canvas: 0,
     ctx: 0,
     height: 0,
     width: 0,
-    posY: 0,
-    posX: 0,
     draggingRect: false,
     dragImg: 0,
     currTempID: 0,
-    init: function(id, width, height){
-      TemplatePicker.stage = new Kinetic.Stage(id, width, height);
-      TemplatePicker.canvas = TemplatePicker.stage.getCanvas();
-      //console.log(TemplatePicker.stage.getCanvas());
-      TemplatePicker.ctx = TemplatePicker.stage.getContext();
-      TemplatePicker.height = height;
-      TemplatePicker.width = width;
+    clickCallback: 0,
+    init: function(id, width, height, clickCallback){
+      MapView.stage = new Kinetic.Stage(id, width, height);
+      MapView.canvas = MapView.stage.getCanvas();
+      MapView.ctx = MapView.stage.getContext();
+      MapView.height = height;
+      MapView.width = width;
+      MapView.clickCallback = clickCallback;
       },
-    scrollUp: function(){
-      if( TemplatePicker.posY - TemplatePicker.scrollHeight >= 0 ){
-        TemplatePicker.posY = TemplatePicker.posY - TemplatePicker.scrollHeight; 
-        var translation = 'translate( 0px, -' + TemplatePicker.posY + 'px)'; 
-        
-        updated_css = {
-          '-webkit-transition': 'all .5s ease-in',
-          '-webkit-transform' : translation
-        }
-        $(TemplatePicker.canvas).css(updated_css);
-      }
-    },
-    scrollDown: function(){
-      if( TemplatePicker.posY + TemplatePicker.scrollHeight < TemplatePicker.canvas.height ){
-        TemplatePicker.posY = TemplatePicker.posY + TemplatePicker.scrollHeight; 
-        var translation = 'translate( 0px, -' + TemplatePicker.posY + 'px)'; 
-        
-        updated_css = {
-          '-webkit-transition': 'all .5s ease-in',
-          '-webkit-transform' : translation
-        }
-        $(TemplatePicker.canvas).css(updated_css);
-      }
-    },
+    
     setDragImg: function(id, imgObj, posX, posY){
         console.log(imgObj);
-        TemplatePicker.currTempID = id;
-        TemplatePicker.stage.removeAll();
-        TemplatePicker.stage.removeEventListenerType("mousedown", TemplatePicker.clicked);
-        TemplatePicker.stage.removeEventListenerType("mousemove", TemplatePicker.mousemoved);
+        MapView.currTempID = id;
+        MapView.stage.removeAll();
+        MapView.stage.removeEventListenerType("mousedown", MapView.clicked);
+        MapView.stage.removeEventListenerType("mousemove", MapView.mousemoved);
         var drawImg = Kinetic.drawImage(imgObj, posX, posY);
-        TemplatePicker.dragImg = new Kinetic.Shape(drawImg); 
-        TemplatePicker.dragImg.setScale(RAMAP.scale/RAMAP.CHUNK_SIZE);
-        TemplatePicker.draggingRect = true;
-        TemplatePicker.stage.add(TemplatePicker.dragImg);
-        TemplatePicker.stage.addEventListener("mousedown", TemplatePicker.clicked);
-        TemplatePicker.stage.addEventListener("mousemove", TemplatePicker.mousemoved, false);
+        MapView.dragImg = new Kinetic.Shape(drawImg); 
+        MapView.dragImg.setScale(RAMAP.scale/RAMAP.CHUNK_SIZE);
+        MapView.draggingRect = true;
+        MapView.stage.add(MapView.dragImg);
+        MapView.stage.addEventListener("mousedown", MapView.clicked);
+        MapView.stage.addEventListener("mousemove", MapView.mousemoved, false);
     },
     clicked: function(){
-      console.log(TemplatePicker.currTempID);
-      //TemplatePicker.draggingRect = false;
+      console.log(MapView.currTempID);
+      MapView.clickCallback();
+      //MapView.draggingRect = false;
     },
     mousemoved: function(){
-      var mousePos = TemplatePicker.stage.getMousePos();
+      var mousePos = MapView.stage.getMousePos();
       //console.log("mouseMove");
-      TemplatePicker.dragImg.setScale(RAMAP.scale/RAMAP.CHUNK_SIZE);
-      TemplatePicker.dragImg.x = Math.floor((mousePos.x - 500) / RAMAP.scale) * RAMAP.scale;
-      TemplatePicker.dragImg.y = Math.floor((mousePos.y ) / RAMAP.scale) * RAMAP.scale;
-      TemplatePicker.stage.draw();
+      MapView.dragImg.setScale(RAMAP.scale/RAMAP.CHUNK_SIZE);
+      MapView.dragImg.x = Math.floor((mousePos.x - 500) / RAMAP.scale) * RAMAP.scale;
+      MapView.dragImg.y = Math.floor((mousePos.y ) / RAMAP.scale) * RAMAP.scale;
+      MapView.stage.draw();
     }
   }
-  return TemplatePicker;
+  return MapView;
 }
 
-
-
-
-
-
-RAMAP.scrollPickerDown = function (value){
-  var translation = 'translate( 0px, -' + value + 'px)'; 
-
-  updated_css = {
-    '-webkit-transition': 'all .5s ease-in',
-    '-webkit-transform' : translation
+RAMAP.newPickerView = function(){
+  var PickerView = {
+    canvas: 0,
+    width: 0,
+    height: 0,
+    posX: 0,
+    posY: 0,
+    init: function(id){
+      PickerView.canvas = document.getElementById(id);
+      console.log(PickerView.canvas);
+      PickerView.width = $(PickerView.canvas).width();
+      PickerView.height = $(PickerView.canvas).height();
+    },
+    scrollUp: function(value){
+      if( PickerView.posY - value >= 0 ){
+        PickerView.posY = PickerView.posY - value; 
+        var translation = 'translate( 0px, -' + PickerView.posY + 'px)'; 
+        
+        updated_css = {
+          '-webkit-transition': 'all .5s ease-in',
+          '-webkit-transform' : translation
+        }
+        $(PickerView.canvas).css(updated_css);
+      }
+    },
+    scrollDown: function(value){
+      if( PickerView.posY + value < PickerView.height ){
+        PickerView.posY = PickerView.posY + value; 
+        var translation = 'translate( 0px, -' + PickerView.posY + 'px)'; 
+        
+        updated_css = {
+          '-webkit-transition': 'all .5s ease-in',
+          '-webkit-transform' : translation
+        }
+        $(PickerView.canvas).css(updated_css);
+      }
+    }
   }
-  $("#template_picker").css(updated_css);
+  return PickerView;
 }
+

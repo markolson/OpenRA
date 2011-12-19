@@ -88,10 +88,13 @@ $(document).ready( function(){
     return value;
   }*/
   $.getScript('javascript/template_picker.js', function( data, textStatus) {  
-    RAMAP.picker = RAMAP.newTemplatePicker();
-    RAMAP.picker.init("map_window", 900, 900);
-    RAMAP.canvas = RAMAP.picker.canvas;
-    RAMAP.ctx = RAMAP.picker.ctx;
+    RAMAP.mapView = RAMAP.newMapView();
+    RAMAP.mapView.init("map_window", 900, 900, mapClick);
+    RAMAP.canvas = RAMAP.mapView.canvas;
+    RAMAP.ctx = RAMAP.mapView.ctx;
+
+    RAMAP.picker = RAMAP.newPickerView();
+    RAMAP.picker.init("template_picker");
 
     loadTemplates(imagesLoaded);
   });
@@ -355,13 +358,13 @@ function newSourceImage(){ //image used to create tile
     return SourceImage;
 }
 /**
-RAMAP.newTemplatePicker = function(){
-  var TemplatePicker = {
+RAMAP.newMapView = function(){
+  var MapView = {
     canvas: 0,
     ctx: 0,
     init: function(canvas){
-      TemplatePicker.canvas = canvas;
-      TemplatePicker.ctx = canvas.getContext('2d');
+      MapView.canvas = canvas;
+      MapView.ctx = canvas.getContext('2d');
     },
     add: function(template){
       
@@ -386,12 +389,17 @@ RAMAP.newTemplatePicker = function(){
       });
     }
   };
-  return TemplatePicker;
+  return MapView;
 }
 */
 function setCursor(key){
   var template = RAMAP.templates[key];
-  RAMAP.picker.setDragImg(key, template.source.image, 0, 0);
+  RAMAP.mapView.setDragImg(key, template.source.image, 0, 0);
+}
+
+function mapClick(){
+  console.log("map clicked");
+  console.log( "write to mapTiles:" + RAMAP.mapView.currTempID );
 }
 function imagesLoaded(){
   //add template to template picker
