@@ -26,9 +26,7 @@ RAMAP.DEBUG = 0;
 RAMAP.TERRAIN_ID = 65535;
 
 $(document).ready( function(){
-  RAMAP.canvas = document.getElementById("canvas");
-  RAMAP.ctx = RAMAP.canvas.getContext("2d");
-
+    /**
   var isDown = false; // whether mouse is pressed
   var startCoords = []; // 'grab' coordinates when pressing mouse
   var last = [0, 0]; // previous coordinates of mouse release
@@ -91,9 +89,13 @@ $(document).ready( function(){
   }*/
   $.getScript('javascript/template_picker.js', function( data, textStatus) {  
     RAMAP.picker = RAMAP.newTemplatePicker();
-    RAMAP.picker.init("template_picker");
+    RAMAP.picker.init("map_window", 900, 900);
+    RAMAP.canvas = RAMAP.picker.canvas;
+    RAMAP.ctx = RAMAP.picker.ctx;
+
     loadTemplates(imagesLoaded);
   });
+  //loadTemplates(imagesLoaded);
 });
 
 RAMAP.errorHandler = function(e) {
@@ -387,6 +389,10 @@ RAMAP.newTemplatePicker = function(){
   return TemplatePicker;
 }
 */
+function setCursor(key){
+  var template = RAMAP.templates[key];
+  RAMAP.picker.setDragImg(template.source.image, 0, 0);
+}
 function imagesLoaded(){
   //add template to template picker
   var spacingX = 0;
@@ -395,18 +401,20 @@ function imagesLoaded(){
   for ( key in RAMAP.templates ){
     //console.log(RAMAP.templates[key]);
     var template = RAMAP.templates[key];
-    //$("#template_picker").append('<img src="' + template.source.image.src + '">');
+    $("#template_picker").append('<input type="image" src="' + template.source.image.src + '" id="'+key+'" onclick="setCursor('+key+')" >');
     //console.log(template.source.image);
+    /**
     if ( ( spacingX + template.width*RAMAP.CHUNK_SIZE) > 500 ){
       spacingX = 0;
       spacingY = spacingY + largestHeightOnRow + 1;
       largestHeightOnRow = 0;
     }
-    RAMAP.picker.ctx.drawImage( template.source.image, spacingX, spacingY, template.width*RAMAP.CHUNK_SIZE, template.height*RAMAP.CHUNK_SIZE);
+    //RAMAP.picker.ctx.drawImage( template.source.image, spacingX, spacingY, template.width*RAMAP.CHUNK_SIZE, template.height*RAMAP.CHUNK_SIZE);
     if ( template.height*RAMAP.CHUNK_SIZE > largestHeightOnRow ){
       largestHeightOnRow = template.height*RAMAP.CHUNK_SIZE;
     }
     spacingX = spacingX + template.width*RAMAP.CHUNK_SIZE+ 1;
+    */
   }
 }
 
