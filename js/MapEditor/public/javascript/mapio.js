@@ -1,36 +1,52 @@
 RAMAP.newMapIO = function(){
   var MapIO = {
     dropZone: 0,
-    init: function( element ){
+    mapDataStorage: [],
+    mapData: 0,
+    onWriteEndCallback: 0,
+    onReadEndCallback: 0,
+    init: function( element, onReadEndCallback, onWriteEndCallback ){
       MapIO.dropZone = element; 
       MapIO.dropZone.addEventListener('dragover', MapIO.handleDragOver, false);
       MapIO.dropZone.addEventListener('drop', MapIO.handleFileDrop, false);
+      MapIO.onWriteEndCallback = onWriteEndCallback;
+      MapIO.onReadEndCallback = onReadEndCallback;
+    },
+    getMapData: function(){
+      return MapIO.mapData;
+    },
+    getMapDataStorage: function(){
+      return MapIO.mapDataStorage;
+    },
+    setMapData: function(mapData){
+      MapIO.mapData = mapData;
     },
     handleDragOver: function(evt){
       evt.stopPropagation();
       evt.preventDefault();
-    }
+    },
     handleFileDrop: function(evt){
       evt.stopPropagation();
       evt.preventDefault();
       var files = evt.dataTransfer.files; // FileList object.
       MapIO.handleFiles(files);
     },
-    onInitFS: function(fs, callback){
+    onInitFS: function(fs){
+      if( MapIO.mapData === 0 ){
+       return;
+      }
       fs.root.getFile('map.bin', {create: true, exclusive: false}, function(fileEntry) {
         fileEntry.createWriter(function(fileWriter) {
           fileWriter.onwriteend = function(e) {
             console.log('Write completed.');
-            $('#download').html("<a href='"+fileEntry.toURL()+"'> Download </a>");
-            RAMAP.drawMap();
-            callback.call(this);
+            MapIO.onWriteEndCallback(fileEntry);
           };
           fileWriter.onerror = function(e) {
             console.log('Write failed: ' + e.toString());
           };
           //give the blob the map array buffer and write it.
           var bb = new window.WebKitBlobBuilder();
-          bb.append( RAMAP.getMapBuffer() );
+          bb.append( MapIO.getMapBuffer() );
           fileWriter.write(bb.getBlob('application/octet-stream'));
         }, MapIO.errorHandler);
       }, MapIO.errorHandler);
@@ -54,12 +70,16 @@ RAMAP.newMapIO = function(){
           //console.log(frEvent.target.result);
           var map_bin = frEvent.target.result;
           MapIO.readMapBin(map_bin);
-          window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
-          window.requestFileSystem( /**window.PERSISTENT*/ window.TEMPORARY, 1, MapIO.onInitFs, MapIO.errorHandler);
           //TODO rewrite using web workers
           //var worker = new Worker("/javascript/write_map.js");
         };
       }
+    },
+    saveMap: function(){
+      
+      console.log("savemap");
+//      window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+//      window.requestFileSystem( /**window.PERSISTENT*/ window.TEMPORARY, 1, MapIO.onInitFs , MapIO.errorHandler);
     },
     readMapBin: function(map_bin){
       var bin_data =  new DataView( map_bin );
@@ -74,7 +94,8 @@ RAMAP.newMapIO = function(){
       }
       var mapSizeX = dr.read16(bin_data);
       var mapSizeY = dr.read16(bin_data);
-      RAMAP.mapData = RAMAP.newMapData(mapSizeX, mapSizeY);
+      MapIO.mapData = RAMAP.newMapData();
+      MapIO.mapData.init(mapSizeX, mapSizeY);
       //read tiles
       for ( var i = 0; i < mapSizeX; i++){
         for ( var j = 0; j < mapSizeY; j++){
@@ -83,7 +104,7 @@ RAMAP.newMapIO = function(){
           if (index === RAMAP.BYTE_MAX_VALUE){
             index = (i % 4 + (j % 4) * 4);
           }
-          RAMAP.mapData.addTile(i,j, templateID, index);
+          MapIO.mapData.addTile(i,j, templateID, index);
         }
       }
       //read resources
@@ -92,14 +113,20 @@ RAMAP.newMapIO = function(){
           var resource = dr.read8(bin_data);
           var index = dr.read8(bin_data);
           //console.log( "X: " + i + " Y: " + j + " Resource: " + resource + " Index: " + index); 
-          RAMAP.mapData.addResource(i,j, resource, index);
+          MapIO.mapData.addResource(i,j, resource, index);
         }
       }
+
+      console.log("finished reading");
+      MapIO.mapDataStorage.push( MapIO.mapData );
+      MapIO.onReadEndCallback();
+      
     },
     getMapBuffer: function(){
+      
       console.log("writeMapBin");
-      var mapSizeX = RAMAP.mapData.sizeX;
-      var mapSizeY = RAMAP.mapData.sizeY;
+      var mapSizeX = MapIO.mapData.sizeX;
+      var mapSizeY = MapIO.mapData.sizeY;
       var area = mapSizeX * mapSizeY;
       var tileSize = area * 3; //tile 2 bytes + index 1 byte
       var resourceSize = area * 2; //resoure 1 byte + index 1 byte
@@ -215,6 +242,8 @@ RAMAP.newMapData = function(){
   };
   return MapData;
 };
+
+
 
 RAMAP.dataReader = (function(){
     var byteOffset = 0;

@@ -1,15 +1,21 @@
-%script(type="text/javascript" src="/javascript/kinetic.js")
 %script(type="text/javascript" src="/javascript/main.js")
+%script(type="text/javascript" src="/javascript/kinetic.js")
+%script(type="text/javascript" src="/javascript/mapio.js")
+%script(type="text/javascript" src="/javascript/mapview.js")
+%script(type="text/javascript" src="/javascript/tileset.js")
 %link(rel="stylesheet" href="/css/template_picker.css")
 #drop_zone
   Drop it like it's hot
 #menu
   %span
-    %button(onclick="RAMAP.zoomIn();") [+]
-    %button(onclick="RAMAP.zoomOut();") [-]
-    %button(onclick="RAMAP.onDebug();") Debug
+    %button(onclick="RAMAP.mapView.zoomIn();") [+]
+    %button(onclick="RAMAP.mapView.zoomOut();") [-]
+    %button(onclick="RAMAP.mapView.onDebug();") Debug
     %button(onclick="RAMAP.picker.scrollDown(900);") Page Down
     %button(onclick="RAMAP.picker.scrollUp(900);") Page Up 
+    %button(onclick="RAMAP.saveMap();") Save
+    %button(onclick="RAMAP.toolPalette.setTool('hand');") Drag
+    %button(onclick="RAMAP.toolPalette.setTool('cursor');") Info
     %span(id="download")
 %span(id="picker_window")
   #scroll_pane

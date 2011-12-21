@@ -81,6 +81,10 @@ h3 {
   font-size: 1em;
   cursor: pointer;
 }
+
+#map_window{
+  cursor: none;
+}
 /**
 #tile_picker{
   width: 300px;
