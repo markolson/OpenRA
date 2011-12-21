@@ -10,19 +10,21 @@ RAMAP.newMapView = function(){
     dragImg: 0,
     lastTileset: 0,
     lastTiles: 0,
-    clickListenerFunc: 0,
-    moveListenerFunc: 0,
-    init: function(id, width, height, scale){
+    isTileCursor: true,
+    clickCallback: 0,
+    init: function(id, width, height, scale, clickCallback){
       MapView.stage = new Kinetic.Stage(id, width, height);
       MapView.canvas = MapView.stage.getCanvas();
       MapView.ctx = MapView.stage.getContext();
       MapView.height = height;
       MapView.width = width;
       MapView.scale = scale;
+      MapView.clickCallback = clickCallback;
       },
-      setCursor: function(imgObj, posX, posY, scale, action, isTileCursor){
+      setCursor: function(imgObj, posX, posY, scale, isTileCursor){
         console.log(imgObj);
         MapView.stage.removeAll();
+        /**
         if (MapView.clickListenerFunc !== undefined){
           console.log("remove click listener");
           MapView.stage.removeEventListenerType( "mousedown", MapView.clickListenerFunc );
@@ -30,18 +32,24 @@ RAMAP.newMapView = function(){
         if (MapView.moveListenerFunc !== undefined){
           console.log("remove move listener");
           MapView.stage.removeEventListenerType("mousemove", MapView.moveListenerFunc);
-        }
+        }*/
+        MapView.isTileCursor = isTileCursor;
+        MapView.stage.removeEventListenerType( "mousedown", MapView.onMouseClick);
+        MapView.stage.removeEventListenerType("mousemove", MapView.onMouseMove);
         var drawImg = Kinetic.drawImage(imgObj, posX, posY);
         MapView.dragImg = new Kinetic.Shape(drawImg); 
         MapView.dragImg.setScale(scale);
         MapView.draggingRect = true;
         MapView.stage.add(MapView.dragImg);
 
+        /**
         MapView.moveListenerFunc = function(){ MapView.onMouseMove(isTileCursor); };
         MapView.stage.addEventListener("mousemove", MapView.moveListenerFunc, false);
-        
         MapView.clickListenerFunc = function(){ MapView.onMouseClick(action); };
         MapView.stage.addEventListener("mousedown", MapView.clickListenerFunc);
+        */
+        MapView.stage.addEventListener("mousemove", MapView.onMouseMove, false);
+        MapView.stage.addEventListener("mousedown", MapView.onMouseClick);
     },
     zoomIn: function(){
       MapView.scale = MapView.scale + 3;
@@ -130,13 +138,14 @@ RAMAP.newMapView = function(){
     },
     onMouseClick: function(action){
       var mousePos = MapView.stage.getMousePos();
-      action(mousePos.x - 500, mousePos.y);
+      //action(mousePos.x - 500, mousePos.y);
       //MapView.draggingRect = false;
+      MapView.clickCallback(mousePos.x - 500, mousePos.y);
     },
     onMouseMove: function(isTileCursor){
       var mousePos = MapView.stage.getMousePos();
       //console.log("mouseMove");
-      if ( isTileCursor ){
+      if ( MapView.isTileCursor ){
         MapView.dragImg.setScale(MapView.scale/RAMAP.CHUNK_SIZE);
         MapView.dragImg.x = Math.floor((mousePos.x - 500) / MapView.scale) * MapView.scale;
         MapView.dragImg.y = Math.floor((mousePos.y ) / MapView.scale) * MapView.scale;
@@ -211,11 +220,11 @@ RAMAP.newToolPalette = function(){
       if ( isNaN(key) ){
         ToolPalette.currentID = 0;
         ToolPalette.currentTool = ToolPalette.tools[key];
-        ToolPalette.mapView.setCursor( ToolPalette.currentTool.source.image, 0,0, 1, ToolPalette.currentTool.action, ToolPalette.currentTool.isTileCursor); 
+        ToolPalette.mapView.setCursor( ToolPalette.currentTool.source.image, 0,0, 1, ToolPalette.currentTool.isTileCursor); 
       }else{
         ToolPalette.currentID = key;
         ToolPalette.currentTool = ToolPalette.tools["tileBrush"];
-        ToolPalette.mapView.setCursor( RAMAP.tileset.templates[key].source.image, 0, 0, RAMAP.mapView.scale/RAMAP.CHUNK_SIZE, ToolPalette.currentTool.action, ToolPalette.currentTool.isTileCursor); 
+        ToolPalette.mapView.setCursor( RAMAP.tileset.templates[key].source.image, 0, 0, RAMAP.mapView.scale/RAMAP.CHUNK_SIZE, ToolPalette.currentTool.isTileCursor); 
       }
     },
     loadIcons: function(callback){
@@ -235,9 +244,8 @@ RAMAP.newToolPalette = function(){
         }
       }
     },
-    clickHandler: function(){
-      var mousePos = ToolPalette.mapView.stage.getMousePos();
-      ToolPalette.currentTool.action(ToolPalette.currentID, mousePos.x, mousePos.y);
+    clickHandler: function(mosX, mosY){
+      ToolPalette.currentTool.action(ToolPalette.currentID, mosX, mosY);
     }
   }
   return ToolPalette;

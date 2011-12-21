@@ -89,7 +89,7 @@ $(document).ready( function(){
 });
 RAMAP.init = function (){
   RAMAP.mapView = RAMAP.newMapView();
-  RAMAP.mapView.init("map_window", 900, 900, RAMAP.DEFAULT_SCALE);
+  RAMAP.mapView.init("map_window", 900, 900, RAMAP.DEFAULT_SCALE, RAMAP.onMapClick);
   RAMAP.canvas = RAMAP.mapView.canvas;
   RAMAP.ctx = RAMAP.mapView.ctx;
 
@@ -101,9 +101,9 @@ RAMAP.init = function (){
 
   //create and add tools
   var tools= {};
-  tools["cursor"] = {"action": function(posX, posY){ console.log("cursor! " + posX + " " + posY);}};
-  tools["hand"] = {"action": function(posX, posY){ console.log("hand! " + posX + " " + posY);}, "isTileCursor": false};
-  tools["tileBrush"] = {"action": function(posX, posY){ console.log("tileBrush! " + posX + " " + posY);}};
+  tools["cursor"] = {"action": function(id, posX, posY){ console.log(id + " cursor! " + posX + " " + posY);}};
+  tools["hand"] = {"action": function(id, posX, posY){ console.log(id + " hand! " + posX + " " + posY);}, "isTileCursor": false};
+  tools["tileBrush"] = {"action": function(id, posX, posY){ console.log(id + " tileBrush! " + posX + " " + posY);}};
 
   RAMAP.toolPalette = RAMAP.newToolPalette();
   for ( key in tools ){
@@ -120,20 +120,20 @@ RAMAP.init = function (){
     var template = RAMAP.tileset.templates[key];
     $("#template_picker").append('<input type="image" src="' + template.source.image.src + '" id="'+key+'" onclick="RAMAP.toolPalette.setTool('+key+')" >');
   }
-}
+};
 
 RAMAP.onMapRead = function(){
   RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
-}
+};
 
-RAMAP.onMapWrite= function(fileEntry){
+RAMAP.onMapWrite = function(fileEntry){
   console.log('mapwrite callback');
   $('#download').html("<a href='"+fileEntry.toURL()+"'> Download </a>");
-}
-RAMAP.setCursor = function(key){
-  var template = RAMAP.tileset.templates[key];
-  RAMAP.mapView.setDragImg(key, template.source.image, 0, 0);
-}
+};
+
+RAMAP.onMapClick = function(mosX, mosY){
+  RAMAP.toolPalette.clickHandler(mosX, mosY);
+};
 
 /**
 RAMAP.onDebug = function(){
