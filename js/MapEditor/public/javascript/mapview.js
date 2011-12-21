@@ -6,12 +6,15 @@ RAMAP.newMapView = function(){
     height: 0,
     width: 0,
     scale: 0,
-    draggingRect: false,
+//    draggingRect: false,
     dragImg: 0,
     lastTileset: 0,
     lastTiles: 0,
     isTileCursor: true,
     clickCallback: 0,
+    isDown: false,// whether mouse is pressed
+    startCoords: [],// 'grab' coordinates when pressing mouse
+    last: [0,0],// previous coordinates of mouse release
     init: function(id, width, height, scale, clickCallback){
       MapView.stage = new Kinetic.Stage(id, width, height);
       MapView.canvas = MapView.stage.getCanvas();
@@ -20,6 +23,54 @@ RAMAP.newMapView = function(){
       MapView.width = width;
       MapView.scale = scale;
       MapView.clickCallback = clickCallback;
+      MapView.canvas.onmousedown = function(e) {
+        MapView.isDown = true;
+
+        MapView.startCoords = [
+            e.offsetX - MapView.last[0], // set start coordinates
+            e.offsetY - MapView.last[1]
+       ];
+      };
+
+      MapView.canvas.onmouseup   = function(e) {
+          MapView.isDown = false;
+
+          MapView.last = [
+              e.offsetX - MapView.startCoords[0], // set last coordinates
+              e.offsetY - MapView.startCoords[1]
+          ];
+      };
+
+      MapView.canvas.onmousemove = function(e)
+      {
+          console.log(MapView.isDown);
+          if(!MapView.isDown) return; // don't pan if mouse is not pressed
+
+          var x = e.offsetX;
+          var y = e.offsetY;
+
+          // set the canvas' transformation matrix by setting the amount of movement:
+          // 1  0  dx
+          // 0  1  dy
+          // 0  0  1
+
+          //RAMAP.ctx.setTransform(1, 0, 0, 1,
+          //                 x - startCoords[0], y - startCoords[1]);
+          //console.log( "dx: " + (x - startCoords[0]) + "dy: " + (y - startCoords[1]) );
+          RAMAP.shiftX = Math.floor( (( x - MapView.startCoords[0] ) / RAMAP.scale) / 2);
+          RAMAP.shiftY = Math.floor( (( y - MapView.startCoords[1] ) / RAMAP.scale) / 2);
+
+
+          //console.log( "shiftX: "+ shiftX + "shiftY: " + shiftY );
+
+          //RAMAP.shiftX = RAMAP.getShift(RAMAP.shiftX - shiftX);
+          //RAMAP.shiftY = RAMAP.getShift(RAMAP.shiftY - shiftY);
+
+          console.log( "RA.shiftX: "+ RAMAP.shiftX + "RA.shiftY: " + RAMAP.shiftY );
+          console.log( x + " " + y + " " + MapView.startCoords[0] + " " + MapView.startCoords[1]);
+          MapView.drawMap( RAMAP.mapIO.mapData.tiles, RAMAP.shiftX, RAMAP.shiftY, RAMAP.scale); // render to show changes
+
+      }
       },
       setCursor: function(imgObj, posX, posY, scale, isTileCursor){
         console.log(imgObj);
