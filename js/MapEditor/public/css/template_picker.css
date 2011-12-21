@@ -20,7 +20,7 @@
 #scroll_pane {
   width:500px;
   height:900px;
-  overflow:hidden;
+  overflow-y:scroll;
   float: left;
   border: 1px solid #000;
   background: #444;
