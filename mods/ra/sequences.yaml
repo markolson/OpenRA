@@ -1054,7 +1054,7 @@ t11:
 		Start: 0
 	burn:
 		Start: 1
-		Length: 10
+		Length: 9
 
 t10:
 	idle:

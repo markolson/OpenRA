@@ -29,6 +29,7 @@ namespace OpenRA.Mods.RA.Widgets
 		public string DeployKey = "f";
 		public string StanceCycleKey = "z";
 		public string BaseCycleKey = "backspace";
+		public string ViewCycleKey = "v";
 		public readonly OrderManager OrderManager;
 
 		[ObjectCreator.UseCtor]
@@ -40,7 +41,6 @@ namespace OpenRA.Mods.RA.Widgets
 		public override bool HandleKeyPress(KeyInput e)
 		{
 			if (World == null) return false;
-			if (World.LocalPlayer == null) return false;
 
 			return ProcessInput(e);
 		}
@@ -51,6 +51,9 @@ namespace OpenRA.Mods.RA.Widgets
 			{
 				if (e.KeyName == BaseCycleKey)
 					return CycleBases();
+					
+				if (e.KeyName == ViewCycleKey)
+					return PerformViewCycle();
 
 				if (!World.Selection.Actors.Any())
 					return false;
@@ -161,6 +164,23 @@ namespace OpenRA.Mods.RA.Widgets
 			World.Selection.Combine(World, new Actor[] { next }, false, true);
 			Game.viewport.Center(World.Selection.Actors);
 			return true;
+		}
+		
+		bool PerformViewCycle()
+		{
+			/**
+			var shrouds = World.ActorsWithTrait<Traits.Shroud>().Select(a => a.Actor.Owner).Where(a => a.ClientIndex >= 0).Distinct();
+			var next = shrouds.SkipWhile( a => a.Shroud != World.RenderedShroud ).Skip(1).FirstOrDefault();
+			if(next == null) 
+			{
+				next = (World.RenderedPlayer == null) ? shrouds.First() : null;
+			}
+			World.RenderedPlayer = next;
+			World.RenderedShroud.Jank();
+			Game.Debug("Viewing through {0}".F( (World.RenderedPlayer == null) ? "Observer" : World.RenderedPlayer.ToString() ) );
+			**/
+			return true;
+			
 		}
 	}
 }
