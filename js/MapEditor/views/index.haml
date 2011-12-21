@@ -9,8 +9,8 @@
     %button(onclick="RAMAP.mapView.zoomIn();") [+]
     %button(onclick="RAMAP.mapView.zoomOut();") [-]
     %button(onclick="RAMAP.mapView.onDebug();") Debug
-    %button(onclick="RAMAP.picker.scrollDown(900);") Page Down
-    %button(onclick="RAMAP.picker.scrollUp(900);") Page Up 
+    %button(onclick="RAMAP.picker.scrollDown(600);") Page Down
+    %button(onclick="RAMAP.picker.scrollUp(600);") Page Up 
     %button(onclick="RAMAP.saveMap();") Save
     %button(onclick="RAMAP.toolPalette.setTool('hand');") Drag
     %button(onclick="RAMAP.toolPalette.setTool('cursor');") Info
@@ -18,4 +18,8 @@
 %span(id="picker_window")
   #scroll_pane
     #template_picker(style="width:500px; height:3200px;")
+      #height_1(class="height")
+      #height_2(class="height")
+      #height_3(class="height")
+      #height_4(class="height")
 %span(id="map_window")

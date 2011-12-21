@@ -208,6 +208,8 @@ RAMAP.newMapData = function(){
     resources: 0,
     actors: 0,
     init: function(mapSizeX, mapSizeY){
+      MapData.sizeX = mapSizeX;
+      MapData.sizeY = mapSizeY;
       //double array to hold map tile info 
       MapData.tiles = new Array(mapSizeX);
       for (var i = 0; i < mapSizeX; i++){
@@ -220,6 +222,9 @@ RAMAP.newMapData = function(){
       }
     },
     addTile: function(i,j, templateID, index){
+      if( !MapData.coordsInMap(i,j) ){
+        return;
+      }
       var tile = RAMAP.newTile();
       tile.init( templateID, index, i, j );
       MapData.tiles[i][j] = tile;
@@ -236,8 +241,21 @@ RAMAP.newMapData = function(){
     removeResource: function(i,j){
       MapData.resources[i][j] = null;
     },
-    addTemplate: function(i,j){
-      //TODO
+    addTemplate: function(x,y, template){
+      var index = 0;
+      for ( var j = 0; j < template.height; j++){
+        for ( var i = 0; i < template.width; i++){
+          MapData.addTile( x+i, y+j, template.id, index);
+          index++;
+        }
+      }
+    },
+    coordsInMap: function(i,j){
+      if( i >= 0 && j >=0 && i < MapData.sizeX && j < MapData.sizeY){
+        return true;
+      }else{
+        return false;
+      }
     }
   };
   return MapData;

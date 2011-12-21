@@ -4,12 +4,25 @@
   -webkit-transform: translate(0px,-2300px); 
 }*/
 #template_picker{
-  background: #CCC;
+  background: #444;
 }
+
+.height input,img{
+  padding: 2px;
+  margin: 2px;
+}
+.height{
+  margin: 0px 0px 5px 0px;
+  background: #999;
+}
+
 #scroll_pane {
   width:500px;
   height:900px;
   overflow:hidden;
   float: left;
   border: 1px solid #000;
+  background: #444;
 }
+
+

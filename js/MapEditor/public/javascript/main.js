@@ -102,8 +102,12 @@ RAMAP.init = function (){
   //create and add tools
   var tools= {};
   tools["cursor"] = {"action": function(id, posX, posY){ console.log(id + " cursor! " + posX + " " + posY);}};
-  tools["hand"] = {"action": function(id, posX, posY){ console.log(id + " hand! " + posX + " " + posY); RAMAP.mapView.dragOn = true;}, "upAction": function(id, posX, posY){ console.log(id + " upAction! " + posX + " " + posY); RAMAP.mapView.dragOn = false;}, "isTileCursor": false};
-  tools["tileBrush"] = {"action": function(id, posX, posY){ console.log(id + " tileBrush! " + posX + " " + posY);}};
+  tools["hand"] = {"action": function(id, posX, posY){ RAMAP.mapView.dragOn = true;}, "upAction": function(id, posX, posY){ RAMAP.mapView.dragOn = false;}, "isTileCursor": false};
+  tools["tileBrush"] = {"action": function(id, posX, posY, mapX, mapY){ 
+    console.log(id + " tileBrush! " + posX + " " + posY + "Tile " + mapX + " " + mapY);
+    RAMAP.mapIO.mapData.addTemplate( mapX, mapY, RAMAP.tileset.templates[id] );
+    RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
+  }};
 
   RAMAP.toolPalette = RAMAP.newToolPalette();
   for ( key in tools ){
@@ -118,7 +122,7 @@ RAMAP.init = function (){
   for ( key in RAMAP.tileset.templates ){
     //console.log(RAMAP.templates[key]);
     var template = RAMAP.tileset.templates[key];
-    $("#template_picker").append('<input type="image" src="' + template.source.image.src + '" id="'+key+'" onclick="RAMAP.toolPalette.setTool('+key+')" >');
+    $("#height_"+template.height).append('<input type="image" src="' + template.source.image.src + '" id="'+key+'" onclick="RAMAP.toolPalette.setTool('+key+')" >');
   }
 };
 
@@ -131,12 +135,12 @@ RAMAP.onMapWrite = function(fileEntry){
   $('#download').html("<a href='"+fileEntry.toURL()+"'> Download </a>");
 };
 
-RAMAP.onMapClick = function(mosX, mosY){
-  RAMAP.toolPalette.clickHandler(mosX, mosY);
+RAMAP.onMapClick = function(mosX, mosY, mapX, mapY){
+  RAMAP.toolPalette.clickHandler(mosX, mosY, mapX, mapY);
 };
 
-RAMAP.onMapUp = function(mosX, mosY){
-  RAMAP.toolPalette.upHandler(mosX, mosY);
+RAMAP.onMapUp = function(mosX, mosY, mapX, mapY){
+  RAMAP.toolPalette.upHandler(mosX, mosY, mapX, mapY);
 };
 
 /**
