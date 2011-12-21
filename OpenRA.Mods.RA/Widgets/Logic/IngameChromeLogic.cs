@@ -37,12 +37,12 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 			optionsBG.GetWidget<ButtonWidget>("MUSIC").OnClick = () => Widget.OpenWindow("MUSIC_MENU");
 			optionsBG.GetWidget<ButtonWidget>("RESUME").OnClick = () => optionsBG.Visible = false;
 
-			optionsBG.GetWidget<ButtonWidget>("SURRENDER").OnClick = () =>
+			optionsBG.GetWidget<ButtonWidget>("SURRENDER").OnClick = () => 
 			{
 				optionsBG.Visible = false;
 				world.IssueOrder(new Order("Surrender", world.LocalPlayer.PlayerActor, false));
 			};
-
+			
 			optionsBG.GetWidget("SURRENDER").IsVisible = () => (world.LocalPlayer != null && world.LocalPlayer.WinState == WinState.Undefined);
 
 			var postgameBG = gameRoot.GetWidget("POSTGAME_BG");
@@ -52,7 +52,7 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 			var postgameQuit = postgameBG.GetWidget<ButtonWidget>("POSTGAME_QUIT");
 			postgameQuit.OnClick = () => LeaveGame(postgameQuit);
 
-			postGameObserve.OnClick = () => postgameQuit.Visible = false;
+			postGameObserve.OnClick = () => postgameQuit.Visible = false;	
 			postGameObserve.IsVisible = () => world.LocalPlayer.WinState != WinState.Won;
 
 			postgameBG.IsVisible = () =>
