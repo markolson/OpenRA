@@ -6,33 +6,43 @@ RAMAP.newMapView = function(){
     height: 0,
     width: 0,
     scale: 0,
-//    draggingRect: false,
-//    dragImg: 0,
-    clickCallback: 0,
+    draggingRect: false,
+    dragImg: 0,
     lastTileset: 0,
     lastTiles: 0,
-    init: function(id, width, height, scale, clickCallback){
+    clickListenerFunc: 0,
+    moveListenerFunc: 0,
+    init: function(id, width, height, scale){
       MapView.stage = new Kinetic.Stage(id, width, height);
       MapView.canvas = MapView.stage.getCanvas();
       MapView.ctx = MapView.stage.getContext();
       MapView.height = height;
       MapView.width = width;
       MapView.scale = scale;
-      MapView.clickCallback = clickCallback;
       },
-/**    setDragImg: function(imgObj, posX, posY, scale){
+      setCursor: function(imgObj, posX, posY, scale, action, isTileCursor){
         console.log(imgObj);
         MapView.stage.removeAll();
-        MapView.stage.removeEventListenerType("mousedown", MapView.clicked);
-        MapView.stage.removeEventListenerType("mousemove", MapView.mousemoved);
+        if (MapView.clickListenerFunc !== undefined){
+          console.log("remove click listener");
+          MapView.stage.removeEventListenerType( "mousedown", MapView.clickListenerFunc );
+        }
+        if (MapView.moveListenerFunc !== undefined){
+          console.log("remove move listener");
+          MapView.stage.removeEventListenerType("mousemove", MapView.moveListenerFunc);
+        }
         var drawImg = Kinetic.drawImage(imgObj, posX, posY);
         MapView.dragImg = new Kinetic.Shape(drawImg); 
         MapView.dragImg.setScale(scale);
         MapView.draggingRect = true;
         MapView.stage.add(MapView.dragImg);
-        MapView.stage.addEventListener("mousemove", MapView.mousemoved, false);
-        MapView.stage.addEventListener("mousedown", MapView.clicked);
-    },*/
+
+        MapView.moveListenerFunc = function(){ MapView.onMouseMove(isTileCursor); };
+        MapView.stage.addEventListener("mousemove", MapView.moveListenerFunc, false);
+        
+        MapView.clickListenerFunc = function(){ MapView.onMouseClick(action); };
+        MapView.stage.addEventListener("mousedown", MapView.clickListenerFunc);
+    },
     zoomIn: function(){
       MapView.scale = MapView.scale + 3;
       if( MapView.scale > RAMAP.MAX_ZOOM){
@@ -117,21 +127,26 @@ RAMAP.newMapView = function(){
         }
       }
      }
-    }/**,
-    clicked: function(){
-      console.log(MapView.currTempID);
+    },
+    onMouseClick: function(action){
       var mousePos = MapView.stage.getMousePos();
-      MapView.clickCallback(mousePos.x - 500, mousePos.y);
+      action(mousePos.x - 500, mousePos.y);
       //MapView.draggingRect = false;
     },
-    mousemoved: function(){
+    onMouseMove: function(isTileCursor){
       var mousePos = MapView.stage.getMousePos();
       //console.log("mouseMove");
-      MapView.dragImg.setScale(MapView.scale/RAMAP.CHUNK_SIZE);
-      MapView.dragImg.x = Math.floor((mousePos.x - 500) / MapView.scale) * MapView.scale;
-      MapView.dragImg.y = Math.floor((mousePos.y ) / MapView.scale) * MapView.scale;
+      if ( isTileCursor ){
+        MapView.dragImg.setScale(MapView.scale/RAMAP.CHUNK_SIZE);
+        MapView.dragImg.x = Math.floor((mousePos.x - 500) / MapView.scale) * MapView.scale;
+        MapView.dragImg.y = Math.floor((mousePos.y ) / MapView.scale) * MapView.scale;
+      }else{
+        MapView.dragImg.setScale(1);
+        MapView.dragImg.x = Math.floor(mousePos.x - 500);
+        MapView.dragImg.y = Math.floor(mousePos.y ); 
+      }
       MapView.stage.draw();
-    }*/
+    }
   }
   return MapView;
 };
@@ -196,11 +211,11 @@ RAMAP.newToolPalette = function(){
       if ( isNaN(key) ){
         ToolPalette.currentID = 0;
         ToolPalette.currentTool = ToolPalette.tools[key];
-        ToolPalette.mapView.setDragImg( ToolPalette.currentTool.source.image, -900,-900, 1); 
+        ToolPalette.mapView.setCursor( ToolPalette.currentTool.source.image, 0,0, 1, ToolPalette.currentTool.action, ToolPalette.currentTool.isTileCursor); 
       }else{
         ToolPalette.currentID = key;
         ToolPalette.currentTool = ToolPalette.tools["tileBrush"];
-        ToolPalette.mapView.setDragImg( RAMAP.tileset.templates[key].source.image, -900, -900, RAMAP.mapView.scale/RAMAP.CHUNK_SIZE); 
+        ToolPalette.mapView.setCursor( RAMAP.tileset.templates[key].source.image, 0, 0, RAMAP.mapView.scale/RAMAP.CHUNK_SIZE, ToolPalette.currentTool.action, ToolPalette.currentTool.isTileCursor); 
       }
     },
     loadIcons: function(callback){
@@ -220,37 +235,6 @@ RAMAP.newToolPalette = function(){
         }
       }
     },
-    setDragImg: function(imgObj, posX, posY, scale){
-        console.log(imgObj);
-        var stage = ToolPalette.mapView.stage;
-        stage.removeAll();
-        stage.removeEventListenerType("mousedown", ToolPalette.clickHandler);
-        stage.removeEventListenerType("mousemove", ToolPalette.mousemoved);
-        var drawImg = Kinetic.drawImage(imgObj, posX, posY);
-        ToolPalette.dragImg = new Kinetic.Shape(drawImg); 
-        ToolPalette.dragImg.setScale(scale);
-        ToolPalette.draggingRect = true;
-        stage.add(ToolPalette.dragImg);
-        stage.addEventListener("mousemove", ToolPalette.mousemoved, false);
-        stage.addEventListener("mousedown", ToolPalette.clickHandler);
-    },
-    clicked: function(){
-      console.log(MapView.currTempID);
-      var mousePos = MapView.stage.getMousePos();
-      MapView.clickCallback(mousePos.x - 500, mousePos.y);
-      //MapView.draggingRect = false;
-    },
-    mousemoved: function(){
-      var mapView = ToolPalette.mapView;
-      var mousePos = mapView.stage.getMousePos();
-      //console.log("mouseMove");
-      if( ToolPalette.currentTool.name !== "hand" ){
-        ToolPalette.dragImg.setScale(mapView.scale/RAMAP.CHUNK_SIZE);
-      }
-      ToolPalette.dragImg.x = Math.floor((mousePos.x - 500) / mapView.scale) * mapView.scale;
-      ToolPalette.dragImg.y = Math.floor((mousePos.y ) / mapView.scale) * mapView.scale;
-      mapView.stage.draw();
-    },
     clickHandler: function(){
       var mousePos = ToolPalette.mapView.stage.getMousePos();
       ToolPalette.currentTool.action(ToolPalette.currentID, mousePos.x, mousePos.y);
@@ -264,9 +248,13 @@ RAMAP.newTool = function(){
     name: 0,
     action: 0,
     source: 0,
-    init: function (name, action, imgPath){
+    isTileCursor: true,
+    init: function (name, action, imgPath, isTileCursor){
       Tool.name = name;
       Tool.action = action;
+      if ( isTileCursor !== undefined ){
+        Tool.isTileCursor = isTileCursor;
+      }
       if( imgPath !== undefined && imgPath !== null ){
         Tool.source = RAMAP.newSourceImage();
         Tool.source.init( imgPath + Tool.name + ".png");
