@@ -22,7 +22,7 @@ RAMAP.newTileset = function(){
           //items.push( val["path"] + ".png" );
           var tm = Tileset.templateMap[key];
           var template = RAMAP.newTemplate();
-          template.init(key, tm.path, tm.width, tm.height, Tileset.imgPath );
+          template.init(key, tm.path, tm.width, tm.height, Tileset.imgPath, tm.visibleChunks );
           template.source.image.onload = function(){
             //console.log("loaded");
             //console.log(template.source.image);
@@ -49,23 +49,23 @@ RAMAP.newTemplate = function(){
     height: 0,
     chunks: 0,
     source: 0,
-    init: function(id, name, width, height, imgPath){
+    init: function(id, name, width, height, imgPath, visibleChunks){
       Template.id = Number(id);
       Template.name = name;
       Template.width = Number(width);
       Template.height = Number(height);
       //console.log( id + " " + Template.width + " " + Template.height );
-      Template.chunks = Template.getChunks(Template.width, Template.height);
+      Template.chunks = Template.getChunks(Template.width, Template.height, visibleChunks);
       Template.source = RAMAP.newSourceImage();
       Template.source.init( imgPath + Template.name + ".png")
     },
-    getChunks: function(tempWidth, tempHeight){
+    getChunks: function(tempWidth, tempHeight, visibleChunks){
       var numChunks = tempWidth * tempHeight;
       var chunks = [];
       for ( var i = 0; i < numChunks; i++){
         var row = Math.floor( i / tempWidth );
         var column = i % tempWidth;
-        chunks.push( { "id": i, "x": column*RAMAP.CHUNK_SIZE, "y": row*RAMAP.CHUNK_SIZE} );
+        chunks.push( { "id": i, "x": column*RAMAP.CHUNK_SIZE, "y": row*RAMAP.CHUNK_SIZE, "visible": Boolean(visibleChunks[i])} );
       }
         return chunks; 
     }
@@ -94,7 +94,7 @@ RAMAP.newTile = function(){
         }else{
           var chunk = template.chunks[Tile.index];
         }
-        if (chunk !== undefined){
+        if (chunk !== undefined && chunk.visible){
           //console.log( template.chunks );
           //console.log( Tile.templateID + " " + template.source.image.src + " " + Tile.index + " chunk:" + chunk.x + " " + chunk.y + "scale " + RAMAP.CHUNK_SIZE );
           ctx.drawImage(template.source.image, chunk.x, chunk.y, RAMAP.CHUNK_SIZE, RAMAP.CHUNK_SIZE, posX*scale, posY*scale, scale, scale);

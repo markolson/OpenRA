@@ -245,7 +245,9 @@ RAMAP.newMapData = function(){
       var index = 0;
       for ( var j = 0; j < template.height; j++){
         for ( var i = 0; i < template.width; i++){
-          MapData.addTile( x+i, y+j, template.id, index);
+          if( template.chunks[index].visible){
+            MapData.addTile( x+i, y+j, template.id, index);
+          }
           index++;
         }
       }

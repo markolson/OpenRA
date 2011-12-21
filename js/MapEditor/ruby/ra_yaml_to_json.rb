@@ -53,12 +53,17 @@ File.open( base_file_name + ".yaml" ).each do |line|
     puts "width: #{$1} height: #{$2}"
     out_hash[last_template][:width] = $1 
     out_hash[last_template][:height] = $2
+    out_hash[last_template][:visibleChunks] = Array.new($1.to_i*$2.to_i).fill(0)
+  end
+
+  if line.match(/(\d{1,2}):\s*\w+/)
+    puts "visible: #{$1.to_i}"
+    out_hash[last_template][:visibleChunks][$1.to_i] = 1
   end
 
 end
 puts "------------------------"
 puts "#{count} templates found"
-
 File.open(base_file_name + ".json","w") do |f|
   f.write(out_hash.to_json)
 end

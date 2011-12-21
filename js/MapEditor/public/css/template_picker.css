@@ -7,10 +7,11 @@
   background: #444;
 }
 
-.height input,img{
-  padding: 2px;
+.height input{
   margin: 2px;
+  border: 1px solid #555;
 }
+
 .height{
   margin: 0px 0px 5px 0px;
   background: #999;
