@@ -204,7 +204,7 @@ RAMAP.newMapView = function(){
       }
      }
     },
-    onMouseClick: function(action){
+    onMouseClick: function(){
       var mousePos = MapView.stage.getMousePos();
       //action(mousePos.x - 500, mousePos.y);
       //MapView.draggingRect = false;
@@ -218,6 +218,9 @@ RAMAP.newMapView = function(){
         MapView.dragImg.setScale(MapView.scale/RAMAP.CHUNK_SIZE);
         MapView.dragImg.x = Math.floor((mousePos.x - 500) / MapView.scale) * MapView.scale;
         MapView.dragImg.y = Math.floor((mousePos.y ) / MapView.scale) * MapView.scale;
+        if( MapView.isDown ){
+          MapView.onMouseClick();
+        }
       }else{
         MapView.dragImg.setScale(1);
         MapView.dragImg.x = Math.floor(mousePos.x - 500);
