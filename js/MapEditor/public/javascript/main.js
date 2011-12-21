@@ -89,7 +89,7 @@ $(document).ready( function(){
 });
 RAMAP.init = function (){
   RAMAP.mapView = RAMAP.newMapView();
-  RAMAP.mapView.init("map_window", 900, 900, RAMAP.DEFAULT_SCALE, RAMAP.onMapClick);
+  RAMAP.mapView.init("map_window", 900, 900, RAMAP.DEFAULT_SCALE, RAMAP.onMapClick, RAMAP.onMapUp);
   RAMAP.canvas = RAMAP.mapView.canvas;
   RAMAP.ctx = RAMAP.mapView.ctx;
 
@@ -102,13 +102,13 @@ RAMAP.init = function (){
   //create and add tools
   var tools= {};
   tools["cursor"] = {"action": function(id, posX, posY){ console.log(id + " cursor! " + posX + " " + posY);}};
-  tools["hand"] = {"action": function(id, posX, posY){ console.log(id + " hand! " + posX + " " + posY);}, "isTileCursor": false};
+  tools["hand"] = {"action": function(id, posX, posY){ console.log(id + " hand! " + posX + " " + posY); RAMAP.mapView.dragOn = true;}, "upAction": function(id, posX, posY){ console.log(id + " upAction! " + posX + " " + posY); RAMAP.mapView.dragOn = false;}, "isTileCursor": false};
   tools["tileBrush"] = {"action": function(id, posX, posY){ console.log(id + " tileBrush! " + posX + " " + posY);}};
 
   RAMAP.toolPalette = RAMAP.newToolPalette();
   for ( key in tools ){
     var tool = RAMAP.newTool();
-    tool.init( key, tools[key].action, "/images/tools/", tools[key].isTileCursor);
+    tool.init( key, tools[key].action, tools[key].upAction, "/images/tools/", tools[key].isTileCursor);
     RAMAP.toolPalette.addTool( tool );
   }
   RAMAP.toolPalette.init(RAMAP.mapView);
@@ -133,6 +133,10 @@ RAMAP.onMapWrite = function(fileEntry){
 
 RAMAP.onMapClick = function(mosX, mosY){
   RAMAP.toolPalette.clickHandler(mosX, mosY);
+};
+
+RAMAP.onMapUp = function(mosX, mosY){
+  RAMAP.toolPalette.upHandler(mosX, mosY);
 };
 
 /**

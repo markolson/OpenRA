@@ -1,7 +1,8 @@
 a{
   font-weight: bold;
   text-decoration: none;
-  color:#3A4E57;
+  /*color:#3A4E57;*/
+  color: #F1F1F1;
 }
 
 a:visited {
@@ -10,10 +11,12 @@ a:visited {
 
 body{
   /* for Jason background: #954F98; */
-  background: #B4A79F; 
+  /* background: #B4A79F; */
+  background: #666666; 
   font-family: Helvitica, Arial;
   /*color: #A37055; orange */
-  color:#3A4E57;
+  /*color:#3A4E57;*/
+  color: #F1F1F1;
 }
 
 input, textarea, button, label{
@@ -48,7 +51,7 @@ td{
 }
 
 h1{
-  color:#3A4E57;
+  /* color:#3A4E57;*/
   margin-left: 10px;
 
   -moz-border-bottom-left-radius: 10px;
@@ -84,6 +87,17 @@ h3 {
 
 #map_window{
   cursor: none;
+}
+
+
+#map_window canvas{
+  border: 1px solid #000;
+}
+
+
+#map_window p{
+  float: left;
+  margin-left: 1em;
 }
 /**
 #tile_picker{
