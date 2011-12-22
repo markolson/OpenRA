@@ -14,8 +14,8 @@
 .height input{
   margin: 2px;
   border: 1px solid #555;
-  background: #66FF66;
-  /**background: #000; /** to hide missing pixels */
+  /**background: #66FF66;*/ /**to show missing pixels */
+  background: #000; /** to hide missing pixels */
 }
 
 .height{
