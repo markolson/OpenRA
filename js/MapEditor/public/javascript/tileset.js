@@ -39,9 +39,9 @@ RAMAP.newTileset = function(){
               }
               callback.call(this);
             }
-            Tileset.sources[key] = template.source;
-            Tileset.templates[key] = template;
           }
+          Tileset.sources[key] = template.source;
+          Tileset.templates[key] = template;
         });
       });
     }
