@@ -96,15 +96,16 @@ h3 {
   cursor: pointer;
 }
 
+#app{
+  width: 1400px;
+  height: 900px;
+  border: 1px solid #000;
+  background: #000; /** to hide missing pixels in template*/
+}
+
 #map_window{
   cursor: none;
 }
-
-
-#map_window canvas{
-  border: 1px solid #000;
-}
-
 
 #map_window p{
   float: left;

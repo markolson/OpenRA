@@ -14,6 +14,8 @@
 .height input{
   margin: 2px;
   border: 1px solid #555;
+  background: #66FF66;
+  /**background: #000; /** to hide missing pixels */
 }
 
 .height{
@@ -26,7 +28,7 @@
   height:900px;
   overflow-y:scroll;
   float: left;
-  border: 1px solid #000;
+  /**border: 1px solid #000;*/
   background: #444;
 }
 
