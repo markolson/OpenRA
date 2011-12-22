@@ -541,7 +541,7 @@ FTRK:
 		Cost: 600
 	Tooltip:
 		Name: Flak Truck
-		Description: Flak Truck, good for scouting.\n  Strong vs Light Vehicles\nand Aircraft, Weak vs Tanks 
+		Description: Flak Truck, good for scouting.\n  Strong vs Aircraft
 	Health:
 		HP: 120
 	Armor: 

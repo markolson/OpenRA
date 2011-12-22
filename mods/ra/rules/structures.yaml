@@ -428,6 +428,8 @@ HBOX:
 		ROT: 255
 
 GUN:
+	RequiresPower:
+	CanPowerDown:
 	Inherits: ^Building
 	Buildable:
 		Queue: Defense
