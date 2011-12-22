@@ -1,3 +1,10 @@
+LG-PLAYABLE:
+    Multiple buildings will now increase production time by +15% per building, to a cap of 45%
+    Units will no longer auto-target other units outside of the player's visibility
+    Units will not follow targeted unit that escape the player's visibility
+    Water tiles can be force-targeted
+    Force-target acts as a command to file on a specific tile and does not target any actor in the tile; if the actor dies, the force-firing still is enabled
+
 NEW:
 	Engine:
 		General performance improvements
