@@ -1,35 +1,9 @@
 require 'rubygems'
 require 'json'
 require 'yaml'
-=begin
-tempHash = {
-    "key_a" => "val_a",
-    "key_b" => "val_b"
-}
 
-File.open("temp.json","w") do |f|
-  f.write(tempHash.to_json)
-end
-=end
-
-=begin
-tree = YAML::parse( File.open( "snow.yaml" ) )
-puts tree.type_id
-# prints:
-#   map
-
-title = tree.select( "/title" )[0]
-puts title.value
-# prints:
-#   YAML.rb
-
-obj_tree = tree.transform
-puts obj_tree['title']
-# prints:
-#   YAML.rb
-#   
-=end
-base_file_name = "snow"
+#base_file_name = "snow"
+base_file_name = "temperate"
 count = 0
 out_hash = {};
 last_template = nil

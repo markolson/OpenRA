@@ -75,6 +75,18 @@ RAMAP.newMapIO = function(){
         };
       }
     },
+    newMap: function( width, height ){
+      console.log(width);
+      console.log(height);
+      MapIO.mapData = RAMAP.newMapData();
+      MapIO.mapData.init(width, height);
+
+      for( var i = 0; i < width; i++ ){
+        for( var j = 0; j < width; j++ ){
+          MapIO.mapData.addTile(i,j, RAMAP.TERRAIN_ID, 0);
+        }
+      }
+    },
     saveMap: function(){
       
       console.log("savemap");

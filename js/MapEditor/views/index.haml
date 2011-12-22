@@ -5,19 +5,33 @@
 %script(type="text/javascript" src="/javascript/tileset.js")
 %link(rel="stylesheet" href="/css/template_picker.css")
 #menu
-  %span
+  #general_menu(style="width: 500px; float: left;")
+    %button(onclick="$('#new_input').show(); $('#instructions').hide(); ") New
+    %span(id="new_input")
+      w:
+      %input( id="new_width" maxlength="3")
+      h:
+      %input( id="new_height" maxlength="3")
+      %button(onclick="$('#new_input').hide(); RAMAP.newMap();") Create 
+    %button(onclick="RAMAP.saveMap();") Save
+    %span(id="download")
+    %span(id="instructions")
+      Drop a map.bin file into the window or click new.
+
+  #map_menu
+    %button(onclick="RAMAP.setTileset('snow');") Snow
+    %button(onclick="RAMAP.setTileset('temperate');") Temperate
+    %button(onclick="RAMAP.mapView.onDebug();") Debug
+    %button(onclick="RAMAP.toolPalette.setTool('cursor');") Info
+    %button(onclick="RAMAP.toolPalette.setTool('hand');") Drag
     %button(onclick="RAMAP.mapView.zoomIn();") [+]
     %button(onclick="RAMAP.mapView.zoomOut();") [-]
-    %button(onclick="RAMAP.mapView.onDebug();") Debug
-    %button(onclick="RAMAP.saveMap();") Save
-    %button(onclick="RAMAP.toolPalette.setTool('hand');") Drag
-    %button(onclick="RAMAP.toolPalette.setTool('cursor');") Info
-    %span(id="download")
-%span(id="picker_window")
-  #scroll_pane
-    #template_picker
-      #height_1(class="height")
-      #height_2(class="height")
-      #height_3(class="height")
-      #height_4(class="height")
-%span(id="map_window")
+#app
+  %span(id="picker_window")
+    #scroll_pane
+      #template_picker
+        #height_1(class="height")
+        #height_2(class="height")
+        #height_3(class="height")
+        #height_4(class="height")
+  %span(id="map_window")

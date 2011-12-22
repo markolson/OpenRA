@@ -7,6 +7,10 @@
   background: #444;
 }
 
+.temperate{
+  display: none;
+}
+
 .height input{
   margin: 2px;
   border: 1px solid #555;

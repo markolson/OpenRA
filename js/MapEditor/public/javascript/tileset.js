@@ -1,11 +1,13 @@
 RAMAP.newTileset = function(){
   var Tileset = {
+    name: 0,
     templateMapSrcPath: 0,
     imgPath: 0,
     templateMap: {},
     templates: {},
     sources: {},
-    init: function(templateMapSrcPath, imgPath){
+    init: function(name, templateMapSrcPath, imgPath){
+     Tileset.name = name;
      Tileset.templateMapSrcPath = templateMapSrcPath;// 'ajax/snow.json'
      Tileset.imgPath = imgPath;// "/images/ramap/Snow/"
     },
@@ -29,11 +31,17 @@ RAMAP.newTileset = function(){
             loadedCount++
             if ( loadedCount == imageCount ){
               //imagesLoaded();
+              //add templates to template picker
+              for ( key in Tileset.templates ){
+                  //console.log(RAMAP.templates[key]);
+                  var temp = Tileset.templates[key];
+                  $("#height_"+temp.height).append('<input type="image" class="'+ Tileset.name + '"src="' + temp.source.image.src + '" id="'+key+'" onclick="RAMAP.toolPalette.setTool('+key+')" >');
+              }
               callback.call(this);
             }
+            Tileset.sources[key] = template.source;
+            Tileset.templates[key] = template;
           }
-          Tileset.sources[key] = template.source;
-          Tileset.templates[key] = template;
         });
       });
     }
@@ -132,4 +140,33 @@ RAMAP.newSourceImage = function(){ //image used to create tile
         }
     };
     return SourceImage;
+}
+
+RAMAP.newTilesetLoader = function(){
+  var TilesetLoader = {
+    loaded: 0,
+    callback: 0,
+    init: function(callback){
+      TilesetLoader.callback = callback;
+
+      var snow = RAMAP.newTileset();
+      RAMAP.tilesets["snow"] = snow;
+      var temperate = RAMAP.newTileset();
+      RAMAP.tilesets["temperate"] = temperate;
+
+      snow.init("snow", 'ajax/snow.json', "/images/ramap/Snow/");
+      snow.loadTemplates(TilesetLoader.loadedTemplate);
+      temperate.init("temperate", 'ajax/temperate.json', "/images/ramap/Temperate/");
+      temperate.loadTemplates(TilesetLoader.loadedTemplate);
+    },
+    loadedTemplate: function(obj){
+      TilesetLoader.loaded++;
+      console.log( TilesetLoader.loaded );
+      if ( TilesetLoader.loaded >= Object.keys(RAMAP.tilesets).length ){
+        console.log("holla");
+        TilesetLoader.callback();
+      }
+    }
+  };
+  return TilesetLoader;
 }

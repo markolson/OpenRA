@@ -14,80 +14,45 @@ RAMAP.MIN_ZOOM = 3;
 //RAMAP.templateMap = {};
 //RAMAP.templates = {};
 //RAMAP.sources = {};
+RAMAP.tilesets = {}; 
 RAMAP.tileset;
 
 RAMAP.DEBUG = 0;
 RAMAP.TERRAIN_ID = 65535;
 
 $(document).ready( function(){
-    /**
-  var isDown = false; // whether mouse is pressed
-  var startCoords = []; // 'grab' coordinates when pressing mouse
-  var last = [0, 0]; // previous coordinates of mouse release
-
-  RAMAP.canvas.onmousedown = function(e) {
-    isDown = true;
-
-    startCoords = [
-        e.offsetX - last[0], // set start coordinates
-        e.offsetY - last[1]
-   ];
-  };
-
-  RAMAP.canvas.onmouseup   = function(e) {
-      isDown = false;
-
-      last = [
-          e.offsetX - startCoords[0], // set last coordinates
-          e.offsetY - startCoords[1]
-      ];
-  };
-
-  RAMAP.canvas.onmousemove = function(e)
-  {
-      if(!isDown) return; // don't pan if mouse is not pressed
-
-      var x = e.offsetX;
-      var y = e.offsetY;
-
-      // set the canvas' transformation matrix by setting the amount of movement:
-      // 1  0  dx
-      // 0  1  dy
-      // 0  0  1
-
-      //RAMAP.ctx.setTransform(1, 0, 0, 1,
-      //                 x - startCoords[0], y - startCoords[1]);
-      //console.log( "dx: " + (x - startCoords[0]) + "dy: " + (y - startCoords[1]) );
-      RAMAP.shiftX = Math.floor( (( x - startCoords[0] ) / RAMAP.scale) / 2);
-      RAMAP.shiftY = Math.floor( (( y - startCoords[1] ) / RAMAP.scale) / 2);
-
-
-      //console.log( "shiftX: "+ shiftX + "shiftY: " + shiftY );
-
-      //RAMAP.shiftX = RAMAP.getShift(RAMAP.shiftX - shiftX);
-      //RAMAP.shiftY = RAMAP.getShift(RAMAP.shiftY - shiftY);
-
-      //console.log( "RA.shiftX: "+ RAMAP.shiftX + "RA.shiftY: " + RAMAP.shiftY );
-      RAMAP.drawMap( RAMAP.shiftX, RAMAP.shiftY, RAMAP.scale); // render to show changes
-
-  }
-  /** 
-  RAMAP.getShift = function(value){
-    if ( value > RAMAP.CANVAS_SIZE ){
-        value = RAMAP.CANVAS_SIZE;
-      }
-      else if ( value < -RAMAP.CANVAS_SIZE ) {
-        value = -RAMAP.CANVAS_SIZE;
-      }
-    return value;
-  }*/
-  //$.getScript('javascript/mapview.js', function( data, textStatus) {  
-    RAMAP.tileset = RAMAP.newTileset();
-    RAMAP.tileset.init('ajax/snow.json', "/images/ramap/Snow/");
-    RAMAP.tileset.loadTemplates(RAMAP.init);
-  //});
+    //$("#menu").hide();
+    //$("#app").hide();
+    var tl = RAMAP.newTilesetLoader();
+    tl.init(RAMAP.init);
 });
+
+RAMAP.setTileset = function( tileset ){
+  RAMAP.tileset = RAMAP.tilesets[tileset];
+  for (key in RAMAP.tilesets){
+    if( key === tileset ){
+      $("."+tileset).show();
+    }else{
+      $("."+key).hide();
+    }
+  }
+  if ( RAMAP.mapIO.mapData.tiles !== 0 ){ 
+    RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
+  }
+}
+
+RAMAP.newMap = function(){
+  //$("#instructions").hide();
+  //$("#menu").show();
+  //$("#app").show();
+  RAMAP.mapIO.newMap( Number( $("#new_width").val()), Number($("#new_height").val()) );
+  RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
+}
+
 RAMAP.init = function (){
+  //set default template
+  RAMAP.tileset = RAMAP.tilesets["snow"];
+
   RAMAP.mapView = RAMAP.newMapView();
   RAMAP.mapView.init("map_window", 900, 900, RAMAP.DEFAULT_SCALE, RAMAP.onMapClick, RAMAP.onMapUp);
   RAMAP.canvas = RAMAP.mapView.canvas;
@@ -116,14 +81,7 @@ RAMAP.init = function (){
     RAMAP.toolPalette.addTool( tool );
   }
   RAMAP.toolPalette.init(RAMAP.mapView);
-  RAMAP.toolPalette.setTool("cursor");
-
-  //add templates to template picker
-  for ( key in RAMAP.tileset.templates ){
-    //console.log(RAMAP.templates[key]);
-    var template = RAMAP.tileset.templates[key];
-    $("#height_"+template.height).append('<input type="image" src="' + template.source.image.src + '" id="'+key+'" onclick="RAMAP.toolPalette.setTool('+key+')" >');
-  }
+  RAMAP.toolPalette.setTool("hand");
 };
 
 RAMAP.onMapRead = function(){
