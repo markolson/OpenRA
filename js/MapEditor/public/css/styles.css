@@ -81,6 +81,7 @@ h3 {
 }
 #new_input{
   display: none;
+  font-size: .75em;
 }
 #new_input input{
   padding: 1px;

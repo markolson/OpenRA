@@ -90,8 +90,8 @@ RAMAP.newMapIO = function(){
     saveMap: function(){
       
       console.log("savemap");
-//      window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
-//      window.requestFileSystem( /**window.PERSISTENT*/ window.TEMPORARY, 1, MapIO.onInitFs , MapIO.errorHandler);
+      window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+      window.requestFileSystem( /**window.PERSISTENT*/ window.TEMPORARY, 1, MapIO.onInitFs , MapIO.errorHandler);
     },
     readMapBin: function(map_bin){
       var bin_data =  new DataView( map_bin );
@@ -165,7 +165,7 @@ RAMAP.newMapIO = function(){
       console.log("write mapTiles");
       for( i = 0; i < mapSizeX; i ++){
         for( j = 0; j < mapSizeY; j ++){
-          var tile = RAMAP.mapData.getTile(i,j);
+          var tile = MapIO.mapData.getTile(i,j);
           dw.write16( file_data, tile.tile );
           //TODO pickany code ( % 4) (for cnc?)
           dw.write8( file_data, tile.index );
@@ -175,9 +175,11 @@ RAMAP.newMapIO = function(){
       //resourceTiles
       for( i = 0; i < mapSizeX; i ++){
         for( j = 0; j < mapSizeY; j ++){
-          var resource = RAMAP.mapData.getResource(i,j);
-          dw.write8( file_data, resource.resource );
-          dw.write8( file_data, resource.index );
+          var resource = MapIO.mapData.getResource(i,j);
+          if( resource !== undefined){
+            dw.write8( file_data, resource.resource );
+            dw.write8( file_data, resource.index );
+          }
         } 
       }
 
