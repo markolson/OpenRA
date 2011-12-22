@@ -4,6 +4,10 @@ LG-PLAYABLE:
     Units will not follow targeted unit that escape the player's visibility
     Water tiles can be force-targeted
     Force-target acts as a command to file on a specific tile and does not target any actor in the tile; if the actor dies, the force-firing still is enabled
+    Turrets now require power and can be manually powered down
+    Flak trucks now only target air units
+    The flame turret has has its rate of fire moderately increased
+    The artillery has had its range reduced slightly
 
 NEW:
 	Engine:
