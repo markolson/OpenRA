@@ -159,7 +159,7 @@ namespace OpenRA.Server
 						var nodes = new List<MiniYamlNode>();
 						nodes.Add( new MiniYamlNode("Id", lobbyInfo.GlobalSettings.RandomSeed.ToString() ) );
 						nodes.Add( new MiniYamlNode("Name", lobbyInfo.GlobalSettings.ServerName) );
-						nodes.Add( new MiniYamlNode("Address", "0.0.0.0") );
+						nodes.Add( new MiniYamlNode("Address", "{0}:{1}".F(Ip, Port) ) ) ;
 						nodes.Add( new MiniYamlNode("State", "1") );
 						nodes.Add( new MiniYamlNode("Players", lobbyInfo.Clients.Count.ToString()) );
 						nodes.Add( new MiniYamlNode("Map", lobbyInfo.GlobalSettings.Map) );

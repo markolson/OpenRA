@@ -118,7 +118,7 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 							.Where(gs => gs.Address != null).ToArray();
 						foreach(var g in games) 
 						{
-							g.Address = im.SenderEndpoint.Address.ToString();
+							g.Address = "{0}:{1}".F(im.SenderEndpoint.Address.ToString(), g.Address.Split(':')[1]);
 						}
 						RefreshServerList(panel, games);
 			            break;
