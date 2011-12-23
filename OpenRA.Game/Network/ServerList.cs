@@ -15,10 +15,15 @@ using System.Text;
 using System.Threading;
 using OpenRA.FileFormats;
 
+using Lidgren.Network;
+
+
 namespace OpenRA.Network
 {
 	public static class ServerList
 	{
+		static NetClient searcher;
+		static Action<GameServer[]> callback;
 		public static void Query(Action<GameServer[]> onComplete)
 		{
 			var masterServerUrl = Game.Settings.Server.MasterServer;
@@ -40,6 +45,47 @@ namespace OpenRA.Network
 				Game.RunAfterTick(() => onComplete(games));
 			}) { IsBackground = true }.Start();
 		}
+
+		public static void SearchLocal(Action<GameServer[]> onComplete)
+		{
+			if(searcher == null)
+			{
+				callback = onComplete;
+				SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+				NetPeerConfiguration config = new NetPeerConfiguration("OpenRA");
+				searcher = new NetClient(config);
+				searcher.RegisterReceivedCallback(new SendOrPostCallback(GotMessage)); 
+				SynchronizationContext.SetSynchronizationContext(null);
+				searcher.Start();
+			}
+			searcher.DiscoverLocalPeers(14242);
+		}
+		
+		static void GotMessage(object peer)
+		{
+			NetIncomingMessage im;
+			while ((im = searcher.ReadMessage()) != null)
+			{
+				// handle incoming message
+				switch (im.MessageType)
+				{
+			        case NetIncomingMessageType.DiscoveryResponse:
+						var yaml = MiniYaml.FromString(im.ReadString());
+						var games = yaml.Select(a => FieldLoader.Load<GameServer>(a.Value))
+							.Where(gs => gs.Address != null).ToArray();
+						foreach(var g in games) 
+						{
+							g.Address = "{0}:{1}".F(im.SenderEndpoint.Address.ToString(), g.Address.Split(':')[1]);
+							g.Local = true;
+						}
+						callback(games);
+			            break;
+					default:
+						break;
+				}
+			}
+		}
+		
 
 		static string GetData(Uri uri)
 		{

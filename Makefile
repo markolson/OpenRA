@@ -20,7 +20,7 @@ distclean: clean
 fileformats_SRCS	:= $(shell find OpenRA.FileFormats/ -iname '*.cs')
 fileformats_TARGET	= OpenRA.FileFormats.dll
 fileformats_KIND	= library
-fileformats_LIBS	= $(COMMON_LIBS) thirdparty/Tao/Tao.Sdl.dll System.Windows.Forms.dll thirdparty/Lidgren.Network.dll
+fileformats_LIBS	= $(COMMON_LIBS) thirdparty/Tao/Tao.Sdl.dll System.Windows.Forms.dll
 PROGRAMS 			= fileformats
 fileformats: $(fileformats_TARGET)
 
@@ -29,7 +29,7 @@ game_TARGET			= OpenRA.Game.exe
 game_KIND			= winexe
 game_DEPS			= $(fileformats_TARGET) 
 game_LIBS			= $(COMMON_LIBS) System.Windows.Forms.dll $(game_DEPS) \
-						thirdparty/Tao/Tao.OpenAl.dll thirdparty/Tao/Tao.FreeType.dll thirdparty/Lidgren.Network.dll
+						thirdparty/Tao/Tao.OpenAl.dll thirdparty/Tao/Tao.FreeType.dll
 game_FLAGS			= -win32icon:OpenRA.Game/OpenRA.ico
 PROGRAMS 			+= game
 game: $(game_TARGET)
@@ -105,7 +105,7 @@ editor_SRCS			:= $(shell find OpenRA.Editor/ -iname '*.cs')
 editor_TARGET			= OpenRA.Editor.exe
 editor_KIND			= winexe
 editor_DEPS			= $(fileformats_TARGET) $(game_TARGET)
-editor_LIBS			= $(COMMON_LIBS) System.Windows.Forms.dll System.Data.dll $(editor_DEPS)
+editor_LIBS			= $(COMMON_LIBS) System.Windows.Forms.dll System.Data.dll $(editor_DEPS) 
 editor_EXTRA		= -resource:OpenRA.Editor.Form1.resources -resource:OpenRA.Editor.MapSelect.resources
 editor_FLAGS		= -win32icon:OpenRA.Editor/OpenRA.Editor.Icon.ico
 
@@ -150,7 +150,7 @@ utility_SRCS		:= $(shell find OpenRA.Utility/ -iname '*.cs')
 utility_TARGET		= OpenRA.Utility.exe
 utility_KIND		= exe
 utility_DEPS        = $(fileformats_TARGET) $(game_TARGET)
-utility_LIBS        = $(COMMON_LIBS) $(utility_DEPS) thirdparty/ICSharpCode.SharpZipLib.dll System.Windows.Forms.dll  thirdparty/Lidgren.Network.dll
+utility_LIBS        = $(COMMON_LIBS) $(utility_DEPS) thirdparty/ICSharpCode.SharpZipLib.dll System.Windows.Forms.dll thirdparty/Lidgren.Network.dll
 PROGRAMS 			+= utility
 utility: $(utility_TARGET)
 
@@ -220,8 +220,8 @@ install: all
 	@cp -r cg $(INSTALL_DIR)
 	@cp *.ttf $(INSTALL_DIR)
 	@cp --parents -r thirdparty/Tao $(INSTALL_DIR)
-	@$(INSTALL_PROGRAM)thirdparty/ICSharpCode.SharpZipLib.dll $(INSTALL_DIR)
-	@$(INSTALL_PROGRAM)thirdparty/Lidgren.Network.dll $(INSTALL_DIR)
+	@$(INSTALL_PROGRAM) thirdparty/ICSharpCode.SharpZipLib.dll $(INSTALL_DIR)
+	@$(INSTALL_PROGRAM) thirdparty/Lidgren.Network.dll $(INSTALL_DIR)
 	
 
 	@echo "#!/bin/sh" > openra

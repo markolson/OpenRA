@@ -23,6 +23,7 @@ namespace OpenRA.Network
 		public readonly string Map = null;
 		public readonly string[] Mods = { };
 		public readonly int TTL = 0;
+		public bool Local = false;
 
 		public Dictionary<string, string> UsefulMods
 		{

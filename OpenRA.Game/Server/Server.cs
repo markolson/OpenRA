@@ -146,7 +146,6 @@ namespace OpenRA.Server
 
 		public void GotMessage(object peer)
 		{
-			Log.Write("debug", "hey, a thing!");
 			NetIncomingMessage im;
 			while ((im = announcer.ReadMessage()) != null)
 			{
