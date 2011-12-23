@@ -15,6 +15,8 @@ using System.Drawing;
 using OpenRA.FileFormats;
 using OpenRA.Network;
 using OpenRA.Widgets;
+using System.Threading;
+using Lidgren.Network;
 
 namespace OpenRA.Mods.RA.Widgets.Logic
 {
@@ -22,9 +24,11 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 	{
 		GameServer currentServer;
 		ScrollItemWidget serverTemplate;
+		public static Widget panel;
 
 		enum SearchStatus { Fetching, Failed, NoGames, Hidden }
 		SearchStatus searchStatus = SearchStatus.Fetching;
+		public static NetClient searcher;
 
 		public string ProgressLabelText()
 		{
@@ -36,11 +40,11 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 				default:					return "";
 			}
 		}
-
+		
 		[ObjectCreator.UseCtor]
 		public ServerBrowserLogic(Widget widget, Action openLobby, Action onExit)
 		{
-			var panel = widget;
+			panel = widget;
 			var sl = panel.GetWidget<ScrollPanelWidget>("SERVER_LIST");
 
 			// Menu buttons
@@ -79,8 +83,62 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 			progressText.IsVisible = () => searchStatus != SearchStatus.Hidden;
 			progressText.GetText = ProgressLabelText;
 
-			ServerList.Query(games => RefreshServerList(panel, games));
+			//ServerList.Query(games => RefreshServerList(panel, games));
+
+			var context = new SynchronizationContext();
+			// set this context for this thread.
+			SynchronizationContext.SetSynchronizationContext(context);
+			
+			NetPeerConfiguration config = new NetPeerConfiguration("OpenRA");
+			config.EnableMessageType(NetIncomingMessageType.DiscoveryResponse);
+			config.EnableMessageType(NetIncomingMessageType.DebugMessage);
+			config.AutoFlushSendQueue = false;
+			searcher = new NetClient(config);
+			Log.Write("debug", "Thread {0} {1}", System.Threading.Thread.CurrentThread.ManagedThreadId, SynchronizationContext.Current);
+			searcher.RegisterReceivedCallback(new SendOrPostCallback(this.GotMessage)); 
+			SynchronizationContext.SetSynchronizationContext(null);
+			searcher.Start();
+			searcher.DiscoverLocalPeers(14242);
 		}
+
+		public void GotMessage(object peer)
+		{
+			NetIncomingMessage im;
+			while ((im = searcher.ReadMessage()) != null)
+			{
+				// handle incoming message
+				switch (im.MessageType)
+				{
+			        case NetIncomingMessageType.DiscoveryResponse:
+			            Log.Write("debug", "Found server at " + im.SenderEndpoint);
+						var str = im.ReadString();
+						var yaml = MiniYaml.FromString(str);
+
+						var games = yaml.Select(a => FieldLoader.Load<GameServer>(a.Value))
+							.Where(gs => gs.Address != null).ToArray();
+						foreach(var g in games) 
+						{
+							g.Address = im.SenderEndpoint.Address.ToString();
+						}
+						RefreshServerList(panel, games);
+			            break;
+					case NetIncomingMessageType.VerboseDebugMessage:
+						break;
+					case NetIncomingMessageType.StatusChanged:
+						NetConnectionStatus status = (NetConnectionStatus)im.ReadByte();
+						string reason = im.ReadString();
+						Log.Write("debug", "StatusChanged: {0}", reason);
+						break;
+					case NetIncomingMessageType.Data:
+						string data = im.ReadString();
+						Log.Write("debug", "Data: {0}", data);
+						break;
+					default:
+						break;
+				}
+			}
+		}
+
 
 		string GetPlayersLabel(GameServer game)
 		{

@@ -17,7 +17,7 @@ namespace OpenRA.Network
 	{
 		public readonly int Id = 0;
 		public readonly string Name = null;
-		public readonly string Address = null;
+		public string Address = null;
 		public readonly int State = 0;
 		public readonly int Players = 0;
 		public readonly string Map = null;

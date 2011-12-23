@@ -20,6 +20,8 @@ using OpenRA.FileFormats;
 using OpenRA.GameRules;
 using OpenRA.Network;
 
+using Lidgren.Network;
+
 namespace OpenRA.Server
 {
 	public class Server
@@ -29,6 +31,7 @@ namespace OpenRA.Server
 
 		// Pre-verified player connections
 		public List<Connection> preConns = new List<Connection>();
+		public static NetServer announcer;
 
 		TcpListener listener = null;
 		Dictionary<int, List<Connection>> inFlightFrames
@@ -58,6 +61,23 @@ namespace OpenRA.Server
 			Ip = localEndpoint.Address;
 			Port = localEndpoint.Port;
 
+			NetPeerConfiguration config = new NetPeerConfiguration("OpenRA");
+			config.EnableMessageType(NetIncomingMessageType.ConnectionApproval);
+			config.EnableMessageType(NetIncomingMessageType.DiscoveryRequest);
+			config.EnableMessageType(NetIncomingMessageType.DebugMessage);
+			config.Port = 14242;
+			config.MaximumTransmissionUnit = 8191;
+			config.AutoExpandMTU = true;
+			announcer = new NetServer(config);
+
+			var context = new SynchronizationContext();
+			// set this context for this thread.
+			SynchronizationContext.SetSynchronizationContext(context);
+			announcer.RegisterReceivedCallback(new SendOrPostCallback(this.GotMessage)); 
+			announcer.Start();
+			
+			SynchronizationContext.SetSynchronizationContext(null);
+			
 			Settings = settings;
 			ModData = modData;
 
@@ -116,10 +136,48 @@ namespace OpenRA.Server
 
 				preConns.Clear();
 				conns.Clear();
-				try { listener.Stop(); }
+				try { 
+					listener.Stop(); 
+					announcer.Shutdown("Done announcing. Go away");
+				 }
 				catch { }
 			} ) { IsBackground = true }.Start();
 		}
+
+		public void GotMessage(object peer)
+		{
+			Log.Write("debug", "hey, a thing!");
+			NetIncomingMessage im;
+			while ((im = announcer.ReadMessage()) != null)
+			{
+				// handle incoming message
+				switch (im.MessageType)
+				{
+					case NetIncomingMessageType.DiscoveryRequest:
+						NetOutgoingMessage response = announcer.CreateMessage();
+
+						var nodes = new List<MiniYamlNode>();
+						nodes.Add( new MiniYamlNode("Id", lobbyInfo.GlobalSettings.RandomSeed.ToString() ) );
+						nodes.Add( new MiniYamlNode("Name", lobbyInfo.GlobalSettings.ServerName) );
+						nodes.Add( new MiniYamlNode("Address", "0.0.0.0") );
+						nodes.Add( new MiniYamlNode("State", "1") );
+						nodes.Add( new MiniYamlNode("Players", lobbyInfo.Clients.Count.ToString()) );
+						nodes.Add( new MiniYamlNode("Map", lobbyInfo.GlobalSettings.Map) );
+						nodes.Add( new MiniYamlNode("Mods",Game.CurrentMods.Select(f => "{0}@{1}".F(f.Key, f.Value.Version)).JoinWith(",")) );
+						nodes.Add( new MiniYamlNode("TTL", "0") );
+						var clientData = new List<MiniYamlNode>();
+						clientData.Add(new MiniYamlNode("Game@0", new MiniYaml( null, nodes ) ));
+						var s = clientData.WriteToString();
+						s = s.Replace("{", "{{").Replace("}", "}}"); //hahaha so dumb. I am so dumb. This is so dumb.
+						response.Write(s);
+
+						// Send the response to the sender of the request
+						announcer.SendDiscoveryResponse(response, im.SenderEndpoint);
+						break;
+				}
+			}
+		}
+
 
 		/* lobby rework todo:
 		 *	- "teams together" option for team games -- will eliminate most need
