@@ -44,8 +44,8 @@ Player:
 	PlayerColorPalette:
 		BasePalette: terrain
 		PaletteFormat: cnc
-	SurrenderOnDisconnect:
-	
+	BaseAttackNotifier:
+
 World:
 	LoadWidgetAtGameStart:
 		Widget: INGAME_ROOT

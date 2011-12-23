@@ -121,9 +121,6 @@ namespace OpenRA
 			FieldLoader.Load(this, yaml);
 			Uid = ComputeHash();
 
-			// 'Simple' metadata
-			FieldLoader.Load( this, yaml );
-
 			// Support for formats 1-3 dropped 2011-02-11.
 			// Use release-20110207 to convert older maps to format 4
 			// Use release-20110511 to convert older maps to format 5
@@ -140,11 +137,8 @@ namespace OpenRA
 			Actors = Lazy.New(() =>
 			{
 				var ret =  new Dictionary<string, ActorReference>();
-				// Load actors
 				foreach (var kv in yaml.NodesDict["Actors"].NodesDict)
 					ret.Add(kv.Key, new ActorReference(kv.Value.Value, kv.Value.NodesDict));
-
-				// Add waypoint actors
 				return ret;
 			});
 
@@ -162,23 +156,20 @@ namespace OpenRA
 				return ret;
 			});
 
-
-			// Rules
-			Rules = yaml.NodesDict["Rules"].Nodes;
-
-			// Sequences
-			Sequences = (yaml.NodesDict.ContainsKey("Sequences")) ? yaml.NodesDict["Sequences"].Nodes : new List<MiniYamlNode>();
-
-			// Weapons
-			Weapons = (yaml.NodesDict.ContainsKey("Weapons")) ? yaml.NodesDict["Weapons"].Nodes : new List<MiniYamlNode>();
-
-			// Voices
-			Voices = (yaml.NodesDict.ContainsKey("Voices")) ? yaml.NodesDict["Voices"].Nodes : new List<MiniYamlNode>();
+			Rules = NodesOrEmpty(yaml, "Rules");
+			Sequences = NodesOrEmpty(yaml, "Sequences");
+			Weapons = NodesOrEmpty(yaml, "Weapons");
+			Voices = NodesOrEmpty(yaml, "Voices");
 
 			CustomTerrain = new string[MapSize.X, MapSize.Y];
 
 			MapTiles = Lazy.New(() => LoadMapTiles());
 			MapResources = Lazy.New(() => LoadResourceTiles());
+		}
+
+		static List<MiniYamlNode> NodesOrEmpty(MiniYaml y, string s)
+		{
+			return y.NodesDict.ContainsKey(s) ? y.NodesDict[s].Nodes : new List<MiniYamlNode>();
 		}
 
 		public void Save(string toPath)
@@ -235,7 +226,7 @@ namespace OpenRA
 				Path = toPath;
 
 				// Create a new map package
-				// TODO: Add other files (resources, rules) to the entries list
+				// TODO: Add other files (custom assets) to the entries list
 				Container = FileSystem.CreatePackage(Path, int.MaxValue, entries);
 			}
 
