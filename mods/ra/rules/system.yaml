@@ -130,11 +130,11 @@ Player:
 		SquadSize: 10
 	PlayerColorPalette:
 		BasePalette: terrain
-	SurrenderOnDisconnect:
 	DebugResourceCash:
 	DebugResourceOre:
 	DebugResourceOreCapacity:
 	GpsWatcher:
+	BaseAttackNotifier:
 
 World:	
 	OpenWidgetAtGameStart:

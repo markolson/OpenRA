@@ -17,25 +17,21 @@ using OpenRA.Graphics;
 
 namespace OpenRA.Widgets
 {
-	public abstract class Widget
+	public static class Ui
 	{
-		public static Widget RootWidget
-		{
-			get { return rootWidget; }
-			set { rootWidget = value; }
-		}
+		public static Widget Root = new ContainerWidget();
 
-		static Widget rootWidget = new ContainerWidget();
 		static Stack<Widget> WindowList = new Stack<Widget>();
+
 		public static Widget SelectedWidget;
 		public static Widget MouseOverWidget;
 
 		public static void CloseWindow()
 		{
 			if (WindowList.Count > 0)
-				RootWidget.RemoveChild(WindowList.Pop());
+				Root.RemoveChild(WindowList.Pop());
 			if (WindowList.Count > 0)
-				rootWidget.AddChild(WindowList.Peek());
+				Root.AddChild(WindowList.Peek());
 		}
 
 		public static Widget OpenWindow(string id)
@@ -45,9 +41,9 @@ namespace OpenRA.Widgets
 
 		public static Widget OpenWindow(string id, WidgetArgs args)
 		{
-			var window = Game.modData.WidgetLoader.LoadWidget(args, rootWidget, id);
+			var window = Game.modData.WidgetLoader.LoadWidget(args, Root, id);
 			if (WindowList.Count > 0)
-				rootWidget.RemoveChild(WindowList.Peek());
+				Root.RemoveChild(WindowList.Peek());
 			WindowList.Push(window);
 			return window;
 		}
@@ -57,17 +53,11 @@ namespace OpenRA.Widgets
 			return Game.modData.WidgetLoader.LoadWidget(args, parent, id);
 		}
 
-		public static void DoTick()
-		{
-			RootWidget.TickOuter();
-		}
+		public static void Tick() { Root.TickOuter(); }
 
-		public static void DoDraw()
-		{
-			RootWidget.DrawOuter();
-		}
+		public static void Draw() { Root.DrawOuter(); }
 
-		public static bool DoHandleInput(MouseInput mi)
+		public static bool HandleInput(MouseInput mi)
 		{
 			var wasMouseOver = MouseOverWidget;
 
@@ -78,7 +68,7 @@ namespace OpenRA.Widgets
 			if (SelectedWidget != null && SelectedWidget.HandleMouseInputOuter(mi))
 				handled = true;
 
-			if (!handled && RootWidget.HandleMouseInputOuter(mi))
+			if (!handled && Root.HandleMouseInputOuter(mi))
 				handled = true;
 
 			if (mi.Event == MouseInputEvent.Move)
@@ -99,24 +89,27 @@ namespace OpenRA.Widgets
 			return handled;
 		}
 
-		public static bool DoHandleKeyPress(KeyInput e)
+		public static bool HandleKeyPress(KeyInput e)
 		{
 			if (SelectedWidget != null)
 				return SelectedWidget.HandleKeyPressOuter(e);
 
-			if (RootWidget.HandleKeyPressOuter(e))
+			if (Root.HandleKeyPressOuter(e))
 				return true;
 			return false;
 		}
 
 		public static void ResetAll()
 		{
-			RootWidget.RemoveChildren();
+			Root.RemoveChildren();
 
-			while (Widget.WindowList.Count > 0)
-				Widget.CloseWindow();
+			while (WindowList.Count > 0)
+				CloseWindow();
 		}
+	}
 
+	public abstract class Widget
+	{
 		// Info defined in YAML
 		public string Id = null;
 		public string X = "0";
@@ -226,6 +219,7 @@ namespace OpenRA.Widgets
 		}
 
 		public virtual Rectangle EventBounds { get { return RenderBounds; } }
+
 		public virtual Rectangle GetEventBounds()
 		{
 			return Children
@@ -234,16 +228,17 @@ namespace OpenRA.Widgets
 				.Aggregate(EventBounds, Rectangle.Union);
 		}
 
-		public bool Focused { get { return SelectedWidget == this; } }
+		public bool Focused { get { return Ui.SelectedWidget == this; } }
+
 		public virtual bool TakeFocus(MouseInput mi)
 		{
 			if (Focused)
 				return true;
 
-			if (SelectedWidget != null && !SelectedWidget.LoseFocus(mi))
+			if (Ui.SelectedWidget != null && !Ui.SelectedWidget.LoseFocus(mi))
 				return false;
 
-			SelectedWidget = this;
+			Ui.SelectedWidget = this;
 			return true;
 		}
 
@@ -256,8 +251,8 @@ namespace OpenRA.Widgets
 
 		public virtual bool LoseFocus()
 		{
-			if (SelectedWidget == this)
-				SelectedWidget = null;
+			if (Ui.SelectedWidget == this)
+				Ui.SelectedWidget = null;
 
 			return true;
 		}
@@ -290,17 +285,17 @@ namespace OpenRA.Widgets
 			if (!(Focused || (IsVisible() && GetEventBounds().Contains(mi.Location))))
 				return false;
 
-			var oldMouseOver = MouseOverWidget;
+			var oldMouseOver = Ui.MouseOverWidget;
 			// Send the event to the deepest children first and bubble up if unhandled
 			foreach (var child in Children.OfType<Widget>().Reverse())
 				if (child.HandleMouseInputOuter(mi))
 					return true;
 
 			if (IgnoreChildMouseOver)
-				MouseOverWidget = oldMouseOver;
+				Ui.MouseOverWidget = oldMouseOver;
 
-			if (mi.Event == MouseInputEvent.Move && MouseOverWidget == null && !IgnoreMouseOver)
-				MouseOverWidget = this;
+			if (mi.Event == MouseInputEvent.Move && Ui.MouseOverWidget == null && !IgnoreMouseOver)
+				Ui.MouseOverWidget = this;
 
 			return HandleMouseInput(mi);
 		}
