@@ -2,8 +2,9 @@ var RAMAP = {};
 RAMAP.BYTE_MAX_VALUE = 255;
 RAMAP.CHUNK_SIZE = 24;
 RAMAP.CANVAS_SIZE = 128;
-RAMAP.CANVAS_WIDTH = 900;
-RAMAP.CANVAS_HEIGHT = 900;
+RAMAP.CANVAS_WIDTH = 700;
+RAMAP.CANVAS_HEIGHT = 700;
+RAMAP.PICKER_WIDTH = 300;
 RAMAP.DEFAULT_SCALE = 12;
 
 RAMAP.MAX_ZOOM = 42;
@@ -54,7 +55,7 @@ RAMAP.init = function (){
   RAMAP.tileset = RAMAP.tilesets["snow"];
 
   RAMAP.mapView = RAMAP.newMapView();
-  RAMAP.mapView.init("map_window", 900, 900, RAMAP.DEFAULT_SCALE, RAMAP.onMapClick, RAMAP.onMapUp);
+  RAMAP.mapView.init("map_window", RAMAP.CANVAS_WIDTH, RAMAP.CANVAS_HEIGHT, RAMAP.DEFAULT_SCALE, RAMAP.onMapClick, RAMAP.onMapUp);
   RAMAP.canvas = RAMAP.mapView.canvas;
   RAMAP.ctx = RAMAP.mapView.ctx;
 

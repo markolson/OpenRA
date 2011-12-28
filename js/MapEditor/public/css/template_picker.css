@@ -23,13 +23,24 @@
   background: #999;
 }
 
-#scroll_pane {
-  width:500px;
-  height:900px;
-  overflow-y:scroll;
+#picker_window {
+  width:300px;
+  height:700px;
   float: left;
-  /**border: 1px solid #000;*/
   background: #444;
+}
+
+#picker_menu {
+  font-size: .9em;
+  /**width: 500px;*/
+  height: 25px;
+  padding-top: 2px;
+}
+
+#scroll_pane {
+  height: 675px;
+  overflow-y:scroll;
+  /**border: 1px solid #000;*/
 }
 
 

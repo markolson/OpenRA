@@ -195,9 +195,14 @@ RAMAP.newMapView = function(){
             tile.render(MapView.ctx, tileset, indexI+shiftX, indexJ+shiftY, scale);
           }
           else{
+            MapView.ctx.fillStyle = "#806E62";
+            MapView.ctx.fillRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
+            MapView.ctx.strokeStyle = "#333333";
+            MapView.ctx.strokeRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
+            MapView.ctx.fillStyle = "#333333";
             MapView.ctx.fillText( tile.templateID, (indexI +shiftX)*scale, (indexJ+shiftY)*scale+10);
             MapView.ctx.fillText( tile.index, (indexI+shiftX)*scale+1, (indexJ+shiftY)*scale+20);
-            MapView.ctx.strokeRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
+
           }
           
         }
@@ -208,22 +213,22 @@ RAMAP.newMapView = function(){
       var mousePos = MapView.stage.getMousePos();
       //action(mousePos.x - 500, mousePos.y);
       //MapView.draggingRect = false;
-      var mapCoords = MapView.getMapCoords(mousePos.x - 500, mousePos.y);
-      MapView.clickCallback(mousePos.x - 500, mousePos.y, mapCoords[0], mapCoords[1]);
+      var mapCoords = MapView.getMapCoords(mousePos.x - RAMAP.PICKER_WIDTH, mousePos.y);
+      MapView.clickCallback(mousePos.x - RAMAP.PICKER_WIDTH, mousePos.y, mapCoords[0], mapCoords[1]);
     },
     onMouseMove: function(isTileCursor){
       var mousePos = MapView.stage.getMousePos();
       //console.log("mouseMove");
       if ( MapView.isTileCursor ){
         MapView.dragImg.setScale(MapView.scale/RAMAP.CHUNK_SIZE);
-        MapView.dragImg.x = Math.floor((mousePos.x - 500) / MapView.scale) * MapView.scale;
+        MapView.dragImg.x = Math.floor((mousePos.x - RAMAP.PICKER_WIDTH) / MapView.scale) * MapView.scale;
         MapView.dragImg.y = Math.floor((mousePos.y ) / MapView.scale) * MapView.scale;
         if( MapView.isDown ){
           MapView.onMouseClick();
         }
       }else{
         MapView.dragImg.setScale(1);
-        MapView.dragImg.x = Math.floor(mousePos.x - 500);
+        MapView.dragImg.x = Math.floor(mousePos.x - RAMAP.PICKER_WIDTH);
         MapView.dragImg.y = Math.floor(mousePos.y ); 
       }
       MapView.stage.draw();
@@ -232,8 +237,8 @@ RAMAP.newMapView = function(){
       var mousePos = MapView.stage.getMousePos();
       //action(mousePos.x - 500, mousePos.y);
       //MapView.draggingRect = false;
-      var mapCoords = MapView.getMapCoords(mousePos.x - 500, mousePos.y);
-      MapView.upCallback(mousePos.x - 500, mousePos.y, mapCoords[0], mapCoords[1]);
+      var mapCoords = MapView.getMapCoords(mousePos.x - RAMAP.PICKER_WIDTH, mousePos.y);
+      MapView.upCallback(mousePos.x - RAMAP.PICKER_WIDTH, mousePos.y, mapCoords[0], mapCoords[1]);
     }
   }
   return MapView;

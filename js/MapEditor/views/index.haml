@@ -27,11 +27,17 @@
     %button(onclick="RAMAP.mapView.zoomIn();") [+]
     %button(onclick="RAMAP.mapView.zoomOut();") [-]
 #app
-  %span(id="picker_window")
-    #scroll_pane
-      #template_picker
-        #height_1(class="height")
-        #height_2(class="height")
-        #height_3(class="height")
-        #height_4(class="height")
+  %span
+    #picker_window 
+      #picker_menu
+        %button(onclick="RAMAP.showTemplates();") Templates
+        %button(onclick="RAMAP.showResources();") Resources
+        %button(onclick="RAMAP.showActors();") Actors
+      #scroll_pane
+        #template_picker
+          #height_1(class="height")
+          #height_2(class="height")
+          #height_3(class="height")
+          #height_4(class="height")
   %span(id="map_window")
+    %canvas( id="resources" style="position: absolute; z-index: 1;" width="900" height="900" )
