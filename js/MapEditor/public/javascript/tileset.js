@@ -96,12 +96,7 @@ RAMAP.newTile = function(){
     render: function(ctx, tileset, posX, posY, scale){
       var template = tileset.templates[Tile.templateID];
       if( template !== undefined){
-        //special casing this because I don't want to figure this out right now.
-        if ( Tile.templateID === RAMAP.TERRAIN_ID ){
-          var chunk = template.chunks[0];
-        }else{
-          var chunk = template.chunks[Tile.index];
-        }
+        var chunk = template.chunks[Tile.index];
         if (chunk !== undefined && chunk.visible){
           //console.log( template.chunks );
           //console.log( Tile.templateID + " " + template.source.image.src + " " + Tile.index + " chunk:" + chunk.x + " " + chunk.y + "scale " + RAMAP.CHUNK_SIZE );

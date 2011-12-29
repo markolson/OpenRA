@@ -1,14 +1,14 @@
 General:
-	Name: Snow
-	Id: SNOW
-	Extensions: .sno, .shp, .tem
-	Palette: snow.pal
+	Name: Temperate
+	Id: TEMPERAT
+	Extensions: .tem, .shp
+	Palette: temperat.pal
 
 Terrain:
 	TerrainType@Clear:
 		Type: Clear
 		AcceptSmudge: True
-		Color: 196, 196, 196
+		Color: 40, 68, 40
 	TerrainType@Water:
 		Type: Water
 		IsWater: true
@@ -2251,7 +2251,7 @@ Templates:
 			5: River
 			6: River
 			7: River
-			8: Rough
+			8: River
 			9: Rock
 			10: River
 			11: Rock
@@ -2876,4 +2876,3 @@ Templates:
 		Tiles:
 			0: Rock
 			1: Rock
-

@@ -83,7 +83,10 @@ RAMAP.newMapIO = function(){
 
       for( var i = 0; i < width; i++ ){
         for( var j = 0; j < width; j++ ){
-          MapIO.mapData.addTile(i,j, RAMAP.TERRAIN_ID, 0);
+          if( i % 4 === 0 && j % 4 === 0){
+            MapIO.mapData.addTemplate(i,j, RAMAP.TERRAIN_ID);
+          }
+          MapIO.mapData.addResource(i,j, 0, 0);
         }
       }
     },
