@@ -75,7 +75,7 @@ RAMAP.newMapIO = function(){
         };
       }
     },
-    newMap: function( width, height ){
+    newMap: function( width, height, tileset){
       console.log(width);
       console.log(height);
       MapIO.mapData = RAMAP.newMapData();
@@ -84,7 +84,7 @@ RAMAP.newMapIO = function(){
       for( var i = 0; i < width; i++ ){
         for( var j = 0; j < width; j++ ){
           if( i % 4 === 0 && j % 4 === 0){
-            MapIO.mapData.addTemplate(i,j, RAMAP.TERRAIN_ID);
+            MapIO.mapData.addTemplate(i,j, tileset.templates[RAMAP.TERRAIN_ID]);
           }
           MapIO.mapData.addResource(i,j, 0, 0);
         }
@@ -244,6 +244,7 @@ RAMAP.newMapData = function(){
       }
       var tile = RAMAP.newTile();
       tile.init( templateID, index, i, j );
+      //console.log( "added tile at " + i + ":" + j + " - " + index ); 
       MapData.tiles[i][j] = tile;
     },
     getTile: function(i,j){
@@ -259,6 +260,7 @@ RAMAP.newMapData = function(){
       MapData.resources[i][j] = null;
     },
     addTemplate: function(x,y, template){
+      //console.log("add template at index: " + x + ": " +y);  
       var index = 0;
       for ( var j = 0; j < template.height; j++){
         for ( var i = 0; i < template.width; i++){

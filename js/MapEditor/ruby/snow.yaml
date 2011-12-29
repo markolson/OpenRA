@@ -51,7 +51,7 @@ Templates:
 	Template@255:
 		Id: 255
 		Image: clear1
-		Size: 4,4
+		Size: 4,5
 		Tiles:
 			0: Clear
 			1: Clear
@@ -69,10 +69,14 @@ Templates:
 			13: Clear
 			14: Clear
 			15: Clear
+			16: Clear
+			17: Clear
+			18: Clear
+			19: Clear
 	Template@65535:
 		Id: 65535
 		Image: clear1
-		Size: 4,4
+		Size: 4,5
 		Tiles:
 			0: Clear
 			1: Clear
@@ -90,6 +94,10 @@ Templates:
 			13: Clear
 			14: Clear
 			15: Clear
+			16: Clear
+			17: Clear
+			18: Clear
+			19: Clear
 	Template@3:
 		Id: 3
 		Image: sh01

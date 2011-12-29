@@ -46,7 +46,7 @@ RAMAP.newMap = function(){
   //$("#instructions").hide();
   //$("#menu").show();
   //$("#app").show();
-  RAMAP.mapIO.newMap( Number( $("#new_width").val()), Number($("#new_height").val()) );
+  RAMAP.mapIO.newMap( Number( $("#new_width").val()), Number($("#new_height").val()), RAMAP.tileset );
   RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
 }
 
