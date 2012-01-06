@@ -2,14 +2,22 @@ RAMAP.newTileset = function(){
   var Tileset = {
     name: 0,
     templateMapSrcPath: 0,
-    imgPath: 0,
+    resourceMapSrcPath: 0,
+    templateImgPath: 0,
+    resourceImgPath: 0,
+    actorImgPath: 0,
     templateMap: {},
+    resourceMap: {},
     templates: {},
+    rsrcTemplates: {},
     sources: {},
-    init: function(name, templateMapSrcPath, imgPath){
+    init: function(name, templateMapSrcPath, templateImgPath, resourceMapSrcPath){
      Tileset.name = name;
      Tileset.templateMapSrcPath = templateMapSrcPath;// 'ajax/snow.json'
-     Tileset.imgPath = imgPath;// "/images/ramap/Snow/"
+     Tileset.resourceMapSrcPath = resourceMapSrcPath;// 'ajax/resources.json'
+     Tileset.templateImgPath = templateImgPath;// "/images/ramap/Snow/"
+     Tileset.resourceImgPath = templateImgPath + "/Resources/";// "/images/ramap/Snow/Resources"
+     Tileset.actorImgPath = templateImgPath + "/Actors/";// "/images/ramap/Snow/Actors"
     },
     loadTemplates: function(callback){
       console.log("loading templates");
@@ -24,7 +32,7 @@ RAMAP.newTileset = function(){
           //items.push( val["path"] + ".png" );
           var tm = Tileset.templateMap[key];
           var template = RAMAP.newTemplate();
-          template.init(key, tm.path, tm.width, tm.height, Tileset.imgPath, tm.visibleChunks );
+          template.init(key, tm.path, tm.width, tm.height, Tileset.templateImgPath, tm.visibleChunks );
           template.source.image.onload = function(){
             //console.log("loaded");
             //console.log(template.source.image);
@@ -40,15 +48,87 @@ RAMAP.newTileset = function(){
               callback.call(this);
             }
           }
-          Tileset.sources[key] = template.source;
+          //Tileset.sources[key] = template.source;
           Tileset.templates[key] = template;
         });
       });
+    },
+    loadResources: function(callback){
+      $.getJSON( Tileset.resourceMapSrcPath, function(data) {
+        var imageCount = Object.keys(data).length;
+        var loadedCount = 0; 
+        $.each(data, function(key, val) {
+          Tileset.resourceMap[key] = val
+          //console.log( key + " " + val["path"] );
+          //items.push( val["path"] + ".png" );
+          var rm = Tileset.resourceMap[key];
+          var template = RAMAP.newRsrcTemplate();
+          //create a resource for each index of a resource?
+          template.init(rm.resource, rm.path, rm.width, rm.height, Tileset.resourceImgPath);
+          resource.source.image.onload = function(){
+            //console.log("loaded");
+            //console.log(template.source.image);
+            loadedCount++
+            if ( loadedCount == imageCount ){
+              //imagesLoaded();
+              //add templates to template picker
+              for ( key in Tileset.rsrcTemplates){
+                  //console.log(RAMAP.templates[key]);
+                  var temp = Tileset.rsrcTemplates[key];
+                  $("#height_"+temp.height).append('<input type="image" class="'+ Tileset.name + ' resource" src="' + temp.source.image.src + '" id="'+key+'" onclick="RAMAP.toolPalette.setTool('+key+')" >');
+              }
+              callback.call(this);
+            }
+          }
+          //Tileset.sources[key] = template.source;
+          Tileset.rsrcTemplates[key] = resource;       
+        });
+      }
+    },
+    loadActors: function(callback){
     }
   }
   return Tileset;
-}
+};
 
+RAMAP.newRsrcTemplate = function(){
+  var RsrcTemplate = {
+    template: 0,
+    init: function( id, name, width, height, imgPath){
+      var visibleChunks = [];
+      //all resource chunks are visible
+      for( var i = 0; i < width; i++){ visibleChunks.push(1); };
+      template = RAMAP.newTemplate();
+      template.init( id, name, width, height, imgPath, visibleChunks);
+    }
+  };
+  return RsrcTemplate;
+}
+/**
+RAMAP.newResource = function(){
+  var Resource = {
+    resource: 0,
+    index: 0,
+    path: 0,
+    width: 0,
+    height: 0,
+    imgPath: 0,
+    source: 0,
+    init: function( resource, index, path, width, height, imgPath){
+      Resource.resource = resource;
+      Resource.index = index;
+      Resource.path = path;
+      Resource.width = width;
+      Resource.height = height;
+      Resource.imgPath = imgPath;
+      Resource.source = RAMAP.newSourceImage();
+      Resource.source.init( imgPath + path + ".png")
+    },
+    render: function( index )
+  };
+  return Resource;
+}
+*/
 RAMAP.newTemplate = function(){
   var Template = {
     id: 0,
@@ -93,8 +173,8 @@ RAMAP.newTile = function(){
       Tile.x = x;
       Tile.y = y;
       },
-    render: function(ctx, tileset, posX, posY, scale){
-      var template = tileset.templates[Tile.templateID];
+    render: function(ctx, templateSrc, posX, posY, scale){
+      var template = templateSrc[Tile.templateID];
       if( template !== undefined){
         var chunk = template.chunks[Tile.index];
         if (chunk !== undefined && chunk.visible){

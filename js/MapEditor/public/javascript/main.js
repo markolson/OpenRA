@@ -55,7 +55,7 @@ RAMAP.init = function (){
   RAMAP.tileset = RAMAP.tilesets["snow"];
 
   RAMAP.mapView = RAMAP.newMapView();
-  RAMAP.mapView.init("map_window", RAMAP.CANVAS_WIDTH, RAMAP.CANVAS_HEIGHT, RAMAP.DEFAULT_SCALE, RAMAP.onMapClick, RAMAP.onMapUp);
+  RAMAP.mapView.init("map_window", "resources", "actors", RAMAP.CANVAS_WIDTH, RAMAP.CANVAS_HEIGHT, RAMAP.DEFAULT_SCALE, RAMAP.onMapClick, RAMAP.onMapUp);
   RAMAP.canvas = RAMAP.mapView.canvas;
   RAMAP.ctx = RAMAP.mapView.ctx;
 
