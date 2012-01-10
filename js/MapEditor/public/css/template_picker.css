@@ -11,6 +11,11 @@
   display: none;
 }
 
+.resource{
+  width: 24px;
+  height: 24px;
+}
+
 .height input{
   margin: 2px;
   border: 1px solid #555;

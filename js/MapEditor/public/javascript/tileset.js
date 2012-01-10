@@ -16,8 +16,8 @@ RAMAP.newTileset = function(){
      Tileset.templateMapSrcPath = templateMapSrcPath;// 'ajax/snow.json'
      Tileset.resourceMapSrcPath = resourceMapSrcPath;// 'ajax/resources.json'
      Tileset.templateImgPath = templateImgPath;// "/images/ramap/Snow/"
-     Tileset.resourceImgPath = templateImgPath + "/Resources/";// "/images/ramap/Snow/Resources"
-     Tileset.actorImgPath = templateImgPath + "/Actors/";// "/images/ramap/Snow/Actors"
+     Tileset.resourceImgPath = templateImgPath + "Resources/";// "/images/ramap/Snow/Resources"
+     Tileset.actorImgPath = templateImgPath + "Actors/";// "/images/ramap/Snow/Actors"
     },
     loadTemplates: function(callback){
       console.log("loading templates");
@@ -36,8 +36,8 @@ RAMAP.newTileset = function(){
           template.source.image.onload = function(){
             //console.log("loaded");
             //console.log(template.source.image);
-            loadedCount++
-            if ( loadedCount == imageCount ){
+            loadedCount++;
+            if ( loadedCount === imageCount ){
               //imagesLoaded();
               //add templates to template picker
               for ( key in Tileset.templates ){
@@ -54,40 +54,38 @@ RAMAP.newTileset = function(){
       });
     },
     loadResources: function(callback){
+      console.log("loading resource template");
       $.getJSON( Tileset.resourceMapSrcPath, function(data) {
         var imageCount = Object.keys(data).length;
         var loadedCount = 0; 
         $.each(data, function(key, val) {
-          Tileset.resourceMap[key] = val
-          //console.log( key + " " + val["path"] );
-          //items.push( val["path"] + ".png" );
+          Tileset.resourceMap[key] = val;
           var rm = Tileset.resourceMap[key];
-          var template = RAMAP.newRsrcTemplate();
+          var rsrcTemplate = RAMAP.newRsrcTemplate();
           //create a resource for each index of a resource?
-          template.init(rm.resource, rm.path, rm.width, rm.height, Tileset.resourceImgPath);
-          resource.source.image.onload = function(){
-            //console.log("loaded");
-            //console.log(template.source.image);
-            loadedCount++
-            if ( loadedCount == imageCount ){
-              //imagesLoaded();
+          console.log( Tileset.resourceImgPath );
+          rsrcTemplate.init(rm.resource, rm.path, rm.width, rm.height, Tileset.resourceImgPath);
+          var template = rsrcTemplate.template;
+          console.log( template );
+          template.source.image.onload = function(){
+            console.log("rsrc image loaded");
+            loadedCount++;
+            if ( loadedCount === imageCount ){
               //add templates to template picker
               for ( key in Tileset.rsrcTemplates){
-                  //console.log(RAMAP.templates[key]);
                   var temp = Tileset.rsrcTemplates[key];
-                  $("#height_"+temp.height).append('<input type="image" class="'+ Tileset.name + ' resource" src="' + temp.source.image.src + '" id="'+key+'" onclick="RAMAP.toolPalette.setTool('+key+')" >');
+                  $("#height_"+temp.height).append('<input type="image" class="'+ Tileset.name + ' resource" style="background: url(' + temp.source.image.src + ') top right;" id="'+key+'" onclick="RAMAP.toolPalette.setTool('+key+')" >');
               }
               callback.call(this);
             }
-          }
-          //Tileset.sources[key] = template.source;
-          Tileset.rsrcTemplates[key] = resource;       
+          };
+          Tileset.rsrcTemplates[key] = template;       
         });
-      }
+      });
     },
     loadActors: function(callback){
     }
-  }
+  };
   return Tileset;
 };
 
@@ -98,8 +96,8 @@ RAMAP.newRsrcTemplate = function(){
       var visibleChunks = [];
       //all resource chunks are visible
       for( var i = 0; i < width; i++){ visibleChunks.push(1); };
-      template = RAMAP.newTemplate();
-      template.init( id, name, width, height, imgPath, visibleChunks);
+      RsrcTemplate.template = RAMAP.newTemplate();
+      RsrcTemplate.template.init( id, name, width, height, imgPath, visibleChunks);
     }
   };
   return RsrcTemplate;
@@ -231,17 +229,19 @@ RAMAP.newTilesetLoader = function(){
 
       snow.init("snow", 'ajax/snow.json', "/images/ramap/Snow/");
       snow.loadTemplates(TilesetLoader.loadedTemplate);
-      temperate.init("temperate", 'ajax/temperate.json', "/images/ramap/Temperate/");
+      snow.loadResources(TilesetLoader.loadedTemplate);
+      temperate.init("temperate", 'ajax/temperate.json', "/images/ramap/Temperate/", "ajax/resources.json");
       temperate.loadTemplates(TilesetLoader.loadedTemplate);
+      temperate.loadResources(TilesetLoader.loadedTemplate);
     },
     loadedTemplate: function(obj){
       TilesetLoader.loaded++;
       console.log( TilesetLoader.loaded );
-      if ( TilesetLoader.loaded >= Object.keys(RAMAP.tilesets).length ){
+      if ( TilesetLoader.loaded >= (Object.keys(RAMAP.tilesets).length * 2) ){
         console.log("holla");
         TilesetLoader.callback();
       }
-    }
+    },
   };
   return TilesetLoader;
 }

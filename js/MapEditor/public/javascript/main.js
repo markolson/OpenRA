@@ -37,7 +37,7 @@ RAMAP.setTileset = function( tileset ){
       $("."+key).hide();
     }
   }
-  if ( RAMAP.mapIO.mapData.tiles !== 0 ){ 
+  if ( RAMAP.mapIO.mapData.tiles !== 0 && RAMAP.mapIO.mapData.resources !== 0){ 
     RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
   }
 }
@@ -63,6 +63,7 @@ RAMAP.init = function (){
   RAMAP.picker.init("template_picker");
 
   RAMAP.mapIO = RAMAP.newMapIO();
+  console.log("new mapIO");
   RAMAP.mapIO.init(document , RAMAP.onMapRead, RAMAP.onMapWrite);
 
   //create and add tools
