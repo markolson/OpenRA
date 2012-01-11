@@ -43,8 +43,9 @@ RAMAP.newTileset = function(){
               for ( key in Tileset.templates ){
                   //console.log(RAMAP.templates[key]);
                   var temp = Tileset.templates[key];
-                  $("#height_"+temp.height).append('<input type="image" class="'+ Tileset.name + '"src="' + temp.source.image.src + '" id="'+key+'" onclick="RAMAP.toolPalette.setTool('+key+')" >');
+                  $("#height_"+temp.height).append('<input type="image" class="'+ Tileset.name + '"src="' + temp.source.image.src + '" id="'+key+'" onclick="RAMAP.toolPalette.setTool('+key+',\'tileBrush\')" >');
               }
+              console.log("loaded " + Tileset.name);
               callback.call(this);
             }
           }
@@ -54,28 +55,25 @@ RAMAP.newTileset = function(){
       });
     },
     loadResources: function(callback){
-      console.log("loading resource template");
+      console.log("loading resource templates");
       $.getJSON( Tileset.resourceMapSrcPath, function(data) {
         var imageCount = Object.keys(data).length;
         var loadedCount = 0; 
         $.each(data, function(key, val) {
           Tileset.resourceMap[key] = val;
           var rm = Tileset.resourceMap[key];
-          var rsrcTemplate = RAMAP.newRsrcTemplate();
-          //create a resource for each index of a resource?
-          console.log( Tileset.resourceImgPath );
-          rsrcTemplate.init(rm.resource, rm.path, rm.width, rm.height, Tileset.resourceImgPath);
-          var template = rsrcTemplate.template;
-          console.log( template );
+          var template = RAMAP.newTemplate();
+          console.log(Tileset.resourceImgPath);
+          template.init(rm.resource, rm.path, rm.width, rm.height, Tileset.resourceImgPath, [1]);
           template.source.image.onload = function(){
-            console.log("rsrc image loaded");
             loadedCount++;
             if ( loadedCount === imageCount ){
               //add templates to template picker
               for ( key in Tileset.rsrcTemplates){
                   var temp = Tileset.rsrcTemplates[key];
-                  $("#height_"+temp.height).append('<input type="image" class="'+ Tileset.name + ' resource" style="background: url(' + temp.source.image.src + ') top right;" id="'+key+'" onclick="RAMAP.toolPalette.setTool('+key+')" >');
+                  $("#height_"+temp.height).append('<input type="image" class="'+ Tileset.name + ' resource" src="' + temp.source.image.src + '" id="'+key+'" onclick="RAMAP.toolPalette.setTool('+key+',\'rsrcBrush\')" >');
               }
+              console.log("loaded " + temp.source.image.src);
               callback.call(this);
             }
           };
@@ -88,20 +86,20 @@ RAMAP.newTileset = function(){
   };
   return Tileset;
 };
-
+/**
 RAMAP.newRsrcTemplate = function(){
   var RsrcTemplate = {
     template: 0,
     init: function( id, name, width, height, imgPath){
       var visibleChunks = [];
       //all resource chunks are visible
-      for( var i = 0; i < width; i++){ visibleChunks.push(1); };
+      //for( var i = 0; i < width; i++){ visibleChunks.push(1); };
       RsrcTemplate.template = RAMAP.newTemplate();
-      RsrcTemplate.template.init( id, name, width, height, imgPath, visibleChunks);
+      RsrcTemplate.template.init( id, name, width, height, imgPath, [1]);
     }
   };
   return RsrcTemplate;
-}
+}*/
 /**
 RAMAP.newResource = function(){
   var Resource = {
@@ -157,7 +155,27 @@ RAMAP.newTemplate = function(){
     }
   }
   return Template;
-}
+};
+
+RAMAP.newRsrcTile = function(){
+  var RsrcTile = {
+    resource: 0,
+    index: 0,
+    x: 0,
+    y: 0,
+    init: function( resource, index, x, y ){
+      RsrcTile.resource = resource;
+      RsrcTile.index = index;
+      RsrcTile.x = x;
+      RsrcTile.y = y;
+    },
+    render: function(ctx, templateSrc, posX, posY, scale){
+      var template = templateSrc[RsrcTile.resource.toString()+RsrcTile.index.toString()];
+      ctx.drawImage(template.source.image, 0, 0, RAMAP.CHUNK_SIZE, RAMAP.CHUNK_SIZE, posX*scale, posY*scale, scale, scale);
+    }
+  };
+  return RsrcTile;
+};
 
 RAMAP.newTile = function(){
   var Tile = {
@@ -227,7 +245,7 @@ RAMAP.newTilesetLoader = function(){
       var temperate = RAMAP.newTileset();
       RAMAP.tilesets["temperate"] = temperate;
 
-      snow.init("snow", 'ajax/snow.json', "/images/ramap/Snow/");
+      snow.init("snow", 'ajax/snow.json', "/images/ramap/Snow/", "ajax/resources.json");
       snow.loadTemplates(TilesetLoader.loadedTemplate);
       snow.loadResources(TilesetLoader.loadedTemplate);
       temperate.init("temperate", 'ajax/temperate.json', "/images/ramap/Temperate/", "ajax/resources.json");
@@ -236,7 +254,6 @@ RAMAP.newTilesetLoader = function(){
     },
     loadedTemplate: function(obj){
       TilesetLoader.loaded++;
-      console.log( TilesetLoader.loaded );
       if ( TilesetLoader.loaded >= (Object.keys(RAMAP.tilesets).length * 2) ){
         console.log("holla");
         TilesetLoader.callback();

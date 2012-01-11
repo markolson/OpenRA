@@ -5,7 +5,7 @@ RAMAP.newMapView = function(){
     rscCanvas: 0,
     actCanvas: 0,
     ctx: 0,
-    rscCtx: 0,
+    rsrcCtx: 0,
     actCtx: 0,
     height: 0,
     width: 0,
@@ -27,7 +27,7 @@ RAMAP.newMapView = function(){
       MapView.canvas = MapView.stage.getCanvas();
       MapView.ctx = MapView.stage.getContext();
       MapView.rscCanvas = document.getElementById(rscID);
-      MapView.rscCtx = MapView.rscCanvas.getContext('2d');
+      MapView.rsrcCtx = MapView.rscCanvas.getContext('2d');
       MapView.actCanvas = document.getElementById(actID);
       MapView.actCtx = MapView.rscCanvas.getContext('2d');
       MapView.height = height;
@@ -150,6 +150,8 @@ RAMAP.newMapView = function(){
  
      //clear in case of redraw
      MapView.ctx.clearRect ( -1200 , -1200 , 3600, 3600 );
+     MapView.rsrcCtx.clearRect ( -1200 , -1200 , 3600, 3600 );
+     MapView.actCtx.clearRect ( -1200 , -1200 , 3600, 3600 );
 
      if ( mapTiles !== undefined && mapTiles !== null){
       MapView.lastTiles = mapTiles; 
@@ -222,30 +224,23 @@ RAMAP.newMapView = function(){
         var indexI = ( i - shiftX );  
         var indexJ = ( j - shiftY );  
         if ( indexI >= 0 && indexI < RAMAP.CANVAS_SIZE &&  indexJ >= 0 && indexJ < RAMAP.CANVAS_SIZE){
-          var resource = RAMAP.mapIO.mapData.resources[indexI][indexJ];
-          console.log( resource );
-          //tile.render(MapView.rscCtx, tileset.rsrcTemplates, indexI+shiftX, indexJ+shiftY, scale);
-
-/**
+          var resourceTile = RAMAP.mapIO.mapData.resources[indexI][indexJ];
           if (RAMAP.DEBUG === 0 || RAMAP.DEBUG === undefined){
-            tile.render(MapView.ctx, tileset, indexI+shiftX, indexJ+shiftY, scale);
-          }
-          else{
-*/
-          if( resource !== undefined ){
-            MapView.rscCtx.fillStyle = "#806E62";
-            MapView.rscCtx.fillRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
-            MapView.rscCtx.strokeStyle = "#333333";
-            MapView.rscCtx.strokeRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
-            MapView.rscCtx.fillStyle = "#333333";
-            MapView.rscCtx.fillText( resource.resource, (indexI +shiftX)*scale, (indexJ+shiftY)*scale+10);
-            MapView.rscCtx.fillText( resource.index, (indexI+shiftX)*scale+1, (indexJ+shiftY)*scale+20);
+            if( resourceTile.resource !== 0 ){
+              resourceTile.render(MapView.rsrcCtx, tileset.rsrcTemplates, indexI+shiftX, indexJ+shiftY, scale);
+            }
+          }else if( resourceTile !== undefined ){
+              MapView.rsrcCtx.fillStyle = "#806E62";
+              MapView.rsrcCtx.fillRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
+              MapView.rsrcCtx.strokeStyle = "#333333";
+              MapView.rsrcCtx.strokeRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
+              MapView.rsrcCtx.fillStyle = "#333333";
+              MapView.rsrcCtx.fillText( resourceTile.resource, (indexI +shiftX)*scale, (indexJ+shiftY)*scale+10);
+              MapView.rsrcCtx.fillText( resourceTile.index, (indexI+shiftX)*scale+1, (indexJ+shiftY)*scale+20);
+              
           }else{
-            console.log("undefined resource");
+              console.log("undefined resource");
           }
-/**
-          }
-*/        
         }
       }
      }
@@ -341,16 +336,23 @@ RAMAP.newToolPalette = function(){
     addTool: function( tool ){
       ToolPalette.tools[tool.name] = tool;
     },
-    setTool: function(key){
-      if ( isNaN(key) ){
-        ToolPalette.currentID = 0;
-        ToolPalette.currentTool = ToolPalette.tools[key];
-        ToolPalette.mapView.setCursor( ToolPalette.currentTool.source.image, 0,0, 1, ToolPalette.currentTool.isTileCursor); 
-      }else{
+    setTool: function(key, type, scale){
         ToolPalette.currentID = key;
-        ToolPalette.currentTool = ToolPalette.tools["tileBrush"];
-        ToolPalette.mapView.setCursor( RAMAP.tileset.templates[key].source.image, 0, 0, RAMAP.mapView.scale/RAMAP.CHUNK_SIZE, ToolPalette.currentTool.isTileCursor); 
-      }
+        ToolPalette.currentTool = ToolPalette.tools[type];
+        if( scale === undefined || scale === null ){
+          scale = RAMAP.mapView.scale/RAMAP.CHUNK_SIZE;
+        }
+        ToolPalette.mapView.setCursor( ToolPalette.currentTool.getSrcImg(key), 0,0, scale, ToolPalette.currentTool.isTileCursor); 
+        /**ToolPalette.mapView.setCursor( ToolPalette.currentTool.source.image, 0,0, scale, ToolPalette.currentTool.isTileCursor); 
+        ToolPalette.currentID = key;
+        if ( RAMAP.tileset.templates[key] ){
+          ToolPalette.currentTool = ToolPalette.tools["tileBrush"];
+          ToolPalette.mapView.setCursor( RAMAP.tileset.templates[key].source.image, 0, 0, RAMAP.mapView.scale/RAMAP.CHUNK_SIZE, ToolPalette.currentTool.isTileCursor); 
+        }else{
+          ToolPalette.currentTool = ToolPalette.tools["rsrcBrush"];
+          ToolPalette.mapView.setCursor( RAMAP.tileset.rsrcTemplates[key].source.image, 0, 0, RAMAP.mapView.scale/RAMAP.CHUNK_SIZE, ToolPalette.currentTool.isTileCursor); 
+        }*/
+      
     },
     loadIcons: function(callback){
       var toolCount = Object.keys(ToolPalette.tools).length;
@@ -390,7 +392,7 @@ RAMAP.newTool = function(){
     upAction: 0,
     source: 0,
     isTileCursor: true,
-    init: function (name, action, upAction, imgPath, isTileCursor){
+    init: function (name, action, upAction, imgPath, isTileCursor, srcImgFunc){
       Tool.name = name;
       Tool.action = action;
       Tool.upAction = upAction;
@@ -401,6 +403,12 @@ RAMAP.newTool = function(){
         Tool.source = RAMAP.newSourceImage();
         Tool.source.init( imgPath + Tool.name + ".png");
       }
+      if( srcImgFunc !== undefined && srcImgFunc !== null ){
+        Tool.getSrcImg = srcImgFunc;
+      }
+    },
+    getSrcImg: function(id){
+      return Tool.source.image;
     }
   }
   return Tool;

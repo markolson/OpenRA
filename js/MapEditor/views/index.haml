@@ -24,8 +24,8 @@
     %button(onclick="RAMAP.mapView.onDebug();") Debug
     %button(onclick="$('#resources').css('display', 'inline');") Show Rsrc
     %button(onclick="$('#resources').css('display', 'none');") Hide Rsrc
-    %button(onclick="RAMAP.toolPalette.setTool('cursor');") Info
-    %button(onclick="RAMAP.toolPalette.setTool('hand');") Drag
+    %button(onclick="RAMAP.toolPalette.setTool(0, 'cursor', 1);") Info
+    %button(onclick="RAMAP.toolPalette.setTool(1, 'hand', 1);") Drag
     %button(onclick="RAMAP.mapView.zoomIn();") [+]
     %button(onclick="RAMAP.mapView.zoomOut();") [-]
 #app
@@ -43,5 +43,5 @@
           #height_4(class="height")
           #height_5(class="height")
   %span(id="map_window")
-    %canvas( id="resources" style="position: absolute; z-index: 1; display: none;" width="900" height="900" )
-    %canvas( id="actors" style="position: absolute; z-index: 2;" width="900" height="900" )
+    %canvas( id="resources" style="position: absolute; z-index: 1;" width="700" height="700" )
+    %canvas( id="actors" style="position: absolute; z-index: 2;" width="700" height="700" )

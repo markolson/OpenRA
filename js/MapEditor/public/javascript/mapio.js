@@ -7,6 +7,14 @@ RAMAP.newMapIO = function(){
     onReadEndCallback: 0,
     init: function( element, onReadEndCallback, onWriteEndCallback ){
       MapIO.dropZone = element; 
+      console.log(MapIO.dropZone);
+/**
+<div id="output" style="min-height: 100px; white-space: pre; border: 1px solid black;"  
+     ondragenter="document.getElementById('output').textContent = ''; event.stopPropagation(); event.preventDefault();"  
+     ondragover="event.stopPropagation(); event.preventDefault();"  
+     ondrop="event.stopPropagation(); event.preventDefault(); dodrop(event);">
+     */
+      MapIO.dropZone.addEventListener('dragenter', MapIO.handleDragOver, false);           
       MapIO.dropZone.addEventListener('dragover', MapIO.handleDragOver, false);
       MapIO.dropZone.addEventListener('drop', MapIO.handleFileDrop, false);
       MapIO.onWriteEndCallback = onWriteEndCallback;
@@ -251,7 +259,9 @@ RAMAP.newMapData = function(){
       return MapData.tiles[i][j];
     },
     addResource: function(i,j, resource, index){
-      MapData.resources[i][j] = { "resource": resource, "index": index }
+      var rsrcTile = RAMAP.newRsrcTile();
+      rsrcTile.init( resource, index, i , j );
+      MapData.resources[i][j] = rsrcTile;
     },
     getResource: function(i,j){
       return MapData.resources[i][j];
