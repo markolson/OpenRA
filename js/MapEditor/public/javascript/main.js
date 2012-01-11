@@ -50,7 +50,7 @@ RAMAP.init = function (){
   RAMAP.tileset = RAMAP.tilesets["snow"];
 
   RAMAP.mapView = RAMAP.newMapView();
-  RAMAP.mapView.init("map_window", "resources", "actors", RAMAP.CANVAS_WIDTH, RAMAP.CANVAS_HEIGHT, RAMAP.DEFAULT_SCALE, RAMAP.onMapClick, RAMAP.onMapUp);
+  RAMAP.mapView.init("map_window", "resources", "actors", RAMAP.CANVAS_WIDTH, RAMAP.CANVAS_HEIGHT, RAMAP.DEFAULT_SCALE, RAMAP.onMapClick, RAMAP.onMapCtrlClick, RAMAP.onMapUp);
   RAMAP.canvas = RAMAP.mapView.canvas;
   RAMAP.ctx = RAMAP.mapView.ctx;
 
@@ -74,8 +74,10 @@ RAMAP.init = function (){
   tools["rsrcBrush"] = {"action": function(id, posX, posY, mapX, mapY){ 
     //console.log(id + " rsrcBrush! " + posX + " " + posY + "Tile " + mapX + " " + mapY);
     RAMAP.mapIO.mapData.addResource( mapX, mapY, RAMAP.tileset.resourceMap[id].resource, RAMAP.tileset.resourceMap[id].index);
-    var resource = RAMAP.mapIO.mapData.resources[mapX][mapY];
     //console.log( resource );
+    RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
+  },"ctrlAction": function(id, posX, posY, mapX, mapY){
+    RAMAP.mapIO.mapData.addResource( mapX, mapY, 0, 0);
     RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
   }, "srcImgFunc": function(id){
     //unhide resources first
@@ -86,7 +88,7 @@ RAMAP.init = function (){
   RAMAP.toolPalette = RAMAP.newToolPalette();
   for ( key in tools ){
     var tool = RAMAP.newTool();
-    tool.init( key, tools[key].action, tools[key].upAction, "/images/tools/", tools[key].isTileCursor, tools[key].srcImgFunc);
+    tool.init( key, tools[key].action, tools[key].ctrlAction, tools[key].upAction, "/images/tools/", tools[key].isTileCursor, tools[key].srcImgFunc);
     RAMAP.toolPalette.addTool( tool );
   }
   RAMAP.toolPalette.init(RAMAP.mapView);
@@ -104,6 +106,10 @@ RAMAP.onMapWrite = function(fileEntry){
 
 RAMAP.onMapClick = function(mosX, mosY, mapX, mapY){
   RAMAP.toolPalette.clickHandler(mosX, mosY, mapX, mapY);
+};
+
+RAMAP.onMapCtrlClick = function(mosX, mosY, mapX, mapY){
+  RAMAP.toolPalette.ctrlClickHandler(mosX, mosY, mapX, mapY);
 };
 
 RAMAP.onMapUp = function(mosX, mosY, mapX, mapY){

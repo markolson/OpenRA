@@ -11,18 +11,21 @@ RAMAP.newMapView = function(){
     width: 0,
     scale: 0,
     dragImg: 0,
+    dragBorder: 0,
     lastTileset: 0,
     lastTiles: 0,
     isTileCursor: true,
     clickCallback: 0,
+    ctrlClickCallback: 0,
     upCallback: 0,
     isDown: false,// whether mouse is pressed
     dragOn: false, //whether map dragging is on, for hand tool
+    ctrlDown: false,
     startCoords: [],// 'grab' coordinates when pressing mouse
     last: [0,0],// previous coordinates of mouse release
     shiftX: 0,
     shiftY: 0,
-    init: function(id, rscID, actID, width, height, scale, clickCallback, upCallback){
+    init: function(id, rscID, actID, width, height, scale, clickCallback, ctrlClickCallback, upCallback){
       MapView.stage = new Kinetic.Stage(id, width, height);
       MapView.canvas = MapView.stage.getCanvas();
       MapView.ctx = MapView.stage.getContext();
@@ -34,6 +37,7 @@ RAMAP.newMapView = function(){
       MapView.width = width;
       MapView.scale = scale;
       MapView.clickCallback = clickCallback;
+      MapView.ctrlClickCallback = ctrlClickCallback;
       MapView.upCallback = upCallback;
 
       //panning event listeners
@@ -53,6 +57,24 @@ RAMAP.newMapView = function(){
               e.offsetY - MapView.startCoords[1]
           ];
       });
+      document.onkeydown =  function(e) {
+        console.log("key press");
+        if( e.keyCode === 17 ){
+          console.log("ctrl pressed");
+          MapView.ctrlDown = true;
+          MapView.stage.remove(MapView.dragImg);
+          MapView.stage.draw();
+        }
+      };
+      document.onkeyup = function(e) {
+        console.log("key released");
+        if( e.keyCode === 17 ){
+          console.log("ctrl released");
+          MapView.ctrlDown = false;
+          MapView.stage.add(MapView.dragImg);
+          MapView.stage.draw();
+        }
+      };
       MapView.stage.addEventListener("mousemove", function(e){
           if(!MapView.isDown || !MapView.dragOn) return; // don't pan if mouse is not pressed
 
@@ -83,7 +105,6 @@ RAMAP.newMapView = function(){
       });
       },
       setCursor: function(imgObj, posX, posY, scale, isTileCursor){
-        console.log(imgObj);
         MapView.stage.removeAll();
         /**
         if (MapView.clickListenerFunc !== undefined){
@@ -98,10 +119,29 @@ RAMAP.newMapView = function(){
         MapView.stage.removeEventListenerType( "mousedown", MapView.onMouseClick);
         MapView.stage.removeEventListenerType("mousemove", MapView.onMouseMove, false);
         MapView.stage.removeEventListenerType("mouseup", MapView.onMouseUp);
-        var drawImg = Kinetic.drawImage(imgObj, posX, posY);
+        //var drawImg = Kinetic.drawImage(imgObj, posX, posY);
+        
+        var drawImg = function(){
+          var context = this.getContext();
+          context.drawImage(imgObj, posX, posY, imgObj.width, imgObj.height);
+          context.beginPath();
+          context.rect(posX, posY, imgObj.width, imgObj.height);
+          context.closePath();
+        };
+
+        var drawBorder = function(){
+          var context = this.getContext();
+          context.strokeStyle = "black";
+          context.strokeRect(0,0,imgObj.width,imgObj.height);
+        }
+
+        if ( isTileCursor ){
+          MapView.dragBorder = new Kinetic.Shape(drawBorder);
+          MapView.dragBorder.setScale(scale);
+          MapView.stage.add(MapView.dragBorder);
+        }
         MapView.dragImg = new Kinetic.Shape(drawImg); 
         MapView.dragImg.setScale(scale);
-        MapView.draggingRect = true;
         MapView.stage.add(MapView.dragImg);
 
         /**
@@ -250,22 +290,23 @@ RAMAP.newMapView = function(){
       //action(mousePos.x - 500, mousePos.y);
       //MapView.draggingRect = false;
       var mapCoords = MapView.getMapCoords(mousePos.x - RAMAP.PICKER_WIDTH, mousePos.y);
-      MapView.clickCallback(mousePos.x - RAMAP.PICKER_WIDTH, mousePos.y, mapCoords[0], mapCoords[1]);
+      if( MapView.ctrlDown ){
+        MapView.ctrlClickCallback(mousePos.x - RAMAP.PICKER_WIDTH, mousePos.y, mapCoords[0], mapCoords[1]);
+      }else{
+        MapView.clickCallback(mousePos.x - RAMAP.PICKER_WIDTH, mousePos.y, mapCoords[0], mapCoords[1]);
+      }
     },
+    
     onMouseMove: function(isTileCursor){
-      var mousePos = MapView.stage.getMousePos();
       //console.log("mouseMove");
       if ( MapView.isTileCursor ){
-        MapView.dragImg.setScale(MapView.scale/RAMAP.CHUNK_SIZE);
-        MapView.dragImg.x = Math.floor((mousePos.x - RAMAP.PICKER_WIDTH) / MapView.scale) * MapView.scale;
-        MapView.dragImg.y = Math.floor((mousePos.y ) / MapView.scale) * MapView.scale;
+        MapView.followTileCursor( MapView.dragImg );  
+        MapView.followTileCursor( MapView.dragBorder);  
         if( MapView.isDown ){
           MapView.onMouseClick();
         }
       }else{
-        MapView.dragImg.setScale(1);
-        MapView.dragImg.x = Math.floor(mousePos.x - RAMAP.PICKER_WIDTH);
-        MapView.dragImg.y = Math.floor(mousePos.y ); 
+        MapView.followCursor( MapView.dragImg );  
       }
       MapView.stage.draw();
     },
@@ -275,6 +316,18 @@ RAMAP.newMapView = function(){
       //MapView.draggingRect = false;
       var mapCoords = MapView.getMapCoords(mousePos.x - RAMAP.PICKER_WIDTH, mousePos.y);
       MapView.upCallback(mousePos.x - RAMAP.PICKER_WIDTH, mousePos.y, mapCoords[0], mapCoords[1]);
+    },
+    followTileCursor: function(img){
+      var mousePos = MapView.stage.getMousePos();
+      img.setScale(MapView.scale/RAMAP.CHUNK_SIZE);
+      img.x = Math.floor((mousePos.x - RAMAP.PICKER_WIDTH) / MapView.scale) * MapView.scale;
+      img.y = Math.floor((mousePos.y ) / MapView.scale) * MapView.scale;
+    },
+    followCursor: function(img){
+      var mousePos = MapView.stage.getMousePos();
+      img.setScale(1);
+      img.x = Math.floor(mousePos.x - RAMAP.PICKER_WIDTH);
+      img.y = Math.floor(mousePos.y );
     }
   }
   return MapView;
@@ -328,7 +381,6 @@ RAMAP.newToolPalette = function(){
     mapView: 0,
     currentTool: 0,
     currentID: 0,
-    dragImg: 0,
     init: function(mapView){
       ToolPalette.mapView = mapView;
       ToolPalette.loadIcons();
@@ -376,6 +428,11 @@ RAMAP.newToolPalette = function(){
         ToolPalette.currentTool.action(ToolPalette.currentID, mosX, mosY, mapX, mapY);
       }
     },
+    ctrlClickHandler: function(mosX, mosY, mapX, mapY){
+      if ( ToolPalette.currentTool.ctrlAction !== undefined){
+        ToolPalette.currentTool.ctrlAction(ToolPalette.currentID, mosX, mosY, mapX, mapY);
+      }
+    },
     upHandler: function(mosX, mosY, mapX, mapY){
       if ( ToolPalette.currentTool.upAction !== undefined){
         ToolPalette.currentTool.upAction(ToolPalette.currentID, mosX, mosY, mapX, mapY);
@@ -389,12 +446,14 @@ RAMAP.newTool = function(){
   var Tool = {
     name: 0,
     action: 0,
+    ctrlAction: 0,
     upAction: 0,
     source: 0,
     isTileCursor: true,
-    init: function (name, action, upAction, imgPath, isTileCursor, srcImgFunc){
+    init: function (name, action, ctrlAction, upAction, imgPath, isTileCursor, srcImgFunc){
       Tool.name = name;
       Tool.action = action;
+      Tool.ctrlAction = ctrlAction;
       Tool.upAction = upAction;
       if ( isTileCursor !== undefined ){
         Tool.isTileCursor = isTileCursor;
