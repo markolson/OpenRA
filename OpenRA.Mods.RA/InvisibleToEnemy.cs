@@ -34,7 +34,7 @@ namespace OpenRA.Mods.RA
 
 		public IEnumerable<Renderable> ModifyRender(Actor self, IEnumerable<Renderable> r)
 		{
-			return IsVisible(self) ? r : Nothing;
+			return IsVisible(self.Owner.Shroud, self) ? r : Nothing;
 		}
 	}
 }
