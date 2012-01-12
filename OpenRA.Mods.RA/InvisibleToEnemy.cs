@@ -1,4 +1,4 @@
-﻿#region Copyright & License Information
+#region Copyright & License Information
 /*
  * Copyright 2007-2011 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
@@ -20,7 +20,8 @@ namespace OpenRA.Mods.RA
 	{
 		public bool IsVisible(Shroud s, Actor self)
 		{
-			return self.Owner == self.World.LocalPlayer;
+			return self.World.LocalPlayer == null ||
+				self.Owner.Stances[self.World.LocalPlayer] == Stance.Ally;
 		}
 
 		public Color RadarColorOverride(Actor self)
@@ -30,10 +31,10 @@ namespace OpenRA.Mods.RA
 		}
 
 		static readonly Renderable[] Nothing = { };
+
 		public IEnumerable<Renderable> ModifyRender(Actor self, IEnumerable<Renderable> r)
 		{
-			return self.World.LocalPlayer == null || self.Owner.Stances[self.World.LocalPlayer] == Stance.Ally
-				? r : Nothing;
+			return IsVisible(self) ? r : Nothing;
 		}
 	}
 }

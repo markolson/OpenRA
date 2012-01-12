@@ -28,7 +28,7 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 		public DiplomacyLogic(World world)
 		{
 			this.world = world;
-			var root = Widget.RootWidget.GetWidget("INGAME_ROOT");
+			var root = Ui.Root.GetWidget("INGAME_ROOT");
 			var diplomacyBG = root.GetWidget("DIPLOMACY_BG");
 			var diplomacy = root.GetWidget<ButtonWidget>("INGAME_DIPLOMACY_BUTTON");
 
@@ -122,7 +122,7 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 
 		void ShowDropDown(Player p, DropDownButtonWidget dropdown)
 		{
-			var stances = Enum.GetValues(typeof(Stance)).OfType<Stance>();
+			var stances = Enum<Stance>.GetValues();
 			Func<Stance, ScrollItemWidget, ScrollItemWidget> setupItem = (s, template) =>
 			{
 				var item = ScrollItemWidget.Setup(template,

@@ -172,6 +172,8 @@ namespace OpenRA
 			return v;
 		}
 
+		public static Size NextPowerOf2(this Size s) { return new Size(NextPowerOf2(s.Width), NextPowerOf2(s.Height)); }
+
 		public static string JoinWith<T>(this IEnumerable<T> ts, string j)
 		{
 			return string.Join(j, ts.Select(t => t.ToString()).ToArray());
@@ -181,5 +183,31 @@ namespace OpenRA
 		{
 			return ts.Concat(moreTs);
 		}
+
+		public static Color ColorLerp(float t, Color c1, Color c2)
+		{
+			return Color.FromArgb(
+				(int)(t * c2.A + (1 - t) * c1.A),
+				(int)(t * c2.R + (1 - t) * c1.R),
+				(int)(t * c2.G + (1 - t) * c1.G),
+				(int)(t * c2.B + (1 - t) * c1.B));
+		}
+
+		public static T[] MakeArray<T>(int count, Func<int, T> f)
+		{
+			T[] result = new T[count];
+			for (int i = 0; i < count; i++)
+				result[i] = f(i);
+
+			return result;
+		}
+
+		public static Rectangle Bounds(this Bitmap b) { return new Rectangle(0, 0, b.Width, b.Height); }
+	}
+
+	public static class Enum<T>
+	{
+		public static T Parse(string s) { return (T)Enum.Parse(typeof(T), s); }
+		public static T[] GetValues() { return (T[])Enum.GetValues(typeof(T)); }
 	}
 }

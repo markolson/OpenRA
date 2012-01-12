@@ -53,7 +53,7 @@ namespace OpenRA.Mods.RA.Widgets
 			if( world.LocalPlayer == null ) return;
 			if( world.LocalPlayer.WinState != WinState.Undefined ) return;
 
-			var radarBin = Widget.RootWidget.GetWidget<RadarBinWidget>(RadarBin);
+			var radarBin = Ui.Root.GetWidget<RadarBinWidget>(RadarBin);
 
 			powerCollection = "power-" + world.LocalPlayer.Country.Race;
 
@@ -77,7 +77,7 @@ namespace OpenRA.Mods.RA.Widgets
 
 			var color = GetPowerColor(power);
 
-			var colorDark = Graphics.Util.Lerp(0.25f, color, Color.Black);
+			var colorDark = Exts.ColorLerp(0.25f, color, Color.Black);
 			for (int i = 0; i < powerSize.Height; i++)
 			{
 				color = (i - 1 < powerSize.Height / 2) ? color : colorDark;

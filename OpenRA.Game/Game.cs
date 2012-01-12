@@ -50,13 +50,8 @@ namespace OpenRA
 
 		public static void JoinServer(string host, int port)
 		{
-			var replayFilename = ChooseReplayFilename();
-			string path = Path.Combine( Platform.SupportDir, "Replays" );
-			if( !Directory.Exists( path ) ) Directory.CreateDirectory( path );
-			var replayFile = File.Create( Path.Combine( path, replayFilename ) );
-
 			JoinInner(new OrderManager(host, port,
-				new ReplayRecorderConnection(new NetworkConnection(host, port), replayFile)));
+				new ReplayRecorderConnection(new NetworkConnection(host, port), ChooseReplayFilename)));
 		}
 
 		static string ChooseReplayFilename()
@@ -95,14 +90,14 @@ namespace OpenRA
 		// Hacky workaround for orderManager visibility
 		public static Widget OpenWindow(World world, string widget)
 		{
-			return Widget.OpenWindow(widget, new WidgetArgs() {{ "world", world }, { "orderManager", orderManager }, { "worldRenderer", worldRenderer }});
+			return Ui.OpenWindow(widget, new WidgetArgs() {{ "world", world }, { "orderManager", orderManager }, { "worldRenderer", worldRenderer }});
 		}
 
 		// Who came up with the great idea of making these things
 		// impossible for the things that want them to access them directly?
 		public static Widget OpenWindow(string widget, WidgetArgs args)
 		{
-			return Widget.OpenWindow(widget, new WidgetArgs(args)
+			return Ui.OpenWindow(widget, new WidgetArgs(args)
 			{
 				{ "world", worldRenderer.world },
 				{ "orderManager", orderManager },
@@ -160,7 +155,7 @@ namespace OpenRA
 				using( new PerfSample( "tick_time" ) )
 				{
 					orderManager.LastTickTime += Settings.Game.Timestep;
-					Widget.DoTick();
+					Ui.Tick();
 					var world = orderManager.world;
 					if (orderManager.GameStarted)
 						++Viewport.TicksSinceLastMove;
@@ -214,7 +209,7 @@ namespace OpenRA
 			worldRenderer = new WorldRenderer(orderManager.world);
 
 			if (orderManager.GameStarted) return;
-			Widget.SelectedWidget = null;
+			Ui.SelectedWidget = null;
 
 			orderManager.LocalFrameNumber = 0;
 			orderManager.LastTickTime = Environment.TickCount;
@@ -224,7 +219,12 @@ namespace OpenRA
 
 		public static bool IsHost
 		{
-			get { return orderManager.Connection.LocalClientId == 0; }
+			get 
+			{
+				var client= orderManager.LobbyInfo.ClientWithIndex (
+					orderManager.Connection.LocalClientId);
+				return ((client!=null) && client.IsAdmin);
+			}
 		}
 
 		public static Dictionary<String, Mod> CurrentMods
@@ -269,7 +269,7 @@ namespace OpenRA
 			AddChatLine = (a,b,c) => {};
 			ConnectionStateChanged = om => {};
 			BeforeGameStart = () => {};
-			Widget.ResetAll();
+			Ui.ResetAll();
 
 			worldRenderer = null;
 			if (server != null)

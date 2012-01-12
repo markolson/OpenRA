@@ -40,6 +40,7 @@ namespace OpenRA.Server
 		public readonly IPAddress Ip;
 		public readonly int Port;
 		int randomSeed;
+		public readonly Thirdparty.Random Random = new Thirdparty.Random();
 
 		public ServerSettings Settings;
 		public ModData ModData;
@@ -120,7 +121,7 @@ namespace OpenRA.Server
 				catch { }
 			} ) { IsBackground = true }.Start();
 		}
-
+		int nextPlayerIndex;
 		/* lobby rework todo:
 		 *	- "teams together" option for team games -- will eliminate most need
 		 *		for manual spawnpoint choosing.
@@ -128,12 +129,8 @@ namespace OpenRA.Server
 		 */
 		public int ChooseFreePlayerIndex()
 		{
-			for (var i = 0; i < 256; i++)
-				if (conns.All(c => c.PlayerIndex != i) && preConns.All(c => c.PlayerIndex != i)
-					&& lobbyInfo.Clients.All(c => c.Index != i))
-					return i;
-
-			throw new InvalidOperationException("Already got 256 players");
+			nextPlayerIndex++;
+			return nextPlayerIndex;
 		}
 
 		void AcceptConnection()
@@ -220,6 +217,9 @@ namespace OpenRA.Server
 					SyncClientToPlayerReference(client, Map.Players[client.Slot]);
 
 				lobbyInfo.Clients.Add(client);
+				//Assume that first validated client is server admin
+				if(lobbyInfo.Clients.Count==1)
+					client.IsAdmin=true;
 
 				Log.Write("server", "Client {0}: Accepted connection from {1}",
 					newConn.PlayerIndex, newConn.socket.RemoteEndPoint);

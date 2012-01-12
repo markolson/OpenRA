@@ -1,4 +1,4 @@
-﻿#region Copyright & License Information
+#region Copyright & License Information
 /*
  * Copyright 2007-2011 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
@@ -30,6 +30,8 @@ namespace OpenRA.Mods.RA.Widgets
 		public string StanceCycleKey = "z";
 		public string BaseCycleKey = "backspace";
 		public string ViewCycleKey = "v";
+		public string GotoLastEventKey = "space";
+
 		public readonly OrderManager OrderManager;
 
 		[ObjectCreator.UseCtor]
@@ -54,6 +56,9 @@ namespace OpenRA.Mods.RA.Widgets
 					
 				if (e.KeyName == ViewCycleKey)
 					return PerformViewCycle();
+
+				if (e.KeyName == GotoLastEventKey)
+					return GotoLastEvent();
 
 				if (!World.Selection.Actors.Any())
 					return false;
@@ -130,7 +135,7 @@ namespace OpenRA.Mods.RA.Widgets
 			if (actor.First == null)
 				return true;
 
-			var stances = (UnitStance[])Enum.GetValues(typeof(UnitStance));
+			var stances = Enum<UnitStance>.GetValues();
 
 			var nextStance = stances.Concat(stances).SkipWhile(s => s != actor.Second.predictedStance).Skip(1).First();
 
@@ -181,6 +186,22 @@ namespace OpenRA.Mods.RA.Widgets
 			
 			return true;
 			
+		}
+
+		bool GotoLastEvent()
+		{
+			if (World.LocalPlayer == null)
+				return true;
+
+			var eventNotifier = World.LocalPlayer.PlayerActor.TraitOrDefault<BaseAttackNotifier>();
+			if (eventNotifier == null)
+				return true;
+
+			if (eventNotifier.lastAttackTime < 0)
+				return true;
+
+			Game.viewport.Center(eventNotifier.lastAttackLocation);
+			return true;
 		}
 	}
 }
