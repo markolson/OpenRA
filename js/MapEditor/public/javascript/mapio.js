@@ -177,7 +177,7 @@ RAMAP.newMapIO = function(){
       for( i = 0; i < mapSizeX; i ++){
         for( j = 0; j < mapSizeY; j ++){
           var tile = MapIO.mapData.getTile(i,j);
-          dw.write16( file_data, tile.tile );
+          dw.write16( file_data, tile.templateID);
           //TODO pickany code ( % 4) (for cnc?)
           dw.write8( file_data, tile.index );
         } 
