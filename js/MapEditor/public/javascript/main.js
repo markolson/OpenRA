@@ -101,6 +101,7 @@ RAMAP.onMapRead = function(){
 
 RAMAP.onMapWrite = function(fileEntry){
   console.log('mapwrite callback');
+  $('#download').show();
   $('#download').html("<a href='"+fileEntry.toURL()+"'> Download </a>");
 };
 

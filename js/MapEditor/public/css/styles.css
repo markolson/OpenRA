@@ -91,10 +91,11 @@ h3 {
 }
 
 #download{
-  background: #FFF; 
-  color: #000;
+  border: 1px solid #FFF;
+  padding: 1px;
   font-size: 1em;
   cursor: pointer;
+  display: none;
 }
 
 #app{
