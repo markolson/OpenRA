@@ -27,6 +27,7 @@ if (typeof VM != "undefined") {
 // Context constants
 var YAML_KEY = 3;
 var YAML_FROMARRAY = 5;
+var YAML_FROMMAPPING = 6;
 var YAML_VALUE = "\x07YAML\x07VALUE\x07";
 
 // Common YAML character sets
@@ -44,8 +45,8 @@ var YAML_BLOCK_CHAR = "|";
 
 YAML_Indent         = 2;
 YAML_UseHeader      = true;
-YAML_UseVersion     = true;
-YAML_SortKeys       = true;
+YAML_UseVersion     = false;
+YAML_SortKeys       = false;
 YAML_AnchorPrefix   = "";
 YAML_UseCode        = false;
 YAML_DumpCode       = "";
@@ -53,7 +54,7 @@ YAML_LoadCode       = "";
 YAML_ForceBlock     = false;
 YAML_UseBlock       = false;
 YAML_UseFold        = false;
-YAML_CompressSeries = true;
+YAML_CompressSeries = false;
 //XXX NYI  YAML_InlineSeries   = false;
 YAML_UseAliases     = true;
 YAML_Purity         = false;
@@ -133,7 +134,7 @@ function YAML_emit_header(node) {
 	this.headless = true;
 	return;
     }
-    this.stream += "---";
+    //this.stream += "---";
     if (this.UseVersion) {
 	this.stream += " #YAML:1.0";
     }
@@ -176,9 +177,9 @@ function YAML_emit_node(node, context) {
 	    return this._emit_function(node);
 	}
     } else if (typeof node == "string" || typeof node == "boolean") {
-	return this._emit_str(node);
+	return this._emit_str(node, context);
     } else {
-	return this._emit_str(String(node));
+	return this._emit_str(String(node), context);
     }
 }
 
@@ -197,12 +198,12 @@ function YAML_emit_mapping(value, context) {
         this.stream += " ";
 	this.offset[this.level+1] = this.offset[this.level] + 2;
     } else {
+        if (!this.headless && context !== 0) {
+            this.stream += "\n";
+            this.headless = false;
+        }
         context = 0;
-	if (!this.headless) {
-	    this.stream += "\n";
-	    this.headless = false;
-	}
-	this.offset[this.level+1] = this.offset[this.level] + this.Indent;
+        this.offset[this.level+1] = this.offset[this.level] + this.Indent;
     }
     
     if (this.SortKeys) {
@@ -211,11 +212,16 @@ function YAML_emit_mapping(value, context) {
 	
     this.level++;
     for(var key_i = 0; key_i < keys.length; key_i++) {
-	var key = keys[key_i];
-        this._emit_key(key, context);
+	    var key = keys[key_i];
         context = 0;
-        this.stream += ":";
-        this._emit_node(value[key]);
+        if( key === "id" ){
+          this._emit_str( value[key]);
+          //this._emit_node(value[key], YAML_FROMMAPPING);
+        }else{
+          this._emit_key(key, context);
+          this.stream += ":";
+          this._emit_node(value[key], YAML_FROMMAPPING);
+        }
     }
     this.level--;
 }
@@ -227,7 +233,7 @@ function YAML_emit_sequence(value) {
     }
 
     if (!this.headless) {
-	this.stream += "\n";
+	//this.stream += "\n";
 	this.headless = false;
     }
 
@@ -236,10 +242,13 @@ function YAML_emit_sequence(value) {
     this.offset[this.level + 1] = this.offset[this.level] + this.Indent;
     this.level++;
     for(var i = 0; i < value.length; i++) {
-	this.stream += YAML_x(" ", this.offset[this.level]);
-	this.stream += "-";
+	//this.stream += YAML_x(" ", this.offset[this.level]);
+    if ( i > 0 ){
+	  this.stream += ",";
+    }
 	this._emit_node(value[i], YAML_FROMARRAY);
     }
+	this.stream += "\n";
     this.level--;
 }
 
@@ -289,9 +298,9 @@ function YAML_emit_str(value, type) {
         } else {
             this._emit_single(value);
         }
-	if (type != YAML_KEY) {
-	    this.stream += "\n";
-	}
+      if (type != YAML_KEY && type != YAML_FROMARRAY) {
+          this.stream += "\n";
+      }
     }
     
     this.level--;
@@ -349,9 +358,9 @@ function YAML_emit_nested(indicator, value) {
 
 function YAML_emit_simple(value) {
     if (typeof value == "boolean") {
-	this.stream += value ? "+" : "-";
+	this.stream += value ? "True" : "False";
     } else {
-	this.stream += value == null ? "~" : value;
+	this.stream += value == null ? "" : value;
     }
 }
 
