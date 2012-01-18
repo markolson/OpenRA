@@ -43,7 +43,7 @@ if (YAML_JS == "njs") { // workaround njs 0.2.5 bug (?)
 var YAML_FOLD_CHAR = ">";
 var YAML_BLOCK_CHAR = "|";
 
-YAML_Indent         = 2;
+YAML_Indent         = 1;
 YAML_UseHeader      = true;
 YAML_UseVersion     = false;
 YAML_SortKeys       = false;
@@ -199,8 +199,10 @@ function YAML_emit_mapping(value, context) {
 	this.offset[this.level+1] = this.offset[this.level] + 2;
     } else {
         if (!this.headless && context !== 0) {
-            this.stream += "\n";
-            this.headless = false;
+            if ( value.id === undefined ){
+              this.stream += "\n";
+              this.headless = false;
+            }
         }
         context = 0;
         this.offset[this.level+1] = this.offset[this.level] + this.Indent;
@@ -254,7 +256,7 @@ function YAML_emit_sequence(value) {
 
 function YAML_emit_key(value, context) {
     if (context != YAML_FROMARRAY) {
-	this.stream += YAML_x(" ", this.offset[this.level]);
+	this.stream += YAML_x("\t", this.offset[this.level]);
     }
     this._emit_str(value, YAML_KEY);
 }
@@ -400,7 +402,7 @@ function YAML_indent(text) {
     if (text.length == 0) return text;
     if (text.charAt(text.length-1) == "\n")
 	text = text.substr(0, text.length-1);
-    var indent = YAML_x(" ", this.offset[this.level]);
+    var indent = YAML_x("\t", this.offset[this.level]);
 
     if (YAML_JS == "js1.3") {
 	var text_a = text.split("\n");
