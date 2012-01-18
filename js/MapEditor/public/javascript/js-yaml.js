@@ -2129,6 +2129,13 @@ Scanner.prototype.scanToNextToken = function scanToNextToken() {
   }
 
   while (!found) {
+    while (this.peek() === '\x09') {
+      var TABSIZE = 2;
+      for( var i = 0; i < TABSIZE; i++){
+        this.forward();
+      }
+    }
+
     while (this.peek() === ' ') {
       this.forward();
     }
