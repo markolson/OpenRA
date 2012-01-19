@@ -3,7 +3,6 @@ var Parser = {};
 Parser.parse = function( text , id ){
   this.level = -1;
   this.lines = text.split("\n");
-  //console.log(this.lines);
   this.rmEmptyLines(this.lines);
   return this.getMapping( id );
 }
@@ -22,7 +21,6 @@ Parser.getMapping = function( id ){
   }
   this.level--;
   return obj;
-  //console.log(this.level);
 };
 
 Parser.keyInMapping = function(){
@@ -46,12 +44,14 @@ Parser.isMapping = function(){
 }
 
 Parser.getNumIndents = function(line){
-  indents = line.match("\t");
-  if( indents !== null ){
-    return indents.length;
+  //get the tabs at the begingging of line
+  tabs = line.match(/^(\t)+/g);
+  if( tabs !== null ){
+    //count the tabs
+    indents = tabs[0].match(/(\t)/g);
+    return indents.length ;
   }
   return 0;
-
 };
 
 Parser.getPair = function(){
@@ -82,10 +82,6 @@ Parser.getValue = function(value){
 
 Parser.getCurrLine = function(){
   return this.lines[0];
-}
-
-Parser.getNextLine = function(){
-  return this.lines[1];
 }
 
 Parser.rmEmptyLines = function(lines){
