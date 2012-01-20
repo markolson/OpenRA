@@ -284,6 +284,40 @@ RAMAP.newMapView = function(){
         }
       }
      }
+      
+    //draw actors
+    if ( RAMAP.mapIO.mapData.actors !== undefined ){
+      for( i = 0; i < drawWidth; i++){
+        for( j = 0; j < drawHeight; j++){
+          var indexI = ( i - shiftX );  
+          var indexJ = ( j - shiftY );  
+          if ( indexI >= 0 && indexI < RAMAP.CANVAS_SIZE &&  indexJ >= 0 && indexJ < RAMAP.CANVAS_SIZE){
+            
+            var actorTile = RAMAP.mapIO.mapData.getActor(indexI, indexJ);
+            if( actorTile !== undefined ){
+              console.log( actorTile.x + ":" + actorTile.y );
+            }
+            /**
+            if (RAMAP.DEBUG === 0 || RAMAP.DEBUG === undefined){
+              if( actorTile.resource !== 0 ){
+                actorTile.render(MapView.rsrcCtx, tileset.rsrcTemplates, indexI+shiftX, indexJ+shiftY, scale);
+              }
+            }else if( actorTile !== undefined ){
+                MapView.rsrcCtx.fillStyle = "#806E62";
+                MapView.rsrcCtx.fillRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
+                MapView.rsrcCtx.strokeStyle = "#333333";
+                MapView.rsrcCtx.strokeRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
+                MapView.rsrcCtx.fillStyle = "#333333";
+                MapView.rsrcCtx.fillText( actorTile.name, (indexI +shiftX)*scale, (indexJ+shiftY)*scale+10);
+                //MapView.rsrcCtx.fillText( resourceTile.index, (indexI+shiftX)*scale+1, (indexJ+shiftY)*scale+20);
+            }else{
+                console.log("undefined resource");
+            }*/
+          }
+        }
+       }
+    }
+
     },
     onMouseClick: function(){
       var mousePos = MapView.stage.getMousePos();

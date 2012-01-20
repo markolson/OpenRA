@@ -157,6 +157,28 @@ RAMAP.newTemplate = function(){
   return Template;
 };
 
+RAMAP.newActorTile = function(){
+  var ActorTile = {
+    name: 0,
+    x: 0,
+    y: 0,
+    owner: "Neutral",
+    init: function( name, x, y, owner){
+      ActorTile.name = name;
+      ActorTile.x = x;
+      ActorTile.y = y;
+      if ( owner !== undefined ){
+        ActorTile.owner = owner;
+      }
+    },
+    render: function(ctx, posX, posY, scale){
+      var template = RAMAP.actorTemplate[ActorTile.name];
+      ctx.drawImage(template.source.image, 0, 0, RAMAP.CHUNK_SIZE, RAMAP.CHUNK_SIZE, posX*scale, posY*scale, scale, scale);
+    }
+  };
+  return ActorTile;
+};
+
 RAMAP.newRsrcTile = function(){
   var RsrcTile = {
     resource: 0,

@@ -1,8 +1,13 @@
+/** RAMAP.newMapInfo requires rayaml-parser.js */
+
 RAMAP.newMapIO = function(){
   var MapIO = {
     dropZone: 0,
     mapDataStorage: [],
+    mapInfoStorage: [],
     mapData: 0,
+    mapInfo: 0,
+    infoFile: 0,
     onWriteEndCallback: 0,
     onReadEndCallback: 0,
     init: function( element, onReadEndCallback, onWriteEndCallback ){
@@ -68,12 +73,14 @@ RAMAP.newMapIO = function(){
         console.log(f);
         files[f.name] = f;  
       }
+      if("map.yaml" in files){
+        console.log("map.yaml dropped");
+        MapIO.infoFile = files["map.yaml"]; 
+      }
       if("map.bin" in files){
         console.log("map.bin dropped");
         var fr = new FileReader();
-        //console.log("what what");
         fr.readAsArrayBuffer( files["map.bin"]);
-        //console.log("in the");
         fr.onloadend = function (frEvent) {  
           //console.log(frEvent.target.result);
           var map_bin = frEvent.target.result;
@@ -103,6 +110,32 @@ RAMAP.newMapIO = function(){
       console.log("savemap");
       window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
       window.requestFileSystem( /**window.PERSISTENT*/ window.TEMPORARY, 1, MapIO.onInitFs , MapIO.errorHandler);
+    },
+    readMapYaml: function( text ){
+      MapIO.mapInfo = RAMAP.newMapInfo();
+      MapIO.mapInfo.parse(text);
+      
+      //read in actors
+      if ( MapIO.mapData !== undefined ){
+        console.log( "about to read in actors");
+        var actors = MapIO.mapInfo.actors;
+        for( key in actors){
+          if( key === "id") { continue; }
+          //console.log(key);
+          var actor = actors[key];
+          MapIO.mapData.addActor(  actor.loc[0], actor.loc[1], actor.id, actor.owner ); 
+          //console.log(actor);
+        }
+      }
+
+      //update the tileset 
+      if ( MapIO.mapInfo.Tileset !== undefined ){
+        RAMAP.tileset = RAMAP.tilesets[MapIO.mapInfo.tileset.toLowerCase()];
+      }
+
+      console.log("finished reading yaml");
+      MapIO.mapInfoStorage.push( MapIO.mapInfo );
+      MapIO.onReadEndCallback();
     },
     readMapBin: function(map_bin){
       var bin_data =  new DataView( map_bin );
@@ -138,6 +171,16 @@ RAMAP.newMapIO = function(){
           //console.log( "X: " + i + " Y: " + j + " Resource: " + resource + " Index: " + index); 
           MapIO.mapData.addResource(i,j, resource, index);
         }
+      }
+
+      if ( MapIO.infoFile !== undefined && MapIO.infoFile !== 0 ){
+        var fr = new FileReader();
+        fr.readAsText( MapIO.infoFile );
+        fr.onloadend = function (frEvent) {  
+          var yaml_text = frEvent.target.result;
+          MapIO.readMapYaml(yaml_text);
+        };
+        MapIO.infoFile = 0;
       }
 
       console.log("finished reading");
@@ -225,6 +268,42 @@ RAMAP.newMapIO = function(){
   return MapIO;
 }
 
+RAMAP.newMapInfo = function(){
+  var MapInfo = {
+    selectable: false,
+    mapformat: 0,
+    title: "No Title",
+    description: "No Description",
+    author: "Edgar Allan Poe",
+    tileset: "SNOW",
+    mapfize: [128,128],
+    bounds: [16, 16, 96, 96],
+    useasshellmap: false,
+    type: "Conquest",
+    players: 0,
+    actors: 0,
+    smudges: 0,
+    rules: 0,
+    sequences: 0,
+    weapons: 0,
+    voices: 0,
+    init: function( mapObj ){
+      for ( key in mapObj ){
+        console.log( key );
+        if( mapObj[key] !== undefined ){
+          console.log( "copied " + key );
+          MapInfo[key.toLowerCase()] = mapObj[key];
+        }
+      }
+    },
+    parse: function( text ){
+      var mapObj = RAParser.parse( text, 'map.yaml');
+      MapInfo.init(mapObj);
+    },
+  };
+  return MapInfo;
+}
+
 RAMAP.newMapData = function(){
   var MapData = {
     sizeX: 0,
@@ -244,6 +323,11 @@ RAMAP.newMapData = function(){
       MapData.resources = new Array(mapSizeX);
       for (var i = 0; i < mapSizeX; i++){
         MapData.resources[i] = new Array(mapSizeY);
+      }
+      //double array to hold actor tile info 
+      MapData.actors = new Array(mapSizeX);
+      for (var i = 0; i < mapSizeX; i++){
+        MapData.actors[i] = new Array(mapSizeY);
       }
     },
     addTile: function(i,j, templateID, index){
@@ -268,6 +352,31 @@ RAMAP.newMapData = function(){
     },
     removeResource: function(i,j){
       MapData.resources[i][j] = null;
+    },
+    addActor: function(i , j, name, owner){
+      var actorTile = RAMAP.newActorTile();
+      actorTile.init( name, i, j, owner );
+      console.log(actorTile);
+      console.log("added");
+      MapData.actors[i][j] = actorTile;
+    },
+    getActor: function(i, j){
+      if( i > 128 ){
+        console.log( "x out of bounds");
+      }
+      if( j > 128 ){
+        console.log( "y out of bounds");
+      }
+      //console.log("wtf mates");
+      if ( MapData.actors[i][j] !== undefined ){
+        //console.log(MapData.actors[i][j]);
+      }else{
+        //console.log("damnit");
+      }
+      return MapData.actors[i][j];
+    },
+    removeActor: function(i,j){
+      MapData.actors[i][j] = null;
     },
     addTemplate: function(x,y, template){
       //console.log("add template at index: " + x + ": " +y);  
