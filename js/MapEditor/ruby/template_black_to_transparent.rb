@@ -3,7 +3,7 @@ require 'RMagick'
 require 'json'
 include Magick
 
-json_name = "temperate.json"
+json_name = "temperat.json"
 dir_name = "TemperateBackup"
 output_dir_name = "Temperate"
 

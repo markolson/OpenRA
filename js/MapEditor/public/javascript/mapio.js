@@ -1,4 +1,5 @@
-/** RAMAP.newMapInfo requires rayaml-parser.js */
+/** RAMAP.newMapInfo requires rayaml-parser.js  */
+/** RAMAP.getMapYaml requires yaml_dumper.js  */
 
 RAMAP.newMapIO = function(){
   var MapIO = {
@@ -9,8 +10,9 @@ RAMAP.newMapIO = function(){
     mapInfo: 0,
     infoFile: 0,
     onWriteEndCallback: 0,
+    onWriteYamlEndCallback: 0,
     onReadEndCallback: 0,
-    init: function( element, onReadEndCallback, onWriteEndCallback ){
+    init: function( element, onReadEndCallback, onWriteEndCallback, onWriteYamlEndCallback ){
       MapIO.dropZone = element; 
       console.log(MapIO.dropZone);
 /**
@@ -23,6 +25,7 @@ RAMAP.newMapIO = function(){
       MapIO.dropZone.addEventListener('dragover', MapIO.handleDragOver, false);
       MapIO.dropZone.addEventListener('drop', MapIO.handleFileDrop, false);
       MapIO.onWriteEndCallback = onWriteEndCallback;
+      MapIO.onWriteYamlEndCallback = onWriteYamlEndCallback;
       MapIO.onReadEndCallback = onReadEndCallback;
     },
     getMapData: function(){
@@ -51,7 +54,7 @@ RAMAP.newMapIO = function(){
       fs.root.getFile('map.bin', {create: true, exclusive: false}, function(fileEntry) {
         fileEntry.createWriter(function(fileWriter) {
           fileWriter.onwriteend = function(e) {
-            console.log('Write completed.');
+            console.log('Write Bin completed.');
             MapIO.onWriteEndCallback(fileEntry);
           };
           fileWriter.onerror = function(e) {
@@ -61,6 +64,22 @@ RAMAP.newMapIO = function(){
           var bb = new window.WebKitBlobBuilder();
           bb.append( MapIO.getMapBuffer() );
           fileWriter.write(bb.getBlob('application/octet-stream'));
+        }, MapIO.errorHandler);
+      }, MapIO.errorHandler);
+
+      fs.root.getFile('map.yaml', {create: true, exclusive: false}, function(fileEntry) {
+        fileEntry.createWriter(function(fileWriter) {
+          fileWriter.onwriteend = function(e) {
+            console.log('Write Yaml completed.');
+            MapIO.onWriteYamlEndCallback(fileEntry);
+          };
+          fileWriter.onerror = function(e) {
+            console.log('Write failed: ' + e.toString());
+          };
+          //give the blob the map array buffer and write it.
+          var bb = new window.WebKitBlobBuilder();
+          bb.append( MapIO.getMapYaml() );
+          fileWriter.write(bb.getBlob('text/plain'));
         }, MapIO.errorHandler);
       }, MapIO.errorHandler);
     },
@@ -104,12 +123,14 @@ RAMAP.newMapIO = function(){
           MapIO.mapData.addResource(i,j, 0, 0);
         }
       }
+      
+      MapIO.mapInfo = RAMAP.newMapInfo();
     },
     saveMap: function(){
       
       console.log("savemap");
       window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
-      window.requestFileSystem( /**window.PERSISTENT*/ window.TEMPORARY, 1, MapIO.onInitFs , MapIO.errorHandler);
+      window.requestFileSystem( /**window.PERSISTENT*/ window.TEMPORARY, 1, MapIO.onInitFS , MapIO.errorHandler);
     },
     readMapYaml: function( text ){
       MapIO.mapInfo = RAMAP.newMapInfo();
@@ -117,7 +138,6 @@ RAMAP.newMapIO = function(){
       
       //read in actors
       if ( MapIO.mapData !== undefined ){
-        console.log( "about to read in actors");
         var actors = MapIO.mapInfo.actors;
         for( key in actors){
           if( key === "id") { continue; }
@@ -129,7 +149,7 @@ RAMAP.newMapIO = function(){
       }
 
       //update the tileset 
-      if ( MapIO.mapInfo.Tileset !== undefined ){
+      if ( MapIO.mapInfo.tileset !== undefined ){
         RAMAP.tileset = RAMAP.tilesets[MapIO.mapInfo.tileset.toLowerCase()];
       }
 
@@ -187,6 +207,12 @@ RAMAP.newMapIO = function(){
       MapIO.mapDataStorage.push( MapIO.mapData );
       MapIO.onReadEndCallback();
       
+    },
+    getMapYaml: function(){
+      yamlWriter = new YAML();
+      yamlText = yamlWriter.dump([MapIO.mapInfo.getInfoObj()]);
+      console.log(yamlText);
+      return yamlText;
     },
     getMapBuffer: function(){
       
@@ -271,22 +297,35 @@ RAMAP.newMapIO = function(){
 RAMAP.newMapInfo = function(){
   var MapInfo = {
     selectable: false,
-    mapformat: 0,
+    mapformat: 5,
     title: "No Title",
     description: "No Description",
     author: "Edgar Allan Poe",
     tileset: "SNOW",
-    mapfize: [128,128],
+    mapsize: [128,128],
     bounds: [16, 16, 96, 96],
     useasshellmap: false,
     type: "Conquest",
-    players: 0,
-    actors: 0,
-    smudges: 0,
-    rules: 0,
-    sequences: 0,
-    weapons: 0,
-    voices: 0,
+    players: {
+      "PlayerReference@Neutral": {
+        "Name": "Neutral",
+        "OwnsWorld": true,
+        "NonCombatant": true,
+        "Race": "allies"
+      },
+      "PlayerReference@Creeps": {
+        "Name": "Creeps",
+        "OwnsWorld": true,
+        "NonCombatant": true,
+        "Race": "allies"
+      }
+    },
+    actors: null,
+    smudges: null,
+    rules: null,
+    sequences: null,
+    weapons: null,
+    voices: null,
     init: function( mapObj ){
       for ( key in mapObj ){
         console.log( key );
@@ -300,6 +339,27 @@ RAMAP.newMapInfo = function(){
       var mapObj = RAParser.parse( text, 'map.yaml');
       MapInfo.init(mapObj);
     },
+    getInfoObj: function(){
+      return {
+        "Selectable": MapInfo.selectable,
+        "MapFormat" : MapInfo.mapformat,
+        "Title": MapInfo.title,
+        "Description": MapInfo.description,
+        "Author": MapInfo.author,
+        "Tileset": MapInfo.tileset.toUpperCase(),
+        "MapSize": MapInfo.mapsize,
+        "Bounds": MapInfo.bounds,
+        "UseAsShellmap": MapInfo.useasshellmap,
+        "Type": MapInfo.type,
+        "Players": MapInfo.players,
+        "Actors": MapInfo.actors,
+        "Smudges": MapInfo.smudges,
+        "Rules": MapInfo.rules,
+        "Sequences": MapInfo.sequences,
+        "Weapons": MapInfo.weapons,
+        "Voices": MapInfo.voices 
+      };
+    }
   };
   return MapInfo;
 }

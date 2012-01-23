@@ -30,6 +30,7 @@ $(document).ready( function(){
 
 RAMAP.setTileset = function( tileset ){
   RAMAP.tileset = RAMAP.tilesets[tileset];
+  RAMAP.mapIO.mapInfo.tileset = RAMAP.tileset.name;
   RAMAP.showTemplates();
   if ( RAMAP.mapIO.mapData.tiles !== 0 && RAMAP.mapIO.mapData.resources !== 0){ 
     RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
@@ -37,7 +38,7 @@ RAMAP.setTileset = function( tileset ){
 }
 
 RAMAP.newMap = function(){
-  //$("#instructions").hide();
+  $("#instructions").hide();
   //$("#menu").show();
   //$("#app").show();
   RAMAP.mapIO.newMap( Number( $("#new_width").val()), Number($("#new_height").val()), RAMAP.tileset );
@@ -58,7 +59,7 @@ RAMAP.init = function (){
   RAMAP.picker.init("template_picker");
 
   RAMAP.mapIO = RAMAP.newMapIO();
-  RAMAP.mapIO.init(document , RAMAP.onMapRead, RAMAP.onMapWrite);
+  RAMAP.mapIO.init(document , RAMAP.onMapRead, RAMAP.onMapWrite, RAMAP.onMapWriteYaml);
 
   //create and add tools, perhaps I need a different approach.
   var tools= {};
@@ -100,10 +101,19 @@ RAMAP.onMapRead = function(){
 };
 
 RAMAP.onMapWrite = function(fileEntry){
+  $("#instructions").hide();
   console.log('mapwrite callback');
-  $('#download').show();
-  $('#download').html("<a href='"+fileEntry.toURL()+"'> Download </a>");
+  $('#download_bin').show();
+  $('#download_bin').html("<a href='"+fileEntry.toURL()+"'> map.bin </a>");
 };
+
+RAMAP.onMapWriteYaml = function(fileEntry){
+  $("#instructions").hide();
+  console.log('mapwrite callback');
+  $('#download_yaml').show();
+  $('#download_yaml').html("<a href='"+fileEntry.toURL()+"'> map.yaml </a>");
+};
+
 
 RAMAP.onMapClick = function(mosX, mosY, mapX, mapY){
   RAMAP.toolPalette.clickHandler(mosX, mosY, mapX, mapY);

@@ -3,7 +3,7 @@ require 'json'
 require 'yaml'
 
 #base_file_name = "snow"
-base_file_name = "temperate"
+base_file_name = "temperat"
 count = 0
 out_hash = {};
 last_template = nil

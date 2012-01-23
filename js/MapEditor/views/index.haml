@@ -4,6 +4,7 @@
 %script(type="text/javascript" src="/javascript/mapview.js")
 %script(type="text/javascript" src="/javascript/tileset.js")
 %script(type="text/javascript" src="/javascript/rayaml-parser.js")
+%script(type="text/javascript" src="/javascript/yaml_dumper.js")
 %link(rel="stylesheet" href="/css/template_picker.css")
 #menu
   #general_menu(style="width: 500px; float: left;")
@@ -15,9 +16,10 @@
       %input( id="new_height" maxlength="3" value="128")
       %button(onclick="$('#new_input').hide(); RAMAP.newMap();") Create 
     %button(onclick="RAMAP.saveMap();") Save
-    %span(id="download")
+    %span(id="download_bin" class="download")
+    %span(id="download_yaml" class="download")
     %span(id="instructions")
-      Drop a map.bin file into the window or click new.
+      Drop a map.bin & map.yaml file into the window or click new.
 
   #map_menu
     %button(onclick="RAMAP.setTileset('snow');") Snow

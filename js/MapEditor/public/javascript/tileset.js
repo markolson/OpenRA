@@ -265,12 +265,13 @@ RAMAP.newTilesetLoader = function(){
       var snow = RAMAP.newTileset();
       RAMAP.tilesets["snow"] = snow;
       var temperate = RAMAP.newTileset();
-      RAMAP.tilesets["temperate"] = temperate;
+      RAMAP.tilesets["temperat"] = temperate;
 
       snow.init("snow", 'ajax/snow.json', "/images/ramap/Snow/", "ajax/resources.json");
       snow.loadTemplates(TilesetLoader.loadedTemplate);
       snow.loadResources(TilesetLoader.loadedTemplate);
-      temperate.init("temperate", 'ajax/temperate.json', "/images/ramap/Temperate/", "ajax/resources.json");
+      //"temperat" is not a typo 
+      temperate.init("temperat", 'ajax/temperat.json', "/images/ramap/Temperate/", "ajax/resources.json");
       temperate.loadTemplates(TilesetLoader.loadedTemplate);
       temperate.loadResources(TilesetLoader.loadedTemplate);
     },
