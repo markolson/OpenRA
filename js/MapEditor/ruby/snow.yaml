@@ -2162,7 +2162,7 @@ Templates:
 	Template@116:
 		Id: 116
 		Image: rv05
-		Size: 3,2
+		Size: 3,3
 		Tiles:
 			0: Clear
 			1: River
