@@ -8,16 +8,19 @@ RAMAP.newTileset = function(){
     actorImgPath: 0,
     templateMap: {},
     resourceMap: {},
+    actorMap: {},
     templates: {},
     rsrcTemplates: {},
+    actorTemplates: {},
     sources: {},
-    init: function(name, templateMapSrcPath, templateImgPath, resourceMapSrcPath){
+    init: function(name, templateMapSrcPath, templateImgPath, resourceMapSrcPath, actorMapSrcPath){
      Tileset.name = name;
      Tileset.templateMapSrcPath = templateMapSrcPath;// 'ajax/snow.json'
      Tileset.resourceMapSrcPath = resourceMapSrcPath;// 'ajax/resources.json'
+     Tileset.actorMapSrcPath = actorMapSrcPath;// 'ajax/resources.json'
      Tileset.templateImgPath = templateImgPath;// "/images/ramap/Snow/"
      Tileset.resourceImgPath = templateImgPath + "Resources/";// "/images/ramap/Snow/Resources"
-     Tileset.actorImgPath = templateImgPath + "Actors/";// "/images/ramap/Snow/Actors"
+     Tileset.actorImgPath = "images/ramap/" + "Actors/";// "/images/ramap/Snow/Actors"
     },
     loadTemplates: function(callback){
       console.log("loading templates");
@@ -73,7 +76,7 @@ RAMAP.newTileset = function(){
                   var temp = Tileset.rsrcTemplates[key];
                   $("#height_"+temp.height).append('<input type="image" class="'+ Tileset.name + ' resource" src="' + temp.source.image.src + '" id="'+key+'" onclick="RAMAP.toolPalette.setTool('+key+',\'rsrcBrush\')" >');
               }
-              console.log("loaded " + temp.source.image.src);
+              //console.log("loaded " + temp.source.image.src);
               callback.call(this);
             }
           };
@@ -82,6 +85,35 @@ RAMAP.newTileset = function(){
       });
     },
     loadActors: function(callback){
+      console.log("loading actor templates");
+      $.getJSON( Tileset.actorMapSrcPath, function(data) {
+        var imageCount = Object.keys(data).length;
+        var loadedCount = 0; 
+        console.log( "get actor json")
+        $.each(data, function(key, val) {
+          Tileset.actorMap[key] = val;
+          var am = Tileset.actorMap[key];
+          var template = RAMAP.newTemplate();
+          console.log(Tileset.actorImgPath);
+          template.init(key, am.path, am.width, am.height, Tileset.actorImgPath, []);
+          template.source.image.onload = function(){
+            loadedCount++;
+            console.log( template.source.image);
+            if ( loadedCount === imageCount ){
+              //add templates to template picker
+              for ( key in Tileset.actorTemplates){
+                  console.log( "added " + key );
+                  var temp = Tileset.actorTemplates[key];
+                  console.log(temp);
+                  $("#height_"+temp.height/RAMAP.CHUNK_SIZE).append('<input type="image" class="actor" src="' + temp.source.image.src + '" id="'+key+'" onclick="RAMAP.toolPalette.setTool('+key+',\'actorBrush\')" >');
+              }
+              console.log("loaded " + Tileset.name);
+              callback.call(this);
+            }
+          };
+          Tileset.actorTemplates[key] = template;       
+        });
+      });
     }
   };
   return Tileset;
@@ -267,7 +299,11 @@ RAMAP.newTilesetLoader = function(){
       var temperate = RAMAP.newTileset();
       RAMAP.tilesets["temperat"] = temperate;
 
-      snow.init("snow", 'ajax/snow.json', "/images/ramap/Snow/", "ajax/resources.json");
+      var actors = RAMAP.newTileset();
+      actors.init( "actors", "", "", "", "ajax/actors.json");
+      actors.loadActors(TilesetLoader.loadedTemplate);
+
+      snow.init("snow", 'ajax/snow.json', "/images/ramap/Snow/", "ajax/resources.json" );
       snow.loadTemplates(TilesetLoader.loadedTemplate);
       snow.loadResources(TilesetLoader.loadedTemplate);
       //"temperat" is not a typo 
@@ -277,7 +313,7 @@ RAMAP.newTilesetLoader = function(){
     },
     loadedTemplate: function(obj){
       TilesetLoader.loaded++;
-      if ( TilesetLoader.loaded >= (Object.keys(RAMAP.tilesets).length * 2) ){
+      if ( TilesetLoader.loaded >= (Object.keys(RAMAP.tilesets).length * 2 + 1) ){
         console.log("holla");
         TilesetLoader.callback();
       }

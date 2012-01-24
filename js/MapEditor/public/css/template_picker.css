@@ -7,6 +7,10 @@
   background: #444;
 }
 
+.actor{
+  display: none;
+}
+
 .temperat{
   display: none;
 }
