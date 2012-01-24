@@ -23,7 +23,7 @@
 
   #map_menu
     %button(onclick="RAMAP.setTileset('snow');") Snow
-    %button(onclick="RAMAP.setTileset('temperate');") Temperate
+    %button(onclick="RAMAP.setTileset('temperat');") Temperate
     %button(onclick="RAMAP.mapView.onDebug();") Debug
     %button(onclick="$('#resources').css('display', 'inline');") Show Rsrc
     %button(onclick="$('#resources').css('display', 'none');") Hide Rsrc
@@ -46,5 +46,3 @@
           #height_4(class="height")
           #height_5(class="height")
   %span(id="map_window")
-    %canvas( id="resources" style="position: absolute; z-index: 1;" width="700" height="700" )
-    %canvas( id="actors" style="position: absolute; z-index: 2;" width="700" height="700" )

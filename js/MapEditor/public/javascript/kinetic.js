@@ -30,8 +30,9 @@ var Kinetic = {};
 /****************************************
  * Layer
  */
-Kinetic.Layer = function(stage, stripStyling){
+Kinetic.Layer = function(stage, stripStyling, id ){
     this.canvas = document.createElement('canvas');
+    this.canvas.setAttribute("id", id);
     this.context = this.canvas.getContext('2d');
     this.canvas.width = stage.width;
     this.canvas.height = stage.height;
@@ -84,10 +85,10 @@ Kinetic.Stage = function(containerId, width, height){
     this.touchEnd = false;
     
     // add canvases
-    this.backStageLayer = new Kinetic.Layer(this, true);
-    this.stageLayer = new Kinetic.Layer(this);
-    this.staticLayer = new Kinetic.Layer(this);
-    this.dynamicLayer = new Kinetic.Layer(this);
+    this.backStageLayer = new Kinetic.Layer(this, true, "kinetic_backstage");
+    this.stageLayer = new Kinetic.Layer(this, false, "kinetic_stage");
+    this.staticLayer = new Kinetic.Layer(this, false, "kinetic_static");
+    this.dynamicLayer = new Kinetic.Layer(this, false, "kinetic_dynamic");
     
     this.backStageLayer.getCanvas().style.display = 'none';
     this.listen();

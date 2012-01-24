@@ -2,8 +2,8 @@ RAMAP.newMapView = function(){
   var MapView = {
     stage: 0,
     canvas: 0,
-    rscCanvas: 0,
-    actCanvas: 0,
+    //rscCanvas: 0,
+    //actCanvas: 0,
     ctx: 0,
     rsrcCtx: 0,
     actCtx: 0,
@@ -25,14 +25,20 @@ RAMAP.newMapView = function(){
     last: [0,0],// previous coordinates of mouse release
     shiftX: 0,
     shiftY: 0,
-    init: function(id, rscID, actID, width, height, scale, clickCallback, ctrlClickCallback, upCallback){
+    init: function(id, rsrcID, actID, width, height, scale, clickCallback, ctrlClickCallback, upCallback){
       MapView.stage = new Kinetic.Stage(id, width, height);
       MapView.canvas = MapView.stage.getCanvas();
       MapView.ctx = MapView.stage.getContext();
-      MapView.rscCanvas = document.getElementById(rscID);
-      MapView.rsrcCtx = MapView.rscCanvas.getContext('2d');
-      MapView.actCanvas = document.getElementById(actID);
-      MapView.actCtx = MapView.rscCanvas.getContext('2d');
+
+      MapView.rsrcLayer = new Kinetic.Layer(MapView.stage, false, rsrcID);
+      //MapView.rscCanvas = MapView.rsrcLayer.canvas;
+      MapView.rsrcCtx = MapView.rsrcLayer.context;
+      $("#"+rsrcID).insertBefore("#kinetic_dynamic");
+
+      MapView.actLayer = new Kinetic.Layer(MapView.stage, false, actID);
+      MapView.actCtx = MapView.actLayer.context;
+      $("#"+actID).insertBefore("#kinetic_dynamic");
+
       MapView.height = height;
       MapView.width = width;
       MapView.scale = scale;
