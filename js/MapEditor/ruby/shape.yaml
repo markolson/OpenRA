@@ -1,0 +1,819 @@
+mouse:
+	Width: 30
+	Height: 24
+nopower:
+	Width: 24
+	Height: 24
+mouse:
+	Width: 30
+	Height: 24
+nopower:
+	Width: 24
+	Height: 24
+fcom:
+	Width: 48
+	Height: 48
+oilb:
+	Width: 48
+	Height: 48
+fact:
+	Width: 72
+	Height: 72
+factmake:
+	Width: 72
+	Height: 72
+proc:
+	Width: 72
+	Height: 72
+procmake:
+	Width: 72
+	Height: 72
+silo:
+	Width: 24
+	Height: 24
+silomake:
+	Width: 24
+	Height: 24
+powr:
+	Width: 48
+	Height: 48
+powrmake:
+	Width: 48
+	Height: 48
+apwr:
+	Width: 72
+	Height: 72
+apwrmake:
+	Width: 72
+	Height: 72
+barr:
+	Width: 48
+	Height: 48
+barrmake:
+	Width: 48
+	Height: 48
+tent:
+	Width: 48
+	Height: 48
+tentmake:
+	Width: 48
+	Height: 48
+kenn:
+	Width: 24
+	Height: 24
+kennmake:
+	Width: 24
+	Height: 24
+dome:
+	Width: 48
+	Height: 48
+domemake:
+	Width: 48
+	Height: 48
+atek:
+	Width: 48
+	Height: 48
+atekmake:
+	Width: 48
+	Height: 48
+sputdoor:
+	Width: 24
+	Height: 48
+stek:
+	Width: 72
+	Height: 48
+stekmake:
+	Width: 72
+	Height: 48
+weap:
+	Width: 72
+	Height: 48
+weapmake:
+	Width: 72
+	Height: 48
+weap2:
+	Width: 72
+	Height: 48
+hpad:
+	Width: 48
+	Height: 48
+hpadmake:
+	Width: 48
+	Height: 48
+afld:
+	Width: 72
+	Height: 48
+afldmake:
+	Width: 72
+	Height: 48
+spen:
+	Width: 72
+	Height: 48
+spenmake:
+	Width: 72
+	Height: 48
+syrd:
+	Width: 72
+	Height: 48
+syrdmake:
+	Width: 72
+	Height: 48
+fix:
+	Width: 72
+	Height: 72
+fixmake:
+	Width: 72
+	Height: 72
+gun:
+	Width: 24
+	Height: 24
+gunmake:
+	Width: 24
+	Height: 24
+agun:
+	Width: 24
+	Height: 48
+agunmake:
+	Width: 24
+	Height: 48
+sam:
+	Width: 48
+	Height: 24
+sammake:
+	Width: 48
+	Height: 24
+samfire:
+	Width: 55
+	Height: 35
+ftur:
+	Width: 24
+	Height: 24
+fturmake:
+	Width: 24
+	Height: 24
+tsla:
+	Width: 24
+	Height: 48
+tslamake:
+	Width: 24
+	Height: 48
+pbox:
+	Width: 24
+	Height: 24
+pboxmake:
+	Width: 24
+	Height: 24
+minigun:
+	Width: 18
+	Height: 17
+hbox:
+	Width: 24
+	Height: 24
+hboxmake:
+	Width: 24
+	Height: 24
+gap:
+	Width: 24
+	Height: 48
+gapmake:
+	Width: 24
+	Height: 48
+iron:
+	Width: 48
+	Height: 48
+ironmake:
+	Width: 48
+	Height: 48
+pdox:
+	Width: 48
+	Height: 48
+pdoxmake:
+	Width: 48
+	Height: 48
+mslo:
+	Width: 48
+	Height: 24
+mslomake:
+	Width: 48
+	Height: 24
+mcv:
+	Width: 48
+	Height: 48
+mcvhusk:
+	Width: 48
+	Height: 48
+truk:
+	Width: 24
+	Height: 24
+harv:
+	Width: 48
+	Height: 48
+harvhalf:
+	Width: 48
+	Height: 48
+harvempty:
+	Width: 48
+	Height: 48
+hhusk:
+	Width: 48
+	Height: 48
+hhusk2:
+	Width: 48
+	Height: 48
+1tnk:
+	Width: 24
+	Height: 24
+2tnk:
+	Width: 36
+	Height: 36
+3tnk:
+	Width: 36
+	Height: 36
+4tnk:
+	Width: 48
+	Height: 48
+v2rl:
+	Width: 40
+	Height: 40
+arty:
+	Width: 24
+	Height: 24
+jeep:
+	Width: 24
+	Height: 24
+apc:
+	Width: 24
+	Height: 24
+mnly:
+	Width: 24
+	Height: 24
+mrj:
+	Width: 24
+	Height: 24
+mgg:
+	Width: 40
+	Height: 40
+ss:
+	Width: 56
+	Height: 56
+e1:
+	Width: 50
+	Height: 39
+electro:
+	Width: 50
+	Height: 39
+corpse1:
+	Width: 50
+	Height: 39
+clock:
+	Width: 64
+	Height: 48
+speed:
+	Width: 14
+	Height: 23
+120mm:
+	Width: 24
+	Height: 24
+e3:
+	Width: 50
+	Height: 39
+e6:
+	Width: 50
+	Height: 39
+ca:
+	Width: 72
+	Height: 72
+turr:
+	Width: 18
+	Height: 11
+dd:
+	Width: 72
+	Height: 72
+ssam:
+	Width: 24
+	Height: 24
+pt:
+	Width: 56
+	Height: 56
+mgun:
+	Width: 24
+	Height: 24
+medi:
+	Width: 50
+	Height: 39
+piff:
+	Width: 9
+	Height: 13
+piffpiff:
+	Width: 15
+	Height: 15
+veh-hit3:
+	Width: 19
+	Height: 13
+veh-hit2:
+	Width: 21
+	Height: 17
+h2o_exp1:
+	Width: 32
+	Height: 68
+napalm2:
+	Width: 41
+	Height: 41
+atomsfx:
+	Width: 78
+	Height: 121
+h2o_exp2:
+	Width: 18
+	Height: 48
+art-exp1:
+	Width: 41
+	Height: 35
+fball1:
+	Width: 67
+	Height: 44
+h2o_exp3:
+	Width: 14
+	Height: 35
+frag1:
+	Width: 45
+	Height: 33
+lst:
+	Width: 46
+	Height: 34
+pips:
+	Width: 34
+	Height: 8
+pips2:
+	Width: 4
+	Height: 4
+mig:
+	Width: 56
+	Height: 56
+yak:
+	Width: 40
+	Height: 40
+heli:
+	Width: 46
+	Height: 29
+lrotor:
+	Width: 29
+	Height: 15
+hind:
+	Width: 56
+	Height: 56
+tran2:
+	Width: 48
+	Height: 48
+rrotor:
+	Width: 29
+	Height: 15
+v2:
+	Width: 41
+	Height: 41
+flagfly:
+	Width: 23
+	Height: 23
+fpls:
+	Width: 24
+	Height: 24
+smoke_m:
+	Width: 23
+	Height: 23
+tc04:
+	Width: 96
+	Height: 72
+tc05:
+	Width: 96
+	Height: 72
+tc03:
+	Width: 72
+	Height: 48
+tc02:
+	Width: 72
+	Height: 48
+tc01:
+	Width: 72
+	Height: 48
+t17:
+	Width: 48
+	Height: 48
+t16:
+	Width: 48
+	Height: 48
+t15:
+	Width: 48
+	Height: 48
+t14:
+	Width: 48
+	Height: 48
+t13:
+	Width: 48
+	Height: 48
+t12:
+	Width: 48
+	Height: 48
+t11:
+	Width: 48
+	Height: 48
+t10:
+	Width: 48
+	Height: 48
+t08:
+	Width: 48
+	Height: 24
+t07:
+	Width: 48
+	Height: 48
+t06:
+	Width: 48
+	Height: 48
+t05:
+	Width: 48
+	Height: 48
+t03:
+	Width: 48
+	Height: 48
+t02:
+	Width: 48
+	Height: 48
+t01:
+	Width: 48
+	Height: 48
+mine:
+	Width: 24
+	Height: 24
+dragon:
+	Width: 15
+	Height: 15
+smokey:
+	Width: 19
+	Height: 17
+e2:
+	Width: 50
+	Height: 39
+bomb:
+	Width: 8
+	Height: 8
+dog:
+	Width: 50
+	Height: 39
+electdog:
+	Width: 50
+	Height: 39
+dogbullt:
+	Width: 50
+	Height: 39
+missile:
+	Width: 15
+	Height: 15
+spy:
+	Width: 50
+	Height: 39
+litning:
+	Width: 24
+	Height: 24
+e7:
+	Width: 50
+	Height: 39
+e4:
+	Width: 50
+	Height: 39
+fb1:
+	Width: 24
+	Height: 24
+moveflsh:
+	Width: 23
+	Height: 23
+v01:
+	Width: 48
+	Height: 48
+v02:
+	Width: 48
+	Height: 48
+v03:
+	Width: 48
+	Height: 48
+v04:
+	Width: 48
+	Height: 48
+v05:
+	Width: 48
+	Height: 24
+v06:
+	Width: 48
+	Height: 24
+v07:
+	Width: 48
+	Height: 24
+v08:
+	Width: 24
+	Height: 24
+v09:
+	Width: 24
+	Height: 24
+v10:
+	Width: 24
+	Height: 24
+v11:
+	Width: 24
+	Height: 24
+v12:
+	Width: 24
+	Height: 24
+v13:
+	Width: 24
+	Height: 24
+v14:
+	Width: 24
+	Height: 24
+v15:
+	Width: 24
+	Height: 24
+v16:
+	Width: 24
+	Height: 24
+v17:
+	Width: 24
+	Height: 24
+v18:
+	Width: 24
+	Height: 24
+v19:
+	Width: 24
+	Height: 24
+barl:
+	Width: 12
+	Height: 10
+brl3:
+	Width: 24
+	Height: 22
+miss:
+	Width: 72
+	Height: 48
+minp:
+	Width: 24
+	Height: 24
+minv:
+	Width: 24
+	Height: 24
+select:
+	Width: 24
+	Height: 21
+poweroff:
+	Width: 24
+	Height: 24
+allyrepair:
+	Width: 28
+	Height: 25
+tabs:
+	Width: 160
+	Height: 14
+sputnik:
+	Width: 24
+	Height: 72
+dd-crnr:
+	Width: 23
+	Height: 24
+fb2:
+	Width: 24
+	Height: 24
+u2:
+	Width: 56
+	Height: 56
+scrate:
+	Width: 10
+	Height: 11
+wwcrate:
+	Width: 24
+	Height: 24
+dollar:
+	Width: 24
+	Height: 24
+earth:
+	Width: 22
+	Height: 19
+empulse:
+	Width: 24
+	Height: 24
+fpower:
+	Width: 17
+	Height: 24
+gpsbox:
+	Width: 24
+	Height: 24
+invulbox:
+	Width: 24
+	Height: 24
+invun:
+	Width: 23
+	Height: 29
+missile2:
+	Width: 15
+	Height: 24
+parabox:
+	Width: 24
+	Height: 24
+sonarbox:
+	Width: 24
+	Height: 24
+stealth2:
+	Width: 23
+	Height: 21
+tquake:
+	Width: 24
+	Height: 23
+armor:
+	Width: 23
+	Height: 17
+chronbox:
+	Width: 24
+	Height: 22
+deviator:
+	Width: 15
+	Height: 24
+levelup:
+	Width: 32
+	Height: 32
+parach:
+	Width: 23
+	Height: 35
+badr:
+	Width: 72
+	Height: 72
+brik:
+	Width: 24
+	Height: 24
+sbag:
+	Width: 24
+	Height: 24
+fenc:
+	Width: 24
+	Height: 24
+cycl:
+	Width: 24
+	Height: 24
+barb:
+	Width: 24
+	Height: 24
+wood:
+	Width: 24
+	Height: 24
+atomicup:
+	Width: 48
+	Height: 48
+atomicdn:
+	Width: 48
+	Height: 48
+bomblet:
+	Width: 7
+	Height: 7
+c1:
+	Width: 50
+	Height: 39
+c2:
+	Width: 50
+	Height: 39
+parabomb:
+	Width: 15
+	Height: 15
+playersmoke:
+	Width: 42
+	Height: 31
+fire1:
+	Width: 23
+	Height: 23
+fire2:
+	Width: 23
+	Height: 23
+fire3:
+	Width: 23
+	Height: 23
+fire4:
+	Width: 7
+	Height: 7
+rank:
+	Width: 12
+	Height: 12
+msub:
+	Width: 56
+	Height: 56
+ttnk:
+	Width: 48
+	Height: 48
+shok:
+	Width: 50
+	Height: 39
+ftrk:
+	Width: 36
+	Height: 36
+bubbles:
+	Width: 8
+	Height: 8
+mpspawn:
+	Width: 24
+	Height: 24
+waypoint:
+	Width: 24
+	Height: 24
+gpsdot:
+	Width: 8
+	Height: 8
+overlay:
+	Width: 24
+	Height: 24
+bib3:
+	Width: 24
+	Height: 24
+bib2:
+	Width: 24
+	Height: 24
+bib1:
+	Width: 24
+	Height: 24
+sc1:
+	Width: 24
+	Height: 19
+sc2:
+	Width: 15
+	Height: 23
+sc3:
+	Width: 20
+	Height: 10
+sc4:
+	Width: 23
+	Height: 20
+sc5:
+	Width: 21
+	Height: 20
+sc6:
+	Width: 24
+	Height: 21
+cr1:
+	Width: 24
+	Height: 24
+cr2:
+	Width: 24
+	Height: 24
+cr3:
+	Width: 24
+	Height: 24
+cr4:
+	Width: 24
+	Height: 24
+cr5:
+	Width: 24
+	Height: 24
+cr6:
+	Width: 24
+	Height: 24
+atomicon:
+	Width: 64
+	Height: 48
+pbmbicon:
+	Width: 64
+	Height: 48
+sonricon:
+	Width: 64
+	Height: 48
+infxicon:
+	Width: 64
+	Height: 48
+warpicon:
+	Width: 64
+	Height: 48
+gpssicon:
+	Width: 64
+	Height: 48
+smigicon:
+	Width: 64
+	Height: 48
+pinficon:
+	Width: 64
+	Height: 48
+gold01:
+	Width: 24
+	Height: 24
+gold02:
+	Width: 24
+	Height: 24
+gold03:
+	Width: 24
+	Height: 24
+gold04:
+	Width: 24
+	Height: 24
+gem01:
+	Width: 24
+	Height: 24
+gem02:
+	Width: 24
+	Height: 24
+gem03:
+	Width: 24
+	Height: 24
+gem04:
+	Width: 24
+	Height: 24
+shadow:
+	Width: 24
+	Height: 24
