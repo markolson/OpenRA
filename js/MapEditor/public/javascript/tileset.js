@@ -95,17 +95,17 @@ RAMAP.newTileset = function(){
           var am = Tileset.actorMap[key];
           var template = RAMAP.newTemplate();
           console.log(Tileset.actorImgPath);
-          template.init(key, am.path, am.width, am.height, Tileset.actorImgPath, []);
+          template.init(key, am.path, am.width/RAMAP.CHUNK_SIZE, am.height/RAMAP.CHUNK_SIZE, Tileset.actorImgPath, []);
           template.source.image.onload = function(){
             loadedCount++;
-            console.log( template.source.image);
+            //console.log( template.source.image);
             if ( loadedCount === imageCount ){
               //add templates to template picker
               for ( key in Tileset.actorTemplates){
-                  console.log( "added " + key );
+                  //console.log( "added " + key );
                   var temp = Tileset.actorTemplates[key];
-                  console.log(temp);
-                  $("#height_"+temp.height/RAMAP.CHUNK_SIZE).append('<input type="image" class="actor" src="' + temp.source.image.src + '" id="'+key+'" onclick="RAMAP.toolPalette.setTool('+key+',\'actorBrush\')" >');
+                  //console.log(temp);
+                  $("#height_"+temp.height).append('<input type="image" class="actor" src="' + temp.source.image.src + '" id="'+key+'" onclick="RAMAP.toolPalette.setTool(\''+key+'\',\'actorBrush\')" >');
               }
               console.log("loaded " + Tileset.name);
               callback.call(this);
@@ -204,8 +204,8 @@ RAMAP.newActorTile = function(){
       }
     },
     render: function(ctx, posX, posY, scale){
-      var template = RAMAP.actorTemplate[ActorTile.name];
-      ctx.drawImage(template.source.image, 0, 0, RAMAP.CHUNK_SIZE, RAMAP.CHUNK_SIZE, posX*scale, posY*scale, scale, scale);
+      var template = RAMAP.actorTileset.actorTemplates[ActorTile.name];
+      ctx.drawImage(template.source.image, posX*scale, posY*scale, template.width*scale, template.height*scale);
     }
   };
   return ActorTile;
@@ -302,6 +302,7 @@ RAMAP.newTilesetLoader = function(){
       var actors = RAMAP.newTileset();
       actors.init( "actors", "", "", "", "ajax/actors.json");
       actors.loadActors(TilesetLoader.loadedTemplate);
+      RAMAP.actorTileset = actors;
 
       snow.init("snow", 'ajax/snow.json', "/images/ramap/Snow/", "ajax/resources.json" );
       snow.loadTemplates(TilesetLoader.loadedTemplate);

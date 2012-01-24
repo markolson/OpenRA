@@ -210,6 +210,9 @@ RAMAP.newMapIO = function(){
     },
     getMapYaml: function(){
       yamlWriter = new YAML();
+      //update MapInfo
+      MapIO.mapInfo.addActors(MapIO.mapData.actors);
+
       yamlText = yamlWriter.dump([MapIO.mapInfo.getInfoObj()]);
       console.log(yamlText);
       return yamlText;
@@ -339,6 +342,21 @@ RAMAP.newMapInfo = function(){
       var mapObj = RAParser.parse( text, 'map.yaml');
       MapInfo.init(mapObj);
     },
+    addActors: function( actorData ){
+      if ( MapInfo.actors === undefined || MapInfo.actors === null){
+        MapInfo.actors = {};
+      }
+      var numActors = Object.keys(MapInfo.actors).length;
+      for ( var i = 0; i < actorData.length; i++ ){
+        for ( var j = 0; j < actorData[i].length; j++ ){
+          var actorTile = actorData[i][j];
+          if( actorTile !== undefined && actorTile !== null ){
+            MapInfo.actors["Actor"+numActors] = { "id": actorTile.name, "Location": [actorTile.x,actorTile.y], "Owner": actorTile.owner };
+            numActors++;
+          }
+        }
+      }
+    },
     getInfoObj: function(){
       return {
         "Selectable": MapInfo.selectable,
@@ -411,13 +429,13 @@ RAMAP.newMapData = function(){
       return MapData.resources[i][j];
     },
     removeResource: function(i,j){
-      MapData.resources[i][j] = null;
+      MapData.addResource(i , j, 0, 0);
     },
     addActor: function(i , j, name, owner){
       var actorTile = RAMAP.newActorTile();
       actorTile.init( name, i, j, owner );
-      console.log(actorTile);
-      console.log("added");
+      //console.log(actorTile);
+      //console.log("added");
       MapData.actors[i][j] = actorTile;
     },
     getActor: function(i, j){

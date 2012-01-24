@@ -294,8 +294,9 @@ RAMAP.newMapView = function(){
           if ( indexI >= 0 && indexI < RAMAP.CANVAS_SIZE &&  indexJ >= 0 && indexJ < RAMAP.CANVAS_SIZE){
             
             var actorTile = RAMAP.mapIO.mapData.getActor(indexI, indexJ);
-            if( actorTile !== undefined ){
+            if( actorTile !== undefined && actorTile !== null){
               console.log( actorTile.x + ":" + actorTile.y );
+              actorTile.render(MapView.actCtx, indexI+shiftX, indexJ+shiftY, scale);
             }
             /**
             if (RAMAP.DEBUG === 0 || RAMAP.DEBUG === undefined){

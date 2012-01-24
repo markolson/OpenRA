@@ -78,14 +78,28 @@ RAMAP.init = function (){
     //console.log( resource );
     RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
   },"ctrlAction": function(id, posX, posY, mapX, mapY){
-    RAMAP.mapIO.mapData.addResource( mapX, mapY, 0, 0);
+    RAMAP.mapIO.mapData.removeResource( mapX, mapY);
     RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
   }, "srcImgFunc": function(id){
     //unhide resources first
     $('#resources').css('display', 'inline');
     return RAMAP.tileset.rsrcTemplates[id].source.image;
   }};
-
+  tools["actorBrush"] = {"action": function(id, posX, posY, mapX, mapY){ 
+    //console.log(id + " rsrcBrush! " + posX + " " + posY + "Tile " + mapX + " " + mapY);
+    RAMAP.mapIO.mapData.addActor( mapX, mapY, id, "Neutral");
+    console.log( "actorBrush" + id );
+    RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
+  },"ctrlAction": function(id, posX, posY, mapX, mapY){
+    RAMAP.mapIO.mapData.removeActor( mapX, mapY);
+    RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
+  }, "srcImgFunc": function(id){
+    //unhide resources first
+    $('.actors').css('display', 'inline');
+    //console.log(RAMAP.actorTileset);
+    //console.log(id);
+    return RAMAP.actorTileset.actorTemplates[id].source.image;
+  }}
   RAMAP.toolPalette = RAMAP.newToolPalette();
   for ( key in tools ){
     var tool = RAMAP.newTool();
