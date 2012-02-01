@@ -245,19 +245,25 @@ RAMAP.newMapView = function(){
         var indexJ = ( j - shiftY );  
         if ( indexI >= 0 && indexI < RAMAP.CANVAS_SIZE &&  indexJ >= 0 && indexJ < RAMAP.CANVAS_SIZE){
           var tile = mapTiles[indexI][indexJ];
+          
+          
 
-          if (RAMAP.DEBUG === 0 || RAMAP.DEBUG === undefined){
-            tile.render(MapView.ctx, tileset.templates, indexI+shiftX, indexJ+shiftY, scale);
-          }
-          else{
-            MapView.ctx.fillStyle = "#806E62";
-            MapView.ctx.fillRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
-            MapView.ctx.strokeStyle = "#333333";
-            MapView.ctx.strokeRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
-            MapView.ctx.fillStyle = "#333333";
-            MapView.ctx.fillText( tile.templateID, (indexI +shiftX)*scale, (indexJ+shiftY)*scale+10);
-            MapView.ctx.fillText( tile.index, (indexI+shiftX)*scale+1, (indexJ+shiftY)*scale+20);
+          if( tile !== undefined){
+            if (RAMAP.DEBUG === 0 || RAMAP.DEBUG === undefined){
+              tile.render(MapView.ctx, tileset.templates, indexI+shiftX, indexJ+shiftY, scale);
+            }
+            else{
+              MapView.ctx.fillStyle = "#806E62";
+              MapView.ctx.fillRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
+              MapView.ctx.strokeStyle = "#333333";
+              MapView.ctx.strokeRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
+              MapView.ctx.fillStyle = "#333333";
+              MapView.ctx.fillText( tile.templateID, (indexI +shiftX)*scale, (indexJ+shiftY)*scale+10);
+              MapView.ctx.fillText( tile.index, (indexI+shiftX)*scale+1, (indexJ+shiftY)*scale+20);
 
+            }
+          }else{
+            console.log("undefined tile at: " + indexI + ":" + indexJ); 
           }
           
         }
