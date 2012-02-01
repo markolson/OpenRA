@@ -1,5 +1,6 @@
 /** RAMAP.newMapInfo requires rayaml-parser.js  */
 /** RAMAP.getMapYaml requires yaml_dumper.js  */
+/** RAMAP.newUnzipper requires zip.js  */
 
 RAMAP.newMapIO = function(){
   var MapIO = {
@@ -87,27 +88,35 @@ RAMAP.newMapIO = function(){
       // files is a FileList of File objects. List some properties.
       console.log("Dropped File");
       console.log(input);
-      files = []
       for (var i = 0, f; f = input[i]; i++) {
         console.log(f);
-        files[f.name] = f;  
+        if( /^.*\.oramap$/.test(f.name) ){
+          alert("unzip dat shit");
+          var unzipper = RAMAP.newUnzipper();
+          unzipper.getEntries( f, function(entries){
+              entries.forEach(function(entry){
+                  console.log(entry);
+                });
+            });
+        }
+        if( f.name === "map.yaml" ){
+          console.log("map.yaml dropped");
+          MapIO.infoFile = f;
+        }
+        if ( f.name === "map.bin" ){
+          console.log("map.bin dropped");
+          var fr = new FileReader();
+          fr.readAsArrayBuffer( f );
+          fr.onloadend = function (frEvent) {  
+            //console.log(frEvent.target.result);
+            var map_bin = frEvent.target.result;
+            MapIO.readMapBin(map_bin);
+            //TODO rewrite using web workers
+            //var worker = new Worker("/javascript/write_map.js");
+          };
+        }
       }
-      if("map.yaml" in files){
-        console.log("map.yaml dropped");
-        MapIO.infoFile = files["map.yaml"]; 
-      }
-      if("map.bin" in files){
-        console.log("map.bin dropped");
-        var fr = new FileReader();
-        fr.readAsArrayBuffer( files["map.bin"]);
-        fr.onloadend = function (frEvent) {  
-          //console.log(frEvent.target.result);
-          var map_bin = frEvent.target.result;
-          MapIO.readMapBin(map_bin);
-          //TODO rewrite using web workers
-          //var worker = new Worker("/javascript/write_map.js");
-        };
-      }
+
     },
     newMap: function( width, height, tileset){
       console.log(width);
@@ -520,3 +529,24 @@ RAMAP.dataWriter = (function(){
     }
 }());
 
+RAMAP.newUnzipper = function(){
+  var Unzipper = {
+    URL : document.webkitURL || document.mozURL || document.URL,
+    getEntries : function(file, onend) {
+      zip.createReader(new zip.BlobReader(file), function(zipReader) {
+        zipReader.getEntries(onend);
+      }, onerror);
+    },
+    getEntryFile : function(entry, onend, onprogress) {
+      var writer;
+      function getData() {
+          entry.getData(writer, function(blob) {
+              onend( URL.createObjectURL(blob));
+          }, onprogress);
+      };
+      writer = new zip.BlobWriter();
+      getData();
+    }
+  };
+  return Unzipper;
+};
