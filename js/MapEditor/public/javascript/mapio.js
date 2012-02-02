@@ -2,6 +2,8 @@
 /** RAMAP.getMapYaml requires yaml_dumper.js  */
 /** RAMAP.newUnzipper requires zip.js  */
 
+zip.workerScriptsPath = "/javascript/";
+
 RAMAP.newMapIO = function(){
   var MapIO = {
     dropZone: 0,
@@ -91,11 +93,38 @@ RAMAP.newMapIO = function(){
       for (var i = 0, f; f = input[i]; i++) {
         console.log(f);
         if( /^.*\.oramap$/.test(f.name) ){
-          alert("unzip dat shit");
           var unzipper = RAMAP.newUnzipper();
           unzipper.getEntries( f, function(entries){
               entries.forEach(function(entry){
                   console.log(entry);
+                  if( entry.filename === "map.bin" ){
+                    unzipper.getEntryFile(entry, function(blob){
+                      console.log("unzipped " + entry.filename);
+                      console.log(blob);
+                      var fr = new FileReader();
+                      fr.readAsArrayBuffer( blob );
+                      fr.onloadend = function (frEvent) {  
+                        //console.log(frEvent.target.result);
+                        var map_bin = frEvent.target.result;
+                        MapIO.readMapBin(map_bin);
+                        //TODO rewrite using web workers
+                        //var worker = new Worker("/javascript/write_map.js");
+                      };
+                    }, function(progress, maxvalue){
+                      console.log(progress);
+                      console.log(maxvalue);
+                    });
+                  }
+                  if( entry.filename === "map.yaml" ){
+                    unzipper.getEntryFile(entry, function(blob){
+                      console.log("unzipped " + entry.filename);
+                      console.log(blob);
+                      MapIO.infoFile = blob;
+                    }, function(progress, maxvalue){
+                      console.log(progress);
+                      console.log(maxvalue);
+                    });
+                  }
                 });
             });
         }
@@ -532,20 +561,53 @@ RAMAP.dataWriter = (function(){
 RAMAP.newUnzipper = function(){
   var Unzipper = {
     URL : document.webkitURL || document.mozURL || document.URL,
+    waitlist: [],
+    gettingData: false,
     getEntries : function(file, onend) {
       zip.createReader(new zip.BlobReader(file), function(zipReader) {
         zipReader.getEntries(onend);
       }, onerror);
     },
     getEntryFile : function(entry, onend, onprogress) {
+      //add to waitlist if not already in it
+      if( !Unzipper.entryInWaitlist(entry) ){
+        //console.log( "adding " + entry.filename + " to waitlist");
+        Unzipper.waitlist.push(entry);
+      }
       var writer;
-      function getData() {
-          entry.getData(writer, function(blob) {
-              onend( URL.createObjectURL(blob));
-          }, onprogress);
-      };
       writer = new zip.BlobWriter();
-      getData();
+      //console.log("getData");
+      //console.log("Unzipper.gettingData" + Unzipper.gettingData );
+      if( Unzipper.gettingData === false ){
+        Unzipper.gettingData = true;
+        entry.getData(writer, function(data){ 
+            Unzipper.gettingData = false;
+            Unzipper.waitlist.shift(); //remove from waitlist
+            //console.log("callback Unzipper.gettingData" + Unzipper.gettingData );
+            onend(data);
+            //checkWaitlist();
+            if( Unzipper.waitlist.length > 0 ){
+              //console.log( "calling getEntryFile for: " + Unzipper.waitlist[0].filename );
+              Unzipper.getEntryFile( Unzipper.waitlist[0], onend, onprogress );
+            }
+          },
+          onprogress);
+      }
+    },
+    checkWaitlist: function(){
+      if( Unzipper.waitlist.length > 0 ){
+        Unzipper.getEntryFile( Unzipper.waitlist[0], onend, onprogress );
+      }
+      //if waitlist greater than zero, call getEntryFile
+    },
+    entryInWaitlist: function(entry){
+      var result = false;
+      for( var i = 0; i < Unzipper.waitlist.length; i++ ){
+        if( Unzipper.waitlist[i] === entry ){
+          result = true;
+        }
+      }
+      return result;
     }
   };
   return Unzipper;
