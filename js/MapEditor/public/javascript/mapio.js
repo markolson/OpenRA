@@ -66,7 +66,12 @@ RAMAP.newMapIO = function(){
           //give the blob the map array buffer and write it.
           var bb = new window.WebKitBlobBuilder();
           bb.append( MapIO.getMapBuffer() );
-          fileWriter.write(bb.getBlob('application/octet-stream'));
+          var blob = bb.getBlob('application/octet-stream');
+          console.log(blob);
+          console.log("blob name: " + blob.name);
+          blob.name = "map.bin";
+          console.log("blob name: " + blob.name);
+          fileWriter.write(blob);
         }, MapIO.errorHandler);
       }, MapIO.errorHandler);
 
@@ -82,7 +87,12 @@ RAMAP.newMapIO = function(){
           //give the blob the map array buffer and write it.
           var bb = new window.WebKitBlobBuilder();
           bb.append( MapIO.getMapYaml() );
-          fileWriter.write(bb.getBlob('text/plain'));
+          var blob = bb.getBlob('text/plain');
+          console.log(blob);
+          console.log("blob name: " + blob.name);
+          blob.name = "map.bin";
+          console.log("blob name: " + blob.name);
+          fileWriter.write(blob);
         }, MapIO.errorHandler);
       }, MapIO.errorHandler);
     },
@@ -93,36 +103,62 @@ RAMAP.newMapIO = function(){
       for (var i = 0, f; f = input[i]; i++) {
         console.log(f);
         if( /^.*\.oramap$/.test(f.name) ){
-          var unzipper = RAMAP.newUnzipper();
+          var unzipper = RAMAP.newUnzipper( function(){ 
+              console.log("finished reading");
+              MapIO.mapDataStorage.push( MapIO.mapData );
+              MapIO.onReadEndCallback();
+            });
           unzipper.getEntries( f, function(entries){
+              unzipper.entriesLength = entries.length;
               entries.forEach(function(entry){
+                  var bfr = new FileReader();
+                  var yfr = new FileReader();
                   console.log(entry);
                   if( entry.filename === "map.bin" ){
+                    console.log("map.bin entry name");
                     unzipper.getEntryFile(entry, function(blob){
-                      console.log("unzipped " + entry.filename);
+                      console.log("unzipped bin");
                       console.log(blob);
-                      var fr = new FileReader();
-                      fr.readAsArrayBuffer( blob );
-                      fr.onloadend = function (frEvent) {  
+                      bfr.readAsArrayBuffer( blob );
+                      bfr.onloadend = function (frEvent) {  
                         //console.log(frEvent.target.result);
+                        console.log("map.bin entry completed");
                         var map_bin = frEvent.target.result;
                         MapIO.readMapBin(map_bin);
+                        unzipper.entryCompleted();
                         //TODO rewrite using web workers
                         //var worker = new Worker("/javascript/write_map.js");
                       };
                     }, function(progress, maxvalue){
-                      console.log(progress);
-                      console.log(maxvalue);
+                      //console.log(progress);
+                      //console.log(maxvalue);
                     });
                   }
                   if( entry.filename === "map.yaml" ){
+                    console.log("map.yaml entry name");
                     unzipper.getEntryFile(entry, function(blob){
-                      console.log("unzipped " + entry.filename);
+                      console.log("unzipped yaml");
                       console.log(blob);
                       MapIO.infoFile = blob;
+                      console.log(MapIO.infoFile);
+                      if( MapIO.infoFile !== undefined && MapIO.infoFile !== 0 ){
+                        console.log("map.yaml file reader");
+                        yfr.readAsText( MapIO.infoFile );
+                        console.log("map.yaml read as Text");
+                        yfr.onloadend = function (frEvent) {  
+                          console.log("yaml on loadend");
+                          var yaml_text = frEvent.target.result;
+                          console.log(yaml_text);
+                          MapIO.readMapYaml(yaml_text);
+                        };
+                        MapIO.infoFile = 0;
+                      }else{
+                        console.log("ERROR!!! infoFile empty");
+                      }
+                      unzipper.entryCompleted();
                     }, function(progress, maxvalue){
-                      console.log(progress);
-                      console.log(maxvalue);
+                      //console.log(progress);
+                      //console.log(maxvalue);
                     });
                   }
                 });
@@ -167,6 +203,16 @@ RAMAP.newMapIO = function(){
     saveMap: function(){
       
       console.log("savemap");
+      /**
+      var zipper = RAMAP.newZipper();
+      zipper.addFiles( [], function(progress, max){ 
+        console.log("zipping progress: " + progress);
+        console.log("zipping max: " + max);
+        },
+        function(blobURL){
+          
+        }
+      );*/
       window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
       window.requestFileSystem( /**window.PERSISTENT*/ window.TEMPORARY, 1, MapIO.onInitFS , MapIO.errorHandler);
     },
@@ -230,21 +276,24 @@ RAMAP.newMapIO = function(){
           MapIO.mapData.addResource(i,j, resource, index);
         }
       }
-
+/**
       if ( MapIO.infoFile !== undefined && MapIO.infoFile !== 0 ){
         var fr = new FileReader();
         fr.readAsText( MapIO.infoFile );
         fr.onloadend = function (frEvent) {  
           var yaml_text = frEvent.target.result;
+          console.log(yaml_text);
           MapIO.readMapYaml(yaml_text);
         };
         MapIO.infoFile = 0;
+      }else{
+        console.log("ERROR!!! infoFile empty");
       }
 
       console.log("finished reading");
       MapIO.mapDataStorage.push( MapIO.mapData );
       MapIO.onReadEndCallback();
-      
+*/      
     },
     getMapYaml: function(){
       yamlWriter = new YAML();
@@ -558,11 +607,53 @@ RAMAP.dataWriter = (function(){
     }
 }());
 
-RAMAP.newUnzipper = function(){
+RAMAP.newZipper = function(){
+  var Zipper = {
+    URL: document.webkitURL || document.mozURL || document.URL,
+    addIndex: 0,
+    zipWriter: 0,
+    addFiles: function(files, onprogress, onend){
+      Zipper.addIndex = 0;
+      writer = new zip.BlobWriter();
+      zip.createWriter(writer, function(writer) {
+						Zipper.zipWriter = writer;
+						Zipper.nextFile(files);
+					}, function(e){ console.log( "ERROR: " + e); });
+    },
+    nextFile: function(files){
+      var file = files[Zipper.addIndex];
+      zipWriter.add(file.name, new zip.BlobReader(file), function() {
+        Zipper.addIndex++;
+        if (addIndex < files.length){
+		  Zipper.nextFile(files);
+        }else{
+          Zipper.zipWriter.close(function(blob) {
+            onend(URL.createObjectURL(blob));
+            Zipper.zipWriter = null;
+	      });
+        }
+	  }, onprogress);
+    }
+  };
+  return Zipper;
+}
+
+RAMAP.newUnzipper = function(compCallback){
   var Unzipper = {
     URL : document.webkitURL || document.mozURL || document.URL,
     waitlist: [],
     gettingData: false,
+    entriesCount: 0,
+    entriesLength: 0,
+    completeCallback: compCallback,
+    entryCompleted: function(){
+      Unzipper.entriesCount++;
+      console.log("Entry Completed");
+      if( Unzipper.entriesCount >= Unzipper.entriesLength ){
+        console.log("Calling Complete Callback");
+        Unzipper.completeCallback();
+      }
+    },
     getEntries : function(file, onend) {
       zip.createReader(new zip.BlobReader(file), function(zipReader) {
         zipReader.getEntries(onend);
@@ -572,7 +663,9 @@ RAMAP.newUnzipper = function(){
       //add to waitlist if not already in it
       if( !Unzipper.entryInWaitlist(entry) ){
         //console.log( "adding " + entry.filename + " to waitlist");
-        Unzipper.waitlist.push(entry);
+        
+        //TODO need to store the onend and onprogress callbacks as well
+        Unzipper.waitlist.push({"name": entry.filename, "entry":entry, "onend": onend, "onprogress": onprogress});
       }
       var writer;
       writer = new zip.BlobWriter();
@@ -585,25 +678,28 @@ RAMAP.newUnzipper = function(){
             Unzipper.waitlist.shift(); //remove from waitlist
             //console.log("callback Unzipper.gettingData" + Unzipper.gettingData );
             onend(data);
-            //checkWaitlist();
+            Unzipper.checkWaitlist();
+            /**
             if( Unzipper.waitlist.length > 0 ){
               //console.log( "calling getEntryFile for: " + Unzipper.waitlist[0].filename );
               Unzipper.getEntryFile( Unzipper.waitlist[0], onend, onprogress );
-            }
+            }*/
           },
           onprogress);
       }
     },
     checkWaitlist: function(){
       if( Unzipper.waitlist.length > 0 ){
-        Unzipper.getEntryFile( Unzipper.waitlist[0], onend, onprogress );
+        var ent = Unzipper.waitlist[0];
+        Unzipper.getEntryFile( ent["entry"], ent["onend"], ent["onprogress"] );
       }
       //if waitlist greater than zero, call getEntryFile
     },
     entryInWaitlist: function(entry){
       var result = false;
       for( var i = 0; i < Unzipper.waitlist.length; i++ ){
-        if( Unzipper.waitlist[i] === entry ){
+        var ent = Unzipper.waitlist[i];
+        if( ent["name"] === entry.filename ){
           result = true;
         }
       }
