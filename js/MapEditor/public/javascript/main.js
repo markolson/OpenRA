@@ -114,11 +114,11 @@ RAMAP.onMapRead = function(){
   RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
 };
 
-RAMAP.onMapWrite = function(fileEntry){
+RAMAP.onMapWrite = function(name, url){
   $("#instructions").hide();
   console.log('mapwrite callback');
   $('#download_bin').show();
-  $('#download_bin').html("<a href='"+fileEntry.toURL()+"'> map.bin </a>");
+  $('#download_bin').html("<a href='"+url+"' download='"+name+".oramap' > Download </a>");
 };
 
 RAMAP.onMapWriteYaml = function(fileEntry){
@@ -175,8 +175,9 @@ RAMAP.onDebug = function(){
 }*/
 
 RAMAP.saveMap = function(){
-  window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
-  window.requestFileSystem( /**window.PERSISTENT*/ window.TEMPORARY, 1, RAMAP.mapIO.onInitFS , RAMAP.mapIO.errorHandler);
+  RAMAP.mapIO.saveMap();
+  //window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+  //window.requestFileSystem( /**window.PERSISTENT*/ window.TEMPORARY, 1, RAMAP.mapIO.onInitFS , RAMAP.mapIO.errorHandler);
 }
 
 

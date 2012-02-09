@@ -1,6 +1,7 @@
 /** RAMAP.newMapInfo requires rayaml-parser.js  */
 /** RAMAP.getMapYaml requires yaml_dumper.js  */
-/** RAMAP.newUnzipper requires zip.js  */
+/** RAMAP.newUnzipper requires zip.js, inflate.js  */
+/** RAMAP.newZipper requires zip.js, deflate.js  */
 
 zip.workerScriptsPath = "/javascript/";
 
@@ -201,20 +202,77 @@ RAMAP.newMapIO = function(){
       MapIO.mapInfo = RAMAP.newMapInfo();
     },
     saveMap: function(){
-      
+
       console.log("savemap");
-      /**
+      var bb = new window.WebKitBlobBuilder();
+      bb.append( MapIO.getMapBuffer() );
+      var bin_blob = bb.getBlob('application/octet-stream');
+/**
+      var yb = new window.WebKitBlobBuilder();
+      yb.append( MapIO.getMapYaml() );
+      var yaml_blob = bb.getBlob('text/plain');
+      yaml_blob.name = "map.yaml";
+*/
+      onprogress = function(progress, max){ 
+          console.log("zipping progress: " + progress);
+          console.log("zipping max: " + max);
+      };
+      
+      zip.createWriter(new zip.BlobWriter(), function(writer) {
+        writer.add("map.bin", new zip.BlobReader(bin_blob), function() {
+          var map_text = MapIO.getMapYaml();
+          console.log(map_text);
+          writer.add("map.yaml", new zip.TextReader( map_text  ), function() {
+            console.log("map yaml only");
+            writer.close(function(blob) {
+              var blobURL = window.webkitURL.createObjectURL(blob);
+              MapIO.onWriteEndCallback( MapIO.mapInfo.title, blobURL);
+            });
+          }, onprogress);
+        }, onprogress);
+	  }, function(e){ console.log( "ERROR: " + e); });
+
+
+/**
+      var map_text = "poop" //MapIO.getMapYaml();
+      console.log(map_text);
+      zip.createWriter(new zip.BlobWriter(), function(writer) {
+
+        // use a TextReader to read the String to add
+        writer.add("map.bin", new zip.BlobReader(bin_blob), function() {
+          // onsuccess callback
+
+          // close the zip writer
+          writer.close(function(blob) {
+            // blob contains the zip file as a Blob object
+            MapIO.onWriteEndCallback(window.webkitURL.createObjectURL(blob));
+          });
+        }, function(progress, max) {
+          // onprogress callback
+          console.log("zipping progress: " + progress);
+          console.log("zipping max: " + max);
+        });
+      }, function(error) {
+        // onerror callback
+        console.log( "ERROR: " + e);
+      });
+*/
+
+/**
       var zipper = RAMAP.newZipper();
-      zipper.addFiles( [], function(progress, max){ 
+      zipper.addFiles( [bin_blob, yaml_blob], function(progress, max){ 
         console.log("zipping progress: " + progress);
         console.log("zipping max: " + max);
         },
         function(blobURL){
-          
+          MapIO.onWriteEndCallback(MapIO.mapInfo.title, blobURL);
+          console.log("Finished Zipping: " + blobURL);
         }
-      );*/
-      window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
-      window.requestFileSystem( /**window.PERSISTENT*/ window.TEMPORARY, 1, MapIO.onInitFS , MapIO.errorHandler);
+      );
+*/
+      //window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+      //window.requestFileSystem( /**window.PERSISTENT*/ window.TEMPORARY, 1, MapIO.onInitFS , MapIO.errorHandler);
+      
     },
     readMapYaml: function( text ){
       MapIO.mapInfo = RAMAP.newMapInfo();
@@ -457,7 +515,7 @@ RAMAP.newMapInfo = function(){
         "UseAsShellmap": MapInfo.useasshellmap,
         "Type": MapInfo.type,
         "Players": MapInfo.players,
-        "Actors": MapInfo.actors,
+        "Actors": Object.keys(MapInfo.actors).length > 0 ? MapInfo.actors : null,
         "Smudges": MapInfo.smudges,
         "Rules": MapInfo.rules,
         "Sequences": MapInfo.sequences,
@@ -609,7 +667,7 @@ RAMAP.dataWriter = (function(){
 
 RAMAP.newZipper = function(){
   var Zipper = {
-    URL: document.webkitURL || document.mozURL || document.URL,
+    URL: window.webkitURL || window.mozURL || window.URL,
     addIndex: 0,
     zipWriter: 0,
     addFiles: function(files, onprogress, onend){
@@ -617,22 +675,22 @@ RAMAP.newZipper = function(){
       writer = new zip.BlobWriter();
       zip.createWriter(writer, function(writer) {
 						Zipper.zipWriter = writer;
-						Zipper.nextFile(files);
+						Zipper.nextFile(files, onprogress, onend);
 					}, function(e){ console.log( "ERROR: " + e); });
     },
-    nextFile: function(files){
+    nextFile: function(files, onprogress, onend){
       var file = files[Zipper.addIndex];
-      zipWriter.add(file.name, new zip.BlobReader(file), function() {
+      Zipper.zipWriter.add(file.name, new zip.BlobReader(file), function() {
         Zipper.addIndex++;
-        if (addIndex < files.length){
-		  Zipper.nextFile(files);
+        if (Zipper.addIndex < files.length){
+		  Zipper.nextFile(files, onprogress, onend);
         }else{
           Zipper.zipWriter.close(function(blob) {
-            onend(URL.createObjectURL(blob));
+            onend(Zipper.URL.createObjectURL(blob));
             Zipper.zipWriter = null;
 	      });
         }
-	  }, onprogress);
+	  }, onprogress, {"level":0});
     }
   };
   return Zipper;
