@@ -4,19 +4,18 @@ require 'json'
 include Magick
 
 #base_file_name = "snow"
-base_file_name = "actor"
+#base_file_name = "actor"
 
-file = File.open( base_file_name + ".json" , "rb")
-actors =  JSON.parse(file.read)
+#file = File.open( base_file_name + ".json" , "rb")
+#actors =  JSON.parse(file.read)
+#puts actors.inspect
 
-puts actors.inspect
+#json_name = "actor.json"
+dir_name = "e_images"
+output_dir_name = "final_e_files"
 
-json_name = "actor.json"
-dir_name = "ActorsBackup"
-output_dir_name = "Actors"
-
-jsonFile = File.read(json_name)
-json = JSON.parse(jsonFile)
+#jsonFile = File.read(json_name)
+#json = JSON.parse(jsonFile)
 
 Dir.entries(dir_name).each do |filename|
   next if filename == "."

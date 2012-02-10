@@ -95,7 +95,7 @@ RAMAP.newTileset = function(){
           var am = Tileset.actorMap[key];
           var template = RAMAP.newTemplate();
           console.log(Tileset.actorImgPath);
-          template.init(key, am.path, am.width/RAMAP.CHUNK_SIZE, am.height/RAMAP.CHUNK_SIZE, Tileset.actorImgPath, []);
+          template.init(key, am.path, Math.floor(am.width/RAMAP.CHUNK_SIZE), Math.floor(am.height/RAMAP.CHUNK_SIZE), Tileset.actorImgPath, []);
           template.source.image.onload = function(){
             loadedCount++;
             //console.log( template.source.image);
@@ -205,7 +205,11 @@ RAMAP.newActorTile = function(){
     },
     render: function(ctx, posX, posY, scale){
       var template = RAMAP.actorTileset.actorTemplates[ActorTile.name];
-      ctx.drawImage(template.source.image, posX*scale, posY*scale, template.width*scale, template.height*scale);
+      if( template !== undefined ){
+        ctx.drawImage(template.source.image, posX*scale, posY*scale, template.width*scale, template.height*scale);
+      }else{
+        console.log("XXXXXX Missing actor: " + ActorTile.name);
+      }
     }
   };
   return ActorTile;
@@ -252,7 +256,7 @@ RAMAP.newTile = function(){
           //console.log( Tile.templateID + " " + template.source.image.src + " " + Tile.index + " chunk:" + chunk.x + " " + chunk.y + "scale " + RAMAP.CHUNK_SIZE );
           ctx.drawImage(template.source.image, chunk.x, chunk.y, RAMAP.CHUNK_SIZE, RAMAP.CHUNK_SIZE, posX*scale, posY*scale, scale, scale);
         }else{
-          console.log( "Truffle shuffle: " + Tile.templateID + "index: " + Tile.index);
+          console.log( "XXXXX Missing Template: " + Tile.templateID + " index: " + Tile.index);
         }
 
         /** Use this in case of loading problems
