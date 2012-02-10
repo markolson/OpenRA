@@ -81,6 +81,9 @@ RAParser.getValue = function(value){
   value = value.replace(/^\s+/,"");
   var split = value.split(",");
   if( split.length > 1 ){
+    for( idx in split){
+      split[idx] = split[idx].replace(/^\s+/,"");
+    }
     return split;
   }
   return value;
