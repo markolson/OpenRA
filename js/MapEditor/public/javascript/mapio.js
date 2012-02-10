@@ -522,6 +522,54 @@ RAMAP.newMapInfo = function(){
         "Weapons": MapInfo.weapons,
         "Voices": MapInfo.voices 
       };
+    },
+    /** assumes all data is valid */
+    updateInfo: function(){ 
+      MapInfo.title = $("#title").val();
+      MapInfo.author = $("#author").val();
+      MapInfo.description = $("#description").val();
+      MapInfo.tileset = $("radio_snow:checked").val() !== undefined ? "SNOW" : "TEMPERAT";
+      //mapsize
+      MapInfo.mapsize[0] = $("#mapsize_x").val();
+      MapInfo.mapsize[1] = $("#mapsize_y").val();
+      //bounds
+      MapInfo.bounds[0] = $("#mapsize_E").val();
+      MapInfo.bounds[1] = $("#mapsize_W").val();
+      MapInfo.bounds[2] = $("#mapsize_N").val();
+      MapInfo.bounds[3] = $("#mapsize_S").val();
+      MapInfo.useasshellmap = ($('#shellmap:checked').val() !== undefined ) ;
+      MapInfo.selectable = ($('#selectable:checked').val() !== undefined ) ;
+
+    },
+    updatePropDialog: function(){
+      $("#title").val(MapInfo.title);
+      $("#author").val(MapInfo.author);
+      $("#description").val(MapInfo.description);
+      if( MapInfo.tileset === "SNOW" ){
+        $("#radio_snow").prop("checked", true);
+        $("#radio_snow").button('refresh');
+      }
+      if( MapInfo.tileset === "TEMPERAT" ){
+        $("#radio_temperat").prop("checked", true);
+        $("#radio_temperat").button('refresh');
+      }
+      //mapsize
+      $("#mapsize_x").val(MapInfo.mapsize[0]);
+      $("#mapsize_y").val(MapInfo.mapsize[1]);
+      //bounds
+      $("#bound_E").val(MapInfo.bounds[0]);
+      $("#bound_W").val(MapInfo.bounds[1]);
+      $("#bound_N").val(MapInfo.bounds[2]);
+      $("#bound_S").val(MapInfo.bounds[3]);
+      if( MapInfo.useasshellmap === "True" ){
+        $("#shellmap").prop("checked", true);
+        $("#shellmap").button('refresh');
+      }
+      if( MapInfo.selectable === "True" ){
+        $("#selectable").prop("checked", true);
+        $("#selectable").button('refresh');
+      }
+
     }
   };
   return MapInfo;

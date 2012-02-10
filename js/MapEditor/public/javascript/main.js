@@ -26,7 +26,20 @@ $(document).ready( function(){
     //$("#app").hide();
     var tl = RAMAP.newTilesetLoader();
     tl.init(RAMAP.init);
+
+    //set up dialogs
+    $("#map_prop_dialog").dialog({ autoOpen: false }); 
+    $( ".radio" ).buttonset();
+    $( "input:checkbox, input:submit, a, button" ).button();
+    
 });
+
+RAMAP.showApp = function(){
+  $("#app").show();
+  $("#map_menu").show();
+  $("#map_options").show();
+  $("#instructions").hide();
+}
 
 RAMAP.setTileset = function( tileset ){
   RAMAP.tileset = RAMAP.tilesets[tileset];
@@ -112,10 +125,11 @@ RAMAP.init = function (){
 
 RAMAP.onMapRead = function(){
   RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
+  RAMAP.mapIO.mapInfo.updatePropDialog();
+  RAMAP.showApp();
 };
 
 RAMAP.onMapWrite = function(name, url){
-  $("#instructions").hide();
   console.log('mapwrite callback');
   $('#download_bin').show();
   $('#download_bin').html("<a href='"+url+"' download='"+name+".oramap' > Download </a>");

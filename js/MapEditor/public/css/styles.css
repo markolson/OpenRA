@@ -16,24 +16,25 @@ body{
   font-family: Helvitica, Arial;
   /*color: #A37055; orange */
   /*color:#3A4E57;*/
-  color: #F1F1F1;
+  /*color: #F1F1F1;*/
 }
-
+/**
 input, textarea, button, label{
   font-size: .75em;
   margin-left: 10px;
   margin-top: 1px;
   margin-bottom: 1px;
   color:#3A4E57;
-}
+}*/
 
 form{
   display: inline;
 }
 
+/*
 label {
   color: #F4F1EA;
-}
+}*/
 
 table {
   width: 100%;
@@ -103,6 +104,15 @@ h3 {
   height: 700px;
   border: 1px solid #000;
   background: #000; /** to hide missing pixels in template*/
+  display: none;
+}
+
+#map_options{
+  display: none;
+}
+
+#map_menu{
+  display:none;
 }
 
 #map_window{

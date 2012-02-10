@@ -8,21 +8,20 @@
 %script(type="text/javascript" src="/javascript/tileset.js")
 %script(type="text/javascript" src="/javascript/rayaml-parser.js")
 %script(type="text/javascript" src="/javascript/yaml_dumper.js")
+%link(rel="stylesheet" href="/css/styles.css")
 %link(rel="stylesheet" href="/css/template_picker.css")
+%link(rel="stylesheet" href="/css/jquery-ui-1.8.17.custom.css")
+%link(rel="stylesheet" href="/css/dialog.css")
+
 #menu
   #general_menu(style="width: 500px; float: left;")
-    %button(onclick="$('#new_input').show(); $('#instructions').hide(); ") New
-    %span(id="new_input")
-      w:
-      %input( id="new_width" maxlength="3" value="128")
-      h:
-      %input( id="new_height" maxlength="3" value="128")
-      %button(onclick="$('#new_input').hide(); RAMAP.newMap();") Create 
-    %button(onclick="RAMAP.saveMap();") Save
+    %button(onclick="$('#instructions').hide(); ") New
+    %span(id="map_options")
+      %button(id="map_prop_butt" onclick="$('#map_prop_dialog').dialog('open')") Properties
+      %button(onclick="RAMAP.saveMap();") Save
     %span(id="download_bin" class="download")
-    %span(id="download_yaml" class="download")
     %span(id="instructions")
-      Drop a map.bin & map.yaml file into the window or click new.
+      Drop a .oramap file into the window or click new.
 
   #map_menu
     %button(onclick="RAMAP.setTileset('snow');") Snow
@@ -49,3 +48,47 @@
           #height_4(class="height")
           #height_5(class="height")
   %span(id="map_window")
+
+#map_prop_dialog
+  .text_input
+    %label(for="title") Map Title
+    %input(id="title") 
+  .text_input
+    %label(for="author") Author
+    %input(id="author") 
+  .text_input
+    %label Description
+    %textarea(id="description")
+  %label Tileset
+  .radio
+    .input
+      %input(type="radio" id="radio_snow" name="radio")
+      %label(for="radio_snow") Snow 
+      %input(type="radio" id="radio_temperat" name="radio" style="margin-left: 100px;")
+      %label(for="radio_temperat") Temperate
+  %label Map Size
+  #mapsize
+    .num_input
+      %label(for="mapsize_x") X
+      %input(id="mapsize_x" maxlength="3")
+      %label(for="mapsize_y") Y
+      %input(id="mapsize_y" maxlength="3")
+  %label Map Bounds
+  #bounds
+    .num_input
+      %label(for="bound_E") E
+      %input(id="bound_E" maxlength="3")
+      %label(for="bound_W") W
+      %input(id="bound_W" maxlength="3")
+      %label(for="bound_N") N
+      %input(id="bound_N" maxlength="3")
+      %label(for="bound_S") S
+      %input(id="bound_S" maxlength="3")
+  .input
+    %input(type="checkbox" id="selectable")
+    %label(for="selectable") Selectable
+  .input
+    %input(type="checkbox" id="shellmap")
+    %label(for="shellmap") Shell Map
+  .input
+    %button SAVE
