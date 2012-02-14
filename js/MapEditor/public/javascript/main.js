@@ -22,7 +22,7 @@ RAMAP.DEBUG = 0;
 RAMAP.TERRAIN_ID = 65535;
 
 $(document).ready( function(){
-
+    $("#wrapper").hide();
     //$("#menu").hide();
     //$("#app").hide();
     var tl = RAMAP.newTilesetLoader();
@@ -71,6 +71,7 @@ RAMAP.newMap = function(){
 
 RAMAP.init = function (){
   console.log("init called");
+  $("#wrapper").show();
   //set default template
   RAMAP.tileset = RAMAP.tilesets["snow"];
 
