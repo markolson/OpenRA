@@ -22,13 +22,15 @@ RAMAP.DEBUG = 0;
 RAMAP.TERRAIN_ID = 65535;
 
 $(document).ready( function(){
+
     //$("#menu").hide();
     //$("#app").hide();
     var tl = RAMAP.newTilesetLoader();
     tl.init(RAMAP.init);
 
     //set up dialogs
-    $("#map_prop_dialog").dialog({ autoOpen: false }); 
+    $("#map_prop_dialog").dialog({ autoOpen: false, resizable: false }); 
+    $("#map_prop_dialog").validate();
     $( ".radio" ).buttonset();
     $( "input:checkbox, input:submit, a, button" ).button();
     
@@ -50,12 +52,21 @@ RAMAP.setTileset = function( tileset ){
   }
 }
 
+RAMAP.onClickNew = function(){
+  $('#instructions').hide();
+  $('#map_prop_dialog').attr('action', 'javascript:RAMAP.newMap();');
+  $('#submit_prop_dialog').attr('value', 'CREATE');
+  $('#map_prop_dialog').dialog('open');
+};
+
 RAMAP.newMap = function(){
-  $("#instructions").hide();
-  //$("#menu").show();
-  //$("#app").show();
-  RAMAP.mapIO.newMap( Number( $("#new_width").val()), Number($("#new_height").val()), RAMAP.tileset );
+  RAMAP.mapIO.newMap( RAMAP.tilesets );
   RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
+  //return dialog back to update
+  $('#map_prop_dialog').attr('action', 'javascript:RAMAP.saveProperties();');
+  $('#submit_prop_dialog').attr('value', 'UPDATE');
+  $('#map_prop_dialog').dialog('close');
+  RAMAP.showApp();
 }
 
 RAMAP.init = function (){
@@ -190,8 +201,16 @@ RAMAP.onDebug = function(){
 
 RAMAP.saveMap = function(){
   RAMAP.mapIO.saveMap();
-  //window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
-  //window.requestFileSystem( /**window.PERSISTENT*/ window.TEMPORARY, 1, RAMAP.mapIO.onInitFS , RAMAP.mapIO.errorHandler);
+}
+
+RAMAP.saveProperties = function(){
+  RAMAP.mapIO.mapInfo.updateInfo();
+  //update the tileset 
+  if ( RAMAP.mapIO.mapInfo.tileset !== undefined ){
+    console.log("set tileset");
+    RAMAP.setTileset( RAMAP.mapIO.mapInfo.tileset.toLowerCase() );
+  }
+  $("#map_prop_dialog").dialog('close');
 }
 
 

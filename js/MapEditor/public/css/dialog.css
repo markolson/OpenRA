@@ -1,10 +1,14 @@
-
+.error{
+  color: red;
+  font-size: .75em;
+  display: block;
+}
 .input{
   margin-top: 5px;
 }
 
 .num_input input{
-  width: 25px;
+  width: 35px;
 }
 
 .text_input label{

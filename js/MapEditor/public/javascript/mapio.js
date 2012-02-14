@@ -184,9 +184,15 @@ RAMAP.newMapIO = function(){
       }
 
     },
-    newMap: function( width, height, tileset){
+    newMap: function(tilesets){
+      MapIO.mapInfo = RAMAP.newMapInfo();
+      MapIO.mapInfo.updateInfo();
+      var width = Number(MapIO.mapInfo.mapsize[0]);
+      var height = Number(MapIO.mapInfo.mapsize[1]);
+      var tileset = tilesets[MapIO.mapInfo.tileset.toLowerCase()];
       console.log(width);
       console.log(height);
+      console.log(tileset);
       MapIO.mapData = RAMAP.newMapData();
       MapIO.mapData.init(width, height);
 
@@ -198,8 +204,6 @@ RAMAP.newMapIO = function(){
           MapIO.mapData.addResource(i,j, 0, 0);
         }
       }
-      
-      MapIO.mapInfo = RAMAP.newMapInfo();
     },
     saveMap: function(){
 
@@ -334,24 +338,6 @@ RAMAP.newMapIO = function(){
           MapIO.mapData.addResource(i,j, resource, index);
         }
       }
-/**
-      if ( MapIO.infoFile !== undefined && MapIO.infoFile !== 0 ){
-        var fr = new FileReader();
-        fr.readAsText( MapIO.infoFile );
-        fr.onloadend = function (frEvent) {  
-          var yaml_text = frEvent.target.result;
-          console.log(yaml_text);
-          MapIO.readMapYaml(yaml_text);
-        };
-        MapIO.infoFile = 0;
-      }else{
-        console.log("ERROR!!! infoFile empty");
-      }
-
-      console.log("finished reading");
-      MapIO.mapDataStorage.push( MapIO.mapData );
-      MapIO.onReadEndCallback();
-*/      
     },
     getMapYaml: function(){
       yamlWriter = new YAML();
@@ -528,7 +514,10 @@ RAMAP.newMapInfo = function(){
       MapInfo.title = $("#title").val();
       MapInfo.author = $("#author").val();
       MapInfo.description = $("#description").val();
-      MapInfo.tileset = $("radio_snow:checked").val() !== undefined ? "SNOW" : "TEMPERAT";
+      MapInfo.tileset = ($("#radio_snow:checked").val() !== undefined) ? "SNOW" : "TEMPERAT";
+      console.log("tileset: " + MapInfo.tileset);
+      //TODO update the tileset
+
       //mapsize
       MapInfo.mapsize[0] = $("#mapsize_x").val();
       MapInfo.mapsize[1] = $("#mapsize_y").val();
@@ -537,9 +526,8 @@ RAMAP.newMapInfo = function(){
       MapInfo.bounds[1] = $("#mapsize_W").val();
       MapInfo.bounds[2] = $("#mapsize_N").val();
       MapInfo.bounds[3] = $("#mapsize_S").val();
-      MapInfo.useasshellmap = ($('#shellmap:checked').val() !== undefined ) ;
-      MapInfo.selectable = ($('#selectable:checked').val() !== undefined ) ;
-
+      MapInfo.useasshellmap = ($('#shellmap:checked').val() !== undefined ) ? "True" : "False" ;
+      MapInfo.selectable = ($('#selectable:checked').val() !== undefined ) ? "True" : "False" ;
     },
     updatePropDialog: function(){
       $("#title").val(MapInfo.title);
