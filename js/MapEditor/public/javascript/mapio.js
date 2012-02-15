@@ -230,7 +230,7 @@ RAMAP.newMapIO = function(){
             console.log("map yaml only");
             writer.close(function(blob) {
               var blobURL = window.webkitURL.createObjectURL(blob);
-              MapIO.onWriteEndCallback( MapIO.mapInfo.title, blobURL);
+              MapIO.onWriteEndCallback( MapIO.mapInfo.getMapFilename(), blobURL);
             });
           }, onprogress);
         }, onprogress);
@@ -292,6 +292,7 @@ RAMAP.newMapIO = function(){
           MapIO.mapData.addActor(  actor.loc[0], actor.loc[1], actor.id, actor.owner ); 
           //console.log(actor);
         }
+        console.log(actors);
       }
 
       //update the tileset 
@@ -345,6 +346,7 @@ RAMAP.newMapIO = function(){
       MapIO.mapInfo.addActors(MapIO.mapData.actors);
 
       yamlText = yamlWriter.dump([MapIO.mapInfo.getInfoObj()]);
+      console.log(MapIO.mapInfo.actors);
       console.log(yamlText);
       return yamlText;
     },
@@ -471,7 +473,14 @@ RAMAP.newMapInfo = function(){
     },
     parse: function( text ){
       var mapObj = RAParser.parse( text, 'map.yaml');
+      
+      console.log("ACTORSxxxxxxxxxxxxx");
+      console.log(mapObj);
       MapInfo.init(mapObj);
+      console.log(MapInfo.actors);
+    },
+    capitalize: function(string){
+      return string.charAt(0).toUpperCase() + string.slice(1);
     },
     addActors: function( actorData ){
       if ( MapInfo.actors === undefined || MapInfo.actors === null){
@@ -501,13 +510,37 @@ RAMAP.newMapInfo = function(){
         "UseAsShellmap": MapInfo.useasshellmap,
         "Type": MapInfo.type,
         "Players": MapInfo.players,
-        "Actors": Object.keys(MapInfo.actors).length > 0 ? MapInfo.actors : null,
+        "Actors": MapInfo.getActors(),
         "Smudges": MapInfo.smudges,
         "Rules": MapInfo.rules,
         "Sequences": MapInfo.sequences,
         "Weapons": MapInfo.weapons,
         "Voices": MapInfo.voices 
       };
+    },
+    getMapFilename: function(){
+      return (MapInfo.title.toLowerCase()).replace(/\s/g, "-");
+    },
+    getMapFormat: function(){
+      return Number(MapInfo.mapformat);
+    },
+    getMapSize: function(){
+      return [Number(MapInfo.mapsize[0]), Number(MapInfo.mapsize[1])];
+    },
+    getMapBounds: function(){
+      return [Number(MapInfo.bounds[0]), Number(MapInfo.bounds[1]), Number(MapInfo.bounds[2]), Number(MapInfo.bounds[3])];
+    },
+    getActors: function(){
+      if( Object.keys(MapInfo.actors).length > 0 ){
+        var result = {}; 
+        for( key in MapInfo.actors ){
+          if( key === "id" ){ continue; }
+          result[MapInfo.capitalize(key)] = MapInfo.actors[key];
+        }
+        return result;
+      }else{
+        return null;
+      }
     },
     /** assumes all data is valid */
     updateInfo: function(){ 
