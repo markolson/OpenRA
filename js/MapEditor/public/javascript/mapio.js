@@ -522,10 +522,10 @@ RAMAP.newMapInfo = function(){
       MapInfo.mapsize[0] = $("#mapsize_x").val();
       MapInfo.mapsize[1] = $("#mapsize_y").val();
       //bounds
-      MapInfo.bounds[0] = $("#mapsize_E").val();
-      MapInfo.bounds[1] = $("#mapsize_W").val();
-      MapInfo.bounds[2] = $("#mapsize_N").val();
-      MapInfo.bounds[3] = $("#mapsize_S").val();
+      MapInfo.bounds[0] = $("#bound_W").val();
+      MapInfo.bounds[1] = $("#bound_N").val();
+      MapInfo.bounds[2] = $("#bound_E").val();
+      MapInfo.bounds[3] = $("#bound_S").val();
       MapInfo.useasshellmap = ($('#shellmap:checked').val() !== undefined ) ? "True" : "False" ;
       MapInfo.selectable = ($('#selectable:checked').val() !== undefined ) ? "True" : "False" ;
     },
@@ -545,9 +545,9 @@ RAMAP.newMapInfo = function(){
       $("#mapsize_x").val(MapInfo.mapsize[0]);
       $("#mapsize_y").val(MapInfo.mapsize[1]);
       //bounds
-      $("#bound_E").val(MapInfo.bounds[0]);
-      $("#bound_W").val(MapInfo.bounds[1]);
-      $("#bound_N").val(MapInfo.bounds[2]);
+      $("#bound_W").val(MapInfo.bounds[0]);
+      $("#bound_N").val(MapInfo.bounds[1]);
+      $("#bound_E").val(MapInfo.bounds[2]);
       $("#bound_S").val(MapInfo.bounds[3]);
       if( MapInfo.useasshellmap === "True" ){
         $("#shellmap").prop("checked", true);

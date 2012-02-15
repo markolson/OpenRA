@@ -7,6 +7,7 @@ RAMAP.newMapView = function(){
     ctx: 0,
     rsrcCtx: 0,
     actCtx: 0,
+    bndCtx: 0,
     height: 0,
     width: 0,
     scale: 0,
@@ -25,7 +26,7 @@ RAMAP.newMapView = function(){
     last: [0,0],// previous coordinates of mouse release
     shiftX: 0,
     shiftY: 0,
-    init: function(id, rsrcID, actID, width, height, scale, clickCallback, ctrlClickCallback, upCallback){
+    init: function(id, rsrcID, actID, bndID, width, height, scale, clickCallback, ctrlClickCallback, upCallback){
       MapView.stage = new Kinetic.Stage(id, width, height);
       MapView.canvas = MapView.stage.getCanvas();
       MapView.ctx = MapView.stage.getContext();
@@ -38,6 +39,10 @@ RAMAP.newMapView = function(){
       MapView.actLayer = new Kinetic.Layer(MapView.stage, false, actID);
       MapView.actCtx = MapView.actLayer.context;
       $("#"+actID).insertBefore("#kinetic_dynamic");
+      
+      MapView.bndLayer = new Kinetic.Layer(MapView.stage, false, bndID);
+      MapView.bndCtx = MapView.bndLayer.context;
+      $("#"+bndID).insertBefore("#kinetic_dynamic");
 
       MapView.height = height;
       MapView.width = width;
@@ -198,6 +203,7 @@ RAMAP.newMapView = function(){
      MapView.ctx.clearRect ( -1200 , -1200 , 3600, 3600 );
      MapView.rsrcCtx.clearRect ( -1200 , -1200 , 3600, 3600 );
      MapView.actCtx.clearRect ( -1200 , -1200 , 3600, 3600 );
+     MapView.bndCtx.clearRect ( -1200 , -1200 , 3600, 3600 );
 
      if ( mapTiles !== undefined && mapTiles !== null){
       MapView.lastTiles = mapTiles; 
@@ -238,6 +244,9 @@ RAMAP.newMapView = function(){
      var drawWidth = Math.round( RAMAP.CANVAS_WIDTH / scale ); 
      var drawHeight = Math.round( RAMAP.CANVAS_HEIGHT / scale ); 
 
+     var bounds = RAMAP.mapIO.mapInfo.bounds;
+     console.log("BOUNNDS! xxxxxxxxx");
+     console.log(bounds);
      //draw tiles
      for( i = 0; i < drawWidth; i++){
       for( j = 0; j < drawHeight; j++){
@@ -265,7 +274,40 @@ RAMAP.newMapView = function(){
           }else{
             console.log("undefined tile at: " + indexI + ":" + indexJ); 
           }
-          
+         
+          //draw bounds
+          var bounds = RAMAP.mapIO.mapInfo.bounds;
+          if( bounds !== undefined ){
+            //west
+            if( indexI === Number(bounds[0]) ){
+              MapView.bndCtx.beginPath();
+              MapView.bndCtx.moveTo((indexI+shiftX)*scale, (indexJ+shiftY)*scale);
+              MapView.bndCtx.lineTo((indexI+shiftX)*scale, (indexJ+shiftY)*scale + scale);
+              MapView.bndCtx.stroke();
+            }
+            //north
+            if( indexJ === Number(bounds[1]) ){
+              MapView.bndCtx.beginPath();
+              MapView.bndCtx.moveTo((indexI+shiftX)*scale, (indexJ+shiftY)*scale);
+              MapView.bndCtx.lineTo((indexI+shiftX)*scale + scale, (indexJ+shiftY)*scale);
+              MapView.bndCtx.stroke();
+            }
+            //east
+            if( indexI === Number(bounds[2]) ){
+              MapView.bndCtx.beginPath();
+              MapView.bndCtx.moveTo((indexI+shiftX)*scale + scale, (indexJ+shiftY)*scale);
+              MapView.bndCtx.lineTo((indexI+shiftX)*scale + scale, (indexJ+shiftY)*scale + scale);
+              MapView.bndCtx.stroke();
+            }
+            //east
+            if( indexI === Number(bounds[2]) ){
+              MapView.bndCtx.beginPath();
+              MapView.bndCtx.moveTo((indexI+shiftX)*scale, (indexJ+shiftY)*scale + scale);
+              MapView.bndCtx.lineTo((indexI+shiftX)*scale + scale, (indexJ+shiftY)*scale + scale);
+              MapView.bndCtx.stroke();
+            }
+          }
+
         }
       }
      }
@@ -297,39 +339,41 @@ RAMAP.newMapView = function(){
       }
      }
       
-    //draw actors
-    if ( RAMAP.mapIO.mapData.actors !== undefined ){
-      for( i = 0; i < drawWidth; i++){
-        for( j = 0; j < drawHeight; j++){
-          var indexI = ( i - shiftX );  
-          var indexJ = ( j - shiftY );  
-          if ( indexI >= 0 && indexI < RAMAP.CANVAS_SIZE &&  indexJ >= 0 && indexJ < RAMAP.CANVAS_SIZE){
-            
-            var actorTile = RAMAP.mapIO.mapData.getActor(indexI, indexJ);
-            if( actorTile !== undefined && actorTile !== null){
-              console.log( actorTile.x + ":" + actorTile.y );
-              actorTile.render(MapView.actCtx, indexI+shiftX, indexJ+shiftY, scale);
-            }
-            /**
-            if (RAMAP.DEBUG === 0 || RAMAP.DEBUG === undefined){
-              if( actorTile.resource !== 0 ){
-                actorTile.render(MapView.rsrcCtx, tileset.rsrcTemplates, indexI+shiftX, indexJ+shiftY, scale);
+      //draw actors
+      if ( RAMAP.mapIO.mapData.actors !== undefined ){
+        console.log("Drawing ACTORS! ---------------------------");
+        for( i = 0; i < drawWidth; i++){
+          for( j = 0; j < drawHeight; j++){
+            var indexI = ( i - shiftX );  
+            var indexJ = ( j - shiftY );  
+            if ( indexI >= 0 && indexI < RAMAP.CANVAS_SIZE &&  indexJ >= 0 && indexJ < RAMAP.CANVAS_SIZE){
+              
+              var actorTile = RAMAP.mapIO.mapData.getActor(indexI, indexJ);
+              if( actorTile !== undefined && actorTile !== null){
+                console.log( actorTile.x + ":" + actorTile.y );
+                actorTile.render(MapView.actCtx, indexI+shiftX, indexJ+shiftY, scale);
               }
-            }else if( actorTile !== undefined ){
-                MapView.rsrcCtx.fillStyle = "#806E62";
-                MapView.rsrcCtx.fillRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
-                MapView.rsrcCtx.strokeStyle = "#333333";
-                MapView.rsrcCtx.strokeRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
-                MapView.rsrcCtx.fillStyle = "#333333";
-                MapView.rsrcCtx.fillText( actorTile.name, (indexI +shiftX)*scale, (indexJ+shiftY)*scale+10);
-                //MapView.rsrcCtx.fillText( resourceTile.index, (indexI+shiftX)*scale+1, (indexJ+shiftY)*scale+20);
-            }else{
-                console.log("undefined resource");
-            }*/
+              /**
+              if (RAMAP.DEBUG === 0 || RAMAP.DEBUG === undefined){
+                if( actorTile.resource !== 0 ){
+                  actorTile.render(MapView.rsrcCtx, tileset.rsrcTemplates, indexI+shiftX, indexJ+shiftY, scale);
+                }
+              }else if( actorTile !== undefined ){
+                  MapView.rsrcCtx.fillStyle = "#806E62";
+                  MapView.rsrcCtx.fillRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
+                  MapView.rsrcCtx.strokeStyle = "#333333";
+                  MapView.rsrcCtx.strokeRect((indexI+shiftX)*scale, (indexJ+shiftY)*scale, scale, scale);
+                  MapView.rsrcCtx.fillStyle = "#333333";
+                  MapView.rsrcCtx.fillText( actorTile.name, (indexI +shiftX)*scale, (indexJ+shiftY)*scale+10);
+                  //MapView.rsrcCtx.fillText( resourceTile.index, (indexI+shiftX)*scale+1, (indexJ+shiftY)*scale+20);
+              }else{
+                  console.log("undefined resource");
+              }*/
+            }
           }
-        }
-       }
-    }
+         }
+      }
+
 
     },
     onMouseClick: function(){

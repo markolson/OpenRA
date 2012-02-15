@@ -76,16 +76,16 @@
         %label(for="mapsize_y") Y
         %input(id="mapsize_y" name="mapsize_y" class="required digits" maxlength="3" value="128")
     %label Map Bounds
-    #bounds
+    #bounds_input
       .num_input
-        %label(for="bound_E") E
-        %input(id="bound_E" name="bound_E" class="required digits" maxlength="3" value="16")
         %label(for="bound_W") W
         %input(id="bound_W" name="bound_W" class="reguired digits" maxlength="3" value="16")
         %label(for="bound_N") N
-        %input(id="bound_N" name="bound_N" class="required digits" maxlength="3" value="95")
+        %input(id="bound_N" name="bound_N" class="required digits" maxlength="3" value="16")
+        %label(for="bound_E") E
+        %input(id="bound_E" name="bound_E" class="required digits" maxlength="3" value="112")
         %label(for="bound_S") S
-        %input(id="bound_S" name="bound_S" class="required digits" maxlength="3" value="95")
+        %input(id="bound_S" name="bound_S" class="required digits" maxlength="3" value="112")
     .input
       %input(type="checkbox" id="selectable")
       %label(for="selectable") Selectable
