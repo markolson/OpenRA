@@ -289,7 +289,7 @@ RAMAP.newMapIO = function(){
           if( key === "id") { continue; }
           //console.log(key);
           var actor = actors[key];
-          MapIO.mapData.addActor(  actor.loc[0], actor.loc[1], actor.id, actor.owner ); 
+          MapIO.mapData.addActor(  actor["Location"][0], actor["Location"][1], actor.id, actor.Owner ); 
           //console.log(actor);
         }
         console.log(actors);
@@ -432,7 +432,7 @@ RAMAP.newMapIO = function(){
 
 RAMAP.newMapInfo = function(){
   var MapInfo = {
-    selectable: false,
+    selectable: true,
     mapformat: 5,
     title: "No Title",
     description: "No Description",
@@ -509,7 +509,7 @@ RAMAP.newMapInfo = function(){
         "Bounds": MapInfo.bounds,
         "UseAsShellmap": MapInfo.useasshellmap,
         "Type": MapInfo.type,
-        "Players": MapInfo.players,
+        "Players": MapInfo.getPlayers(),
         "Actors": MapInfo.getActors(),
         "Smudges": MapInfo.smudges,
         "Rules": MapInfo.rules,
@@ -531,6 +531,8 @@ RAMAP.newMapInfo = function(){
       return [Number(MapInfo.bounds[0]), Number(MapInfo.bounds[1]), Number(MapInfo.bounds[2]), Number(MapInfo.bounds[3])];
     },
     getActors: function(){
+      return ( Object.keys(MapInfo.actors).length > 0 ) ? MapInfo.actors : null;
+/**
       if( Object.keys(MapInfo.actors).length > 0 ){
         var result = {}; 
         for( key in MapInfo.actors ){
@@ -541,6 +543,38 @@ RAMAP.newMapInfo = function(){
       }else{
         return null;
       }
+*/
+    },
+    getPlayers: function(){
+      var mpspawnCount = 0;
+      //check if mpsawns, to add multi players
+      for( key in MapInfo.actors ){
+        var actor = MapInfo.actors[key];
+        if( actor.id === "mpspawn" ){
+          mpspawnCount++;
+        }
+      }
+
+      for ( key in MapInfo.players){
+        var player = MapInfo.players[key];
+        if( /Multi\d+/.test( player.Name ) ){
+          delete MapInfo.players[key];
+        }
+      }
+
+      for ( var i = 0; i < mpspawnCount; i++ ){
+        MapInfo.players["PlayerReference@Multi"+i] = { "Name": "Multi"+i, "Playable": "True", "DefaultStartingUnits": "True", "Race": "Random", "Enemies": "Creeps"}; 
+      }
+      return MapInfo.players;
+/**
+                PlayerReference@Multi0:
+                Name: Multi0
+                Playable: True
+                DefaultStartingUnits: True
+                Race: Random
+                Enemies: Creeps
+*/
+      
     },
     /** assumes all data is valid */
     updateInfo: function(){ 

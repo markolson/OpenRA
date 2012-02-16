@@ -68,7 +68,7 @@ RAParser.getPair = function(){
 
 RAParser.getKey = function(key){
   //ltrim
-  key = key.replace(/^\s+/,"").toLowerCase();
+  key = key.replace(/^\s+/,"")//.toLowerCase();
   if( key === "location" ){
     key = "loc";
   }
