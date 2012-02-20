@@ -277,13 +277,15 @@ RAMAP.newMapIO = function(){
         RAMAP.tileset = RAMAP.tilesets[MapIO.mapInfo.tileset.toLowerCase()];
       }
 
+      //update
+
       console.log("finished reading yaml");
       MapIO.mapInfoStorage.push( MapIO.mapInfo );
       MapIO.onReadEndCallback();
     },
     readMapBin: function(map_bin){
       var bin_data =  new DataView( map_bin );
-      var dr = RAMAP.dataReader;
+      var dr = RAMAP.newDataReader();
       console.log("map.bin length: " + bin_data.byteLength);
       var version = dr.read8(bin_data); 
 
@@ -706,26 +708,27 @@ RAMAP.newMapData = function(){
 
 
 
-RAMAP.dataReader = (function(){
-    var byteOffset = 0;
-    return {
-        read8: function(dataView){
-          var value = dataView.getUint8(byteOffset);  
-          byteOffset += 1;
-          return value;  
-        },
-        read16: function(dataView){
-          var value = dataView.getUint16(byteOffset, true);  
-          byteOffset += 2;
-          return value;  
-        },
-        read32: function(dataView){
-          var value = dataView.getUint32(byteOffset, true);  
-          byteOffset += 4;
-          return value;  
-        }
+RAMAP.newDataReader = function(){
+  var DataReader = {
+    byteOffset: 0,
+    read8: function(dataView){
+      var value = dataView.getUint8(DataReader.byteOffset);  
+      DataReader.byteOffset += 1;
+      return value;  
+    },
+    read16: function(dataView){
+      var value = dataView.getUint16(DataReader.byteOffset, true);  
+      DataReader.byteOffset += 2;
+      return value;  
+    },
+    read32: function(dataView){
+      var value = dataView.getUint32(DataReader.byteOffset, true);  
+      DataReader.byteOffset += 4;
+      return value;  
     }
-}());
+  }
+  return DataReader;
+};
 
 RAMAP.dataWriter = (function(){
     var byteOffset = 0;
