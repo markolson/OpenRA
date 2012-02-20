@@ -114,9 +114,7 @@ RAMAP.newMapIO = function(){
               entries.forEach(function(entry){
                   var bfr = new FileReader();
                   var yfr = new FileReader();
-                  console.log(entry);
                   if( entry.filename === "map.bin" ){
-                    console.log("map.bin entry name");
                     unzipper.getEntryFile(entry, function(blob){
                       console.log("unzipped bin");
                       console.log(blob);
@@ -136,16 +134,11 @@ RAMAP.newMapIO = function(){
                     });
                   }
                   if( entry.filename === "map.yaml" ){
-                    console.log("map.yaml entry name");
                     unzipper.getEntryFile(entry, function(blob){
                       console.log("unzipped yaml");
-                      console.log(blob);
                       MapIO.infoFile = blob;
-                      console.log(MapIO.infoFile);
                       if( MapIO.infoFile !== undefined && MapIO.infoFile !== 0 ){
-                        console.log("map.yaml file reader");
                         yfr.readAsText( MapIO.infoFile );
-                        console.log("map.yaml read as Text");
                         yfr.onloadend = function (frEvent) {  
                           console.log("yaml on loadend");
                           var yaml_text = frEvent.target.result;
@@ -164,22 +157,6 @@ RAMAP.newMapIO = function(){
                   }
                 });
             });
-        }
-        if( f.name === "map.yaml" ){
-          console.log("map.yaml dropped");
-          MapIO.infoFile = f;
-        }
-        if ( f.name === "map.bin" ){
-          console.log("map.bin dropped");
-          var fr = new FileReader();
-          fr.readAsArrayBuffer( f );
-          fr.onloadend = function (frEvent) {  
-            //console.log(frEvent.target.result);
-            var map_bin = frEvent.target.result;
-            MapIO.readMapBin(map_bin);
-            //TODO rewrite using web workers
-            //var worker = new Worker("/javascript/write_map.js");
-          };
         }
       }
 
@@ -464,9 +441,9 @@ RAMAP.newMapInfo = function(){
     voices: null,
     init: function( mapObj ){
       for ( key in mapObj ){
-        console.log( key );
+        //console.log( key );
         if( mapObj[key] !== undefined ){
-          console.log( "copied " + key );
+          //console.log( "copied " + key );
           MapInfo[key.toLowerCase()] = mapObj[key];
         }
       }
@@ -474,10 +451,10 @@ RAMAP.newMapInfo = function(){
     parse: function( text ){
       var mapObj = RAParser.parse( text, 'map.yaml');
       
-      console.log("ACTORSxxxxxxxxxxxxx");
-      console.log(mapObj);
+      //console.log("ACTORSxxxxxxxxxxxxx");
+      //console.log(mapObj);
       MapInfo.init(mapObj);
-      console.log(MapInfo.actors);
+      //console.log(MapInfo.actors);
     },
     capitalize: function(string){
       return string.charAt(0).toUpperCase() + string.slice(1);

@@ -62,7 +62,7 @@ RAParser.getPair = function(){
   var split = line.split(":");
   var key = this.getKey(split[0]);
   var value = this.getValue(split[1]);
-  console.log( "key: " + key + " --- " + "value: " + value);
+  //console.log( "key: " + key + " --- " + "value: " + value);
   return {"key": key, "value": value};
 };
 

@@ -275,8 +275,8 @@ RAMAP.newMapView = function(){
      var drawHeight = Math.round( RAMAP.CANVAS_HEIGHT / scale ); 
 
      var bounds = RAMAP.mapIO.mapInfo.bounds;
-     console.log("BOUNNDS! xxxxxxxxx");
-     console.log(bounds);
+     //console.log("BOUNNDS! xxxxxxxxx");
+     //console.log(bounds);
      //draw tiles
      for( i = 0; i < drawWidth; i++){
       for( j = 0; j < drawHeight; j++){
@@ -323,17 +323,17 @@ RAMAP.newMapView = function(){
               MapView.bndCtx.stroke();
             }
             //east
-            if( indexI === Number(bounds[2]) ){
+            if( indexI === ( Number(bounds[2]) + Number(bounds[0]) ) ){
               MapView.bndCtx.beginPath();
-              MapView.bndCtx.moveTo((indexI+shiftX)*scale + scale, (indexJ+shiftY)*scale);
-              MapView.bndCtx.lineTo((indexI+shiftX)*scale + scale, (indexJ+shiftY)*scale + scale);
+              MapView.bndCtx.moveTo((indexI+shiftX)*scale, (indexJ+shiftY)*scale);
+              MapView.bndCtx.lineTo((indexI+shiftX)*scale, (indexJ+shiftY)*scale + scale);
               MapView.bndCtx.stroke();
             }
             //south
-            if( indexJ === Number(bounds[3]) ){
+            if( indexJ === ( Number(bounds[3]) + Number(bounds[1]) ) ){
               MapView.bndCtx.beginPath();
-              MapView.bndCtx.moveTo((indexI+shiftX)*scale, (indexJ+shiftY)*scale + scale);
-              MapView.bndCtx.lineTo((indexI+shiftX)*scale + scale, (indexJ+shiftY)*scale + scale);
+              MapView.bndCtx.moveTo((indexI+shiftX)*scale, (indexJ+shiftY)*scale);
+              MapView.bndCtx.lineTo((indexI+shiftX)*scale + scale, (indexJ+shiftY)*scale);
               MapView.bndCtx.stroke();
             }
           }
@@ -371,7 +371,7 @@ RAMAP.newMapView = function(){
       
       //draw actors
       if ( RAMAP.mapIO.mapData.actors !== undefined ){
-        console.log("Drawing ACTORS! ---------------------------");
+        //console.log("Drawing ACTORS! ---------------------------");
         for( i = 0; i < drawWidth; i++){
           for( j = 0; j < drawHeight; j++){
             var indexI = ( i - shiftX );  
@@ -380,7 +380,7 @@ RAMAP.newMapView = function(){
               
               var actorTile = RAMAP.mapIO.mapData.getActor(indexI, indexJ);
               if( actorTile !== undefined && actorTile !== null){
-                console.log( actorTile.x + ":" + actorTile.y );
+                //console.log( actorTile.x + ":" + actorTile.y );
                 actorTile.render(MapView.actCtx, indexI+shiftX, indexJ+shiftY, scale);
               }
               /**

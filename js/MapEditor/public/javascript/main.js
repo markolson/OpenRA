@@ -62,12 +62,17 @@ RAMAP.setTileset = function( tileset ){
 
 RAMAP.onClickNew = function(){
   $('#instructions').hide();
+  //get defaults
+  var temp_map = RAMAP.newMapInfo(); 
+  temp_map.updatePropDialog();
+
   $('#map_prop_dialog').attr('action', 'javascript:RAMAP.newMap();');
   $('#submit_prop_dialog').attr('value', 'CREATE');
   $('#map_prop_dialog').dialog('open');
 };
 
 RAMAP.newMap = function(){
+  RAMAP.saveProperties();
   RAMAP.mapIO.newMap( RAMAP.tilesets );
   RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
   //return dialog back to update
