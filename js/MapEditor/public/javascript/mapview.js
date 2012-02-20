@@ -87,10 +87,13 @@ RAMAP.newMapView = function(){
         }
       };
       MapView.stage.addEventListener("mousemove", function(e){
-          if(!MapView.isDown || !MapView.dragOn) return; // don't pan if mouse is not pressed
-
           var x = e.offsetX;
           var y = e.offsetY;
+          var mapCoords = MapView.getMapCoords(x, y);
+          $("#map_x").html(String(mapCoords[0]));
+          $("#map_y").html(String(mapCoords[1]));
+
+          if(!MapView.isDown || !MapView.dragOn) return; // don't pan if mouse is not pressed
           //console
           // set the canvas' transformation matrix by setting the amount of movement:
           // 1  0  dx
@@ -105,7 +108,7 @@ RAMAP.newMapView = function(){
 
 
           //console.log( "shiftX: "+ shiftX + "shiftY: " + shiftY );
-
+          
           //MapView.shiftX = RAMAP.getShift(MapView.shiftX - shiftX);
           //MapView.shiftY = RAMAP.getShift(MapView.shiftY - shiftY);
 
@@ -181,6 +184,7 @@ RAMAP.newMapView = function(){
       MapView.drawMap( null, null, MapView.shiftX, MapView.shiftY, MapView.scale); // render to show changes
     },
     onDebug: function(){
+      console.log("DEBUG!");
       RAMAP.DEBUG = RAMAP.DEBUG^1
       console.log( RAMAP.DEBUG );
       MapView.drawMap( null, null, MapView.shiftX, MapView.shiftY, MapView.scale); // render to show changes

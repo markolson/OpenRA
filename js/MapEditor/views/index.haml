@@ -25,15 +25,21 @@
       Drop a .oramap file into the window or click new.
 
   #map_menu
-    %button(onclick="RAMAP.setTileset('snow');") Snow
-    %button(onclick="RAMAP.setTileset('temperat');") Temperate
-    %button(onclick="RAMAP.mapView.onDebug();") Debug
-    %button(onclick="$('#resources').css('display', 'inline');") Show Rsrc
-    %button(onclick="$('#resources').css('display', 'none');") Hide Rsrc
-    %button(onclick="RAMAP.toolPalette.setTool(0, 'cursor', 1);") Info
+    -#%button(onclick="RAMAP.setTileset('snow');") Snow
+    -#%button(onclick="RAMAP.setTileset('temperat');") Temperate
+    %input(type="checkbox" id="debug" onclick="RAMAP.mapView.onDebug();") 
+    %label(for="debug") Debug
+    %input(type="checkbox" id="show_rsrc" onclick="RAMAP.toggleRsrc();" checked="true")
+    %label(for="show_rsrc") Rsrc 
+    %input(type="checkbox" id="show_actor" onclick="RAMAP.toggleActor();" checked="true")
+    %label(for="show_actor") Actor
     %button(onclick="RAMAP.toolPalette.setTool(1, 'hand', 1);") Drag
     %button(onclick="RAMAP.mapView.zoomIn();") [+]
     %button(onclick="RAMAP.mapView.zoomOut();") [-]
+    %label X:
+    %span(id="map_x") 0
+    %label Y:
+    %span(id="map_y") 0
 #app
   %span
     #picker_window 

@@ -74,13 +74,14 @@ h3 {
   font-size: .75em;
   padding-bottom: 5px;
 }
+/**
 #menu button{
   margin-left: .1em;
   font-size: 1em;
   color:#3A4E57;
 
   cursor: pointer;
-}
+}*/
 #new_input{
   display: none;
   font-size: .75em;

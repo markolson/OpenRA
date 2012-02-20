@@ -33,6 +33,23 @@ $(document).ready( function(){
     $("#map_prop_dialog").validate();
     $( ".radio" ).buttonset();
     $( "input:checkbox, input:submit, a, button" ).button();
+
+    $('#map_window').mousedown(function(event) {
+        switch (event.which) {
+            case 1:
+                //alert('Left mouse button pressed');
+                break;
+            case 2:
+                //alert('Middle mouse button pressed');
+                break;
+            case 3:
+                RAMAP.toolPalette.setTool(1, "hand", 1);
+                //alert('Right mouse button pressed');
+                break;
+            default:
+                //alert('You have a strange mouse');
+        }
+    });
     
 });
 
@@ -132,7 +149,7 @@ RAMAP.init = function (){
     RAMAP.toolPalette.addTool( tool );
   }
   RAMAP.toolPalette.init(RAMAP.mapView);
-  RAMAP.toolPalette.setTool("hand");
+  RAMAP.toolPalette.setTool(1, "hand", 1);
 };
 
 RAMAP.onMapRead = function(){
@@ -214,4 +231,20 @@ RAMAP.saveProperties = function(){
   $("#map_prop_dialog").dialog('close');
 }
 
+RAMAP.toggleRsrc = function(){
+  if( $('#resources').is(':visible') ) {
+    $('#resources').css('display', 'none');
+  }else{
+    $('#resources').css('display', 'inline');
+  };
+}
 
+RAMAP.toggleActor = function(){
+  if( $('#actors').is(':visible') ) {
+    $('#actors').css('display', 'none');
+  }else{
+    $('#actors').css('display', 'inline');
+  };
+}
+
+RAMAP.toggle
