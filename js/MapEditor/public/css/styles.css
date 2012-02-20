@@ -16,7 +16,8 @@ body{
   font-family: Helvitica, Arial;
   /*color: #A37055; orange */
   /*color:#3A4E57;*/
-  /*color: #F1F1F1;*/
+  color: #F1F1F1;
+  font-size: .75em;
 }
 /**
 input, textarea, button, label{
@@ -71,8 +72,8 @@ h3 {
   color: #F4F1EA;
 }
 #menu {
-  font-size: .75em;
-  padding-bottom: 5px;
+  /**font-size: .75em;*/
+  /**padding-bottom: 5px;*/
 }
 /**
 #menu button{

@@ -33,8 +33,14 @@ $(document).ready( function(){
     $("#map_prop_dialog").validate();
     $( ".radio" ).buttonset();
     $( "input:checkbox, input:submit, a, button" ).button();
-
     
+    //set up map menu
+    $( "#debug").button( {"icons": { "primary": "ui-icon-info" }});
+    $( "#show_rsrc").button( {"icons": { "primary": "ui-icon-cart" }});
+    $( "#drag_pan").button( {"icons": { "primary": "ui-icon-arrow-4" }});
+    $( "#show_actor").button( {"icons": { "primary": "ui-icon-home" }});
+    $( "#zoom_in").button( {"icons": { "primary": "ui-icon-zoomin" }});
+    $( "#zoom_out").button( {"icons": { "primary": "ui-icon-zoomout" } });
     
 });
 
@@ -232,4 +238,3 @@ RAMAP.toggleActor = function(){
   };
 }
 
-RAMAP.toggle
