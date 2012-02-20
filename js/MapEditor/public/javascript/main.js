@@ -34,22 +34,7 @@ $(document).ready( function(){
     $( ".radio" ).buttonset();
     $( "input:checkbox, input:submit, a, button" ).button();
 
-    $('#map_window').mousedown(function(event) {
-        switch (event.which) {
-            case 1:
-                //alert('Left mouse button pressed');
-                break;
-            case 2:
-                //alert('Middle mouse button pressed');
-                break;
-            case 3:
-                RAMAP.toolPalette.setTool(1, "hand", 1);
-                //alert('Right mouse button pressed');
-                break;
-            default:
-                //alert('You have a strange mouse');
-        }
-    });
+    
     
 });
 

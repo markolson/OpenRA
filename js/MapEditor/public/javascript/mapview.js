@@ -69,7 +69,6 @@ RAMAP.newMapView = function(){
           ];
       });
       document.onkeydown =  function(e) {
-        console.log("key press");
         if( e.keyCode === 17 ){
           console.log("ctrl pressed");
           MapView.ctrlDown = true;
@@ -78,7 +77,6 @@ RAMAP.newMapView = function(){
         }
       };
       document.onkeyup = function(e) {
-        console.log("key released");
         if( e.keyCode === 17 ){
           console.log("ctrl released");
           MapView.ctrlDown = false;
@@ -117,56 +115,88 @@ RAMAP.newMapView = function(){
           MapView.drawMap( RAMAP.mapIO.mapData.tiles, RAMAP.tileset, MapView.shiftX, MapView.shiftY, MapView.scale); // render to show changes
 
       });
-      },
-      setCursor: function(imgObj, posX, posY, scale, isTileCursor){
-        MapView.stage.removeAll();
-        /**
-        if (MapView.clickListenerFunc !== undefined){
-          console.log("remove click listener");
-          MapView.stage.removeEventListenerType( "mousedown", MapView.clickListenerFunc );
-        }
-        if (MapView.moveListenerFunc !== undefined){
-          console.log("remove move listener");
-          MapView.stage.removeEventListenerType("mousemove", MapView.moveListenerFunc);
-        }*/
-        MapView.isTileCursor = isTileCursor;
-        MapView.stage.removeEventListenerType( "mousedown", MapView.onMouseClick);
-        MapView.stage.removeEventListenerType("mousemove", MapView.onMouseMove, false);
-        MapView.stage.removeEventListenerType("mouseup", MapView.onMouseUp);
-        //var drawImg = Kinetic.drawImage(imgObj, posX, posY);
-        
-        var drawImg = function(){
-          var context = this.getContext();
-          context.drawImage(imgObj, posX, posY, imgObj.width, imgObj.height);
-          context.beginPath();
-          context.rect(posX, posY, imgObj.width, imgObj.height);
-          context.closePath();
-        };
 
-        var drawBorder = function(){
-          var context = this.getContext();
-          context.strokeStyle = "black";
-          context.strokeRect(0,0,imgObj.width,imgObj.height);
-        }
+      $('#'+id).mousedown(function(event) {
+          switch (event.which) {
+              case 1:
+                  //alert('Left mouse button pressed');
+                  break;
+              case 2:
+                  //alert('Middle mouse button pressed');
+                  break;
+              case 3:
+                  RAMAP.toolPalette.setTool(1, "hand", 1);
+                  //alert('Right mouse button pressed');
+                  break;
+              default:
+                  //alert('You have a strange mouse');
+          }
+      });
 
-        if ( isTileCursor ){
-          MapView.dragBorder = new Kinetic.Shape(drawBorder);
-          MapView.dragBorder.setScale(scale);
-          MapView.stage.add(MapView.dragBorder);
-        }
-        MapView.dragImg = new Kinetic.Shape(drawImg); 
-        MapView.dragImg.setScale(scale);
-        MapView.stage.add(MapView.dragImg);
+      //mouse wheel
+      document.getElementById( id ).addEventListener('mousewheel', MapView.handleScroll, false);
 
-        /**
-        MapView.moveListenerFunc = function(){ MapView.onMouseMove(isTileCursor); };
-        MapView.stage.addEventListener("mousemove", MapView.moveListenerFunc, false);
-        MapView.clickListenerFunc = function(){ MapView.onMouseClick(action); };
-        MapView.stage.addEventListener("mousedown", MapView.clickListenerFunc);
-        */
-        MapView.stage.addEventListener("mousemove", MapView.onMouseMove, false);
-        MapView.stage.addEventListener("mousedown", MapView.onMouseClick);
-        MapView.stage.addEventListener("mouseup", MapView.onMouseUp);
+    },
+    handleScroll: function(e){
+      if( e.wheelDeltaY < 0  ){
+        //zoom out
+        console.log("zoom out");
+        MapView.zoomOut();
+      }else if( e.wheelDeltaY > 0){
+        //zoom in 
+        console.log("zoom in");
+        MapView.zoomIn();
+      }
+    },
+    setCursor: function(imgObj, posX, posY, scale, isTileCursor){
+      MapView.stage.removeAll();
+      /**
+      if (MapView.clickListenerFunc !== undefined){
+        console.log("remove click listener");
+        MapView.stage.removeEventListenerType( "mousedown", MapView.clickListenerFunc );
+      }
+      if (MapView.moveListenerFunc !== undefined){
+        console.log("remove move listener");
+        MapView.stage.removeEventListenerType("mousemove", MapView.moveListenerFunc);
+      }*/
+      MapView.isTileCursor = isTileCursor;
+      MapView.stage.removeEventListenerType( "mousedown", MapView.onMouseClick);
+      MapView.stage.removeEventListenerType("mousemove", MapView.onMouseMove, false);
+      MapView.stage.removeEventListenerType("mouseup", MapView.onMouseUp);
+      //var drawImg = Kinetic.drawImage(imgObj, posX, posY);
+      
+      var drawImg = function(){
+        var context = this.getContext();
+        context.drawImage(imgObj, posX, posY, imgObj.width, imgObj.height);
+        context.beginPath();
+        context.rect(posX, posY, imgObj.width, imgObj.height);
+        context.closePath();
+      };
+
+      var drawBorder = function(){
+        var context = this.getContext();
+        context.strokeStyle = "black";
+        context.strokeRect(0,0,imgObj.width,imgObj.height);
+      }
+
+      if ( isTileCursor ){
+        MapView.dragBorder = new Kinetic.Shape(drawBorder);
+        MapView.dragBorder.setScale(scale);
+        MapView.stage.add(MapView.dragBorder);
+      }
+      MapView.dragImg = new Kinetic.Shape(drawImg); 
+      MapView.dragImg.setScale(scale);
+      MapView.stage.add(MapView.dragImg);
+
+      /**
+      MapView.moveListenerFunc = function(){ MapView.onMouseMove(isTileCursor); };
+      MapView.stage.addEventListener("mousemove", MapView.moveListenerFunc, false);
+      MapView.clickListenerFunc = function(){ MapView.onMouseClick(action); };
+      MapView.stage.addEventListener("mousedown", MapView.clickListenerFunc);
+      */
+      MapView.stage.addEventListener("mousemove", MapView.onMouseMove, false);
+      MapView.stage.addEventListener("mousedown", MapView.onMouseClick);
+      MapView.stage.addEventListener("mouseup", MapView.onMouseUp);
     },
     zoomIn: function(){
       MapView.scale = MapView.scale + 3;
@@ -184,9 +214,7 @@ RAMAP.newMapView = function(){
       MapView.drawMap( null, null, MapView.shiftX, MapView.shiftY, MapView.scale); // render to show changes
     },
     onDebug: function(){
-      console.log("DEBUG!");
       RAMAP.DEBUG = RAMAP.DEBUG^1
-      console.log( RAMAP.DEBUG );
       MapView.drawMap( null, null, MapView.shiftX, MapView.shiftY, MapView.scale); // render to show changes
     },
     getMapCoords: function( mosX, mosY ){
@@ -194,8 +222,6 @@ RAMAP.newMapView = function(){
       var mapX = Math.floor( mosX / MapView.scale ) - MapView.shiftX;
       var mapY = Math.floor( mosY / MapView.scale ) - MapView.shiftY ;
       
-      console.log( mapX + " " + mapY );
-      console.log( RAMAP.mapIO.mapData.sizeX );
       if ( mapX >= 0 && mapX < RAMAP.mapIO.mapData.sizeX &&  mapY >= 0 && mapY < RAMAP.mapIO.mapData.sizeY){
         return [mapX, mapY];
       }
