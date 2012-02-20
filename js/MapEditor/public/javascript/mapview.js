@@ -91,7 +91,7 @@ RAMAP.newMapView = function(){
 
           var x = e.offsetX;
           var y = e.offsetY;
-          console
+          //console
           // set the canvas' transformation matrix by setting the amount of movement:
           // 1  0  dx
           // 0  1  dy
@@ -299,8 +299,8 @@ RAMAP.newMapView = function(){
               MapView.bndCtx.lineTo((indexI+shiftX)*scale + scale, (indexJ+shiftY)*scale + scale);
               MapView.bndCtx.stroke();
             }
-            //east
-            if( indexI === Number(bounds[2]) ){
+            //south
+            if( indexJ === Number(bounds[3]) ){
               MapView.bndCtx.beginPath();
               MapView.bndCtx.moveTo((indexI+shiftX)*scale, (indexJ+shiftY)*scale + scale);
               MapView.bndCtx.lineTo((indexI+shiftX)*scale + scale, (indexJ+shiftY)*scale + scale);

@@ -119,6 +119,10 @@ h3 {
   cursor: none;
 }
 
+canvas {
+  cursor: none;
+}
+
 #map_window p{
   float: left;
   margin-left: 1em;
