@@ -218,11 +218,13 @@ RAMAP.saveMap = function(){
 }
 
 RAMAP.saveProperties = function(){
-  RAMAP.mapIO.mapInfo.updateInfo();
-  //update the tileset 
-  if ( RAMAP.mapIO.mapInfo.tileset !== undefined ){
-    console.log("set tileset");
-    RAMAP.setTileset( RAMAP.mapIO.mapInfo.tileset.toLowerCase() );
+  if( RAMAP.mapIO.mapInfo !== 0 && RAMAP.mapIO.mapInfo !== undefined){
+    RAMAP.mapIO.mapInfo.updateInfo();
+    //update the tileset 
+    if ( RAMAP.mapIO.mapInfo.tileset !== undefined ){
+      console.log("set tileset");
+      RAMAP.setTileset( RAMAP.mapIO.mapInfo.tileset.toLowerCase() );
+    }
   }
   $("#map_prop_dialog").dialog('close');
 }

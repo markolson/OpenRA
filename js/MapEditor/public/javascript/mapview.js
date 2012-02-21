@@ -59,6 +59,8 @@ RAMAP.newMapView = function(){
             e.offsetX - MapView.last[0], // set start coordinates
             e.offsetY - MapView.last[1]
        ];
+
+        console.log("mouse down:  X: " + MapView.startCoords[0] + " Y: " + MapView.startCoords[1]);
       });
       MapView.stage.addEventListener("mouseup", function(e) {
           MapView.isDown = false;
@@ -67,6 +69,7 @@ RAMAP.newMapView = function(){
               e.offsetX - MapView.startCoords[0], // set last coordinates
               e.offsetY - MapView.startCoords[1]
           ];
+        console.log("up:  X: " + MapView.last[0] + " Y: " + MapView.last[1]);
       });
       document.onkeydown =  function(e) {
         if( e.keyCode === 17 ){
@@ -88,8 +91,10 @@ RAMAP.newMapView = function(){
           var x = e.offsetX;
           var y = e.offsetY;
           var mapCoords = MapView.getMapCoords(x, y);
-          $("#map_x").html(String(mapCoords[0]));
-          $("#map_y").html(String(mapCoords[1]));
+          if( mapCoords !== undefined){
+            $("#map_x").html(String(mapCoords[0]));
+            $("#map_y").html(String(mapCoords[1]));
+          }
 
           if(!MapView.isDown || !MapView.dragOn) return; // don't pan if mouse is not pressed
           //console
@@ -101,9 +106,11 @@ RAMAP.newMapView = function(){
           //RAMAP.ctx.setTransform(1, 0, 0, 1,
           //                 x - startCoords[0], y - startCoords[1]);
           //console.log( "dx: " + (x - startCoords[0]) + "dy: " + (y - startCoords[1]) );
+          
           MapView.shiftX = Math.floor( (( x - MapView.startCoords[0] ) / MapView.scale) / 2);
           MapView.shiftY = Math.floor( (( y - MapView.startCoords[1] ) / MapView.scale) / 2);
 
+          console.log("SHIFT: X: "+MapView.shiftX + " Y: " + MapView.shiftY);
 
           //console.log( "shiftX: "+ shiftX + "shiftY: " + shiftY );
           
@@ -138,14 +145,15 @@ RAMAP.newMapView = function(){
 
     },
     handleScroll: function(e){
+      console.log(e);
       if( e.wheelDeltaY < 0  ){
         //zoom out
         console.log("zoom out");
-        MapView.zoomOut();
+        MapView.zoomOut(e.x, e.y);
       }else if( e.wheelDeltaY > 0){
         //zoom in 
         console.log("zoom in");
-        MapView.zoomIn();
+        MapView.zoomIn(e.x, e.y);
       }
     },
     setCursor: function(imgObj, posX, posY, scale, isTileCursor){
@@ -198,19 +206,23 @@ RAMAP.newMapView = function(){
       MapView.stage.addEventListener("mousedown", MapView.onMouseClick);
       MapView.stage.addEventListener("mouseup", MapView.onMouseUp);
     },
-    zoomIn: function(){
+    zoomIn: function(mosX, mosY){
       MapView.scale = MapView.scale + 3;
       if( MapView.scale > RAMAP.MAX_ZOOM){
         MapView.scale = RAMAP.MAX_ZOOM; 
       }
-      
+      MapView.startCoords = [];
+      MapView.last = [0,0];
+
       MapView.drawMap( null, null, MapView.shiftX, MapView.shiftY, MapView.scale); // render to show changes
     },
-    zoomOut: function(){
+    zoomOut: function(mosX, mosY){
       MapView.scale = MapView.scale - 3;
       if( MapView.scale < RAMAP.MIN_ZOOM){
         MapView.scale = RAMAP.MIN_ZOOM; 
       }
+      MapView.startCoords = [];
+      MapView.last = [0,0];
       MapView.drawMap( null, null, MapView.shiftX, MapView.shiftY, MapView.scale); // render to show changes
     },
     onDebug: function(){
