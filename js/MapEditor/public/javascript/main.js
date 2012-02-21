@@ -151,6 +151,7 @@ RAMAP.init = function (){
 RAMAP.onMapRead = function(){
   RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
   RAMAP.mapIO.mapInfo.updatePropDialog();
+  RAMAP.setTileset(RAMAP.mapIO.mapInfo.tileset.toLowerCase());
   RAMAP.showApp();
 };
 
