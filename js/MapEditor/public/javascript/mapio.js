@@ -321,6 +321,8 @@ RAMAP.newMapIO = function(){
     },
     getMapYaml: function(){
       yamlWriter = new YAML();
+      //clear actors
+      MapIO.mapInfo.actors = {};
       //update MapInfo
       MapIO.mapInfo.addActors(MapIO.mapData.actors);
 
@@ -342,7 +344,7 @@ RAMAP.newMapIO = function(){
       console.log("fileSize: " + fileSize );
       var file_buff = new ArrayBuffer( fileSize ); 
       var file_data = new DataView(file_buff);
-      var dw = RAMAP.dataWriter;
+      var dw = RAMAP.newDataWriter();
 
       console.log("file_data length:" + file_data.byteLength );
       //check if out of range
@@ -535,6 +537,7 @@ RAMAP.newMapInfo = function(){
       }
 
       for ( key in MapInfo.players){
+        if( key === "id"){ continue;};
         var player = MapInfo.players[key];
         if( /Multi\d+/.test( player.Name ) ){
           delete MapInfo.players[key];
@@ -730,23 +733,24 @@ RAMAP.newDataReader = function(){
   return DataReader;
 };
 
-RAMAP.dataWriter = (function(){
-    var byteOffset = 0;
-    return {
+RAMAP.newDataWriter = function(){
+    var DataWriter = {
+        byteOffset: 0,
         write8: function(dataView, value){
-          dataView.setUint8(byteOffset, value );  
-          byteOffset += 1;
+          dataView.setUint8(DataWriter.byteOffset, value );  
+          DataWriter.byteOffset += 1;
         },
         write16: function(dataView, value){
-          dataView.setUint16(byteOffset, value, true);  
-          byteOffset += 2;
+          dataView.setUint16(DataWriter.byteOffset, value, true);  
+          DataWriter.byteOffset += 2;
         },
         write32: function(dataView, value){
-          dataView.setUint32(byteOffset, value, true);  
-          byteOffset += 4;
+          dataView.setUint32(DataWriter.byteOffset, value, true);  
+          DataWriter.byteOffset += 4;
         }
-    }
-}());
+    };
+    return DataWriter;
+};
 
 RAMAP.newZipper = function(){
   var Zipper = {
