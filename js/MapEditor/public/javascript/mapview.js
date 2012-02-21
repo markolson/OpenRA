@@ -106,7 +106,7 @@ RAMAP.newMapView = function(){
           console.log( "dx: " + (x - MapView.startCoords[0]) + "dy: " + (y - MapView.startCoords[1]) );
           var dx = (x - MapView.startCoords[0]);
           var dy = (y - MapView.startCoords[1]);
-          var moveSize = 1;
+          var moveSize = Math.ceil(RAMAP.DEFAULT_SCALE/MapView.scale)*3;
           if( dx > 3 ){
             dx = moveSize;
           }else if( dx < -3 ){
