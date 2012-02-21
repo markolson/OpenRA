@@ -107,15 +107,19 @@ RAMAP.newMapView = function(){
           var dx = (x - MapView.startCoords[0]);
           var dy = (y - MapView.startCoords[1]);
           var moveSize = 1;
-          if( dx > 0 ){
+          if( dx > 3 ){
             dx = moveSize;
-          }else if( dx < 0 ){
+          }else if( dx < -3 ){
             dx = -moveSize;
+          }else{
+            dx = 0
           }
-          if( dy > 0 ){
+          if( dy > 3 ){
             dy = moveSize;
-          }else if( dy < 0 ){
+          }else if( dy < -3 ){
             dy = -moveSize;
+          }else{
+            dy = 0
           }
           MapView.shiftX += dx;
           MapView.shiftY += dy;
