@@ -25,7 +25,7 @@ namespace OpenRA.Mods.RA.Activities
 			limitedAmmo = self.TraitOrDefault<LimitedAmmo>();
 			if (limitedAmmo != null)
 				ticksPerPip = limitedAmmo.ReloadTimePerAmmo();
-			remainingTicks = limitedAmmo.ReloadTimePerAmmo();
+			remainingTicks = ticksPerPip;
 		}
 
 		public override Activity Tick(Actor self)

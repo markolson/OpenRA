@@ -512,7 +512,7 @@ MammothTusk:
 
 155mm:
 	ROF: 85
-	Range: 12
+	Range: 10
 	MinRange: 3
 	Report: TANK5
 	Projectile: Bullet
@@ -914,7 +914,7 @@ Heal:
 		
 SCUD:
 	ROF: 280
-	Range: 10
+	Range: 9
 	MinRange: 3
 	Report: MISSILE1
 	Projectile: Bullet
