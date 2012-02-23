@@ -260,7 +260,9 @@ namespace OpenRA.Mods.RA
 			var selfsameBuildings = self.World.ActorsWithTrait<Production>()
 				.Where(p => p.Trait.Info.Produces.Contains(unit.Traits.Get<BuildableInfo>().Queue))
 				.Where(p => p.Actor.Owner == self.Owner).ToArray();
-			var speedUp = 1 - (selfsameBuildings.First().Trait.Info.SpeedUp  * (selfsameBuildings.Count() - 1)).Clamp(0, selfsameBuildings.First().Trait.Info.MaxSpeedUp);
+			var speedUp = 1.0;
+			if (selfsameBuildings.Count() > 0)
+				speedUp = 1 - (selfsameBuildings.First().Trait.Info.SpeedUp  * (selfsameBuildings.Count() - 1)).Clamp(0, selfsameBuildings.First().Trait.Info.MaxSpeedUp);
 
 			var time = cost
 				* (Info.BuildSpeed * speedUp)
