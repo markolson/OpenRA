@@ -259,7 +259,7 @@ M1Carbine:
 
 Dragon:
 	ROF: 50
-	Range: 5
+	Range: 5.5
 	Report: MISSILE6
 	ValidTargets: Ground
 	Projectile: Missile
