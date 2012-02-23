@@ -8,10 +8,8 @@
  */
 #endregion
 
-using System;
 using System.Drawing;
 using System.Linq;
-using OpenRA.Traits;
 using OpenRA.Widgets;
 
 namespace OpenRA.Mods.Cnc.Widgets.Logic
@@ -19,8 +17,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 	public class CncConquestObjectivesLogic
 	{
 		[ObjectCreator.UseCtor]
-		public CncConquestObjectivesLogic([ObjectCreator.Param] Widget widget,
-		                                  [ObjectCreator.Param] World world)
+		public CncConquestObjectivesLogic(Widget widget, World world)
 		{
 			var panel = widget.GetWidget("CONQUEST_OBJECTIVES");
 			panel.GetWidget<LabelWidget>("TITLE").GetText = () => "Conquest: " + world.Map.Title;

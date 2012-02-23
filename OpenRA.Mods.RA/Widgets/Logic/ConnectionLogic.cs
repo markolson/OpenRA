@@ -12,9 +12,9 @@ using System;
 using OpenRA.Network;
 using OpenRA.Widgets;
 
-namespace OpenRA.Mods.Cnc.Widgets.Logic
+namespace OpenRA.Mods.RA.Widgets.Logic
 {
-	public class CncConnectingLogic
+	public class ConnectionLogic
 	{
 		Action onConnect, onRetry, onAbort;
 		string host;
@@ -31,8 +31,8 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 			{
 				// Show connection failed dialog
 				CloseWindow();
-				Widget.OpenWindow("CONNECTIONFAILED_PANEL", new WidgetArgs()
-	            {
+				Ui.OpenWindow("CONNECTIONFAILED_PANEL", new WidgetArgs()
+				{
 					{ "onAbort", onAbort },
 					{ "onRetry", onRetry },
 					{ "host", host },
@@ -41,19 +41,14 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 			}
 		}
 
-		public void CloseWindow()
+		void CloseWindow()
 		{
 			Game.ConnectionStateChanged -= ConnectionStateChanged;
-			Widget.CloseWindow();
+			Ui.CloseWindow();
 		}
 
 		[ObjectCreator.UseCtor]
-		public CncConnectingLogic([ObjectCreator.Param] Widget widget,
-		                          [ObjectCreator.Param] string host,
-	                              [ObjectCreator.Param] int port,
-		                          [ObjectCreator.Param] Action onConnect,
-		                          [ObjectCreator.Param] Action onRetry,
-		                          [ObjectCreator.Param] Action onAbort)
+		public ConnectionLogic(Widget widget, string host, int port, Action onConnect, Action onRetry, Action onAbort)
 		{
 			this.host = host;
 			this.port = port;
@@ -63,7 +58,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 
 			Game.ConnectionStateChanged += ConnectionStateChanged;
 
-			var panel = widget.GetWidget("CONNECTING_PANEL");
+			var panel = widget;
 			panel.GetWidget<ButtonWidget>("ABORT_BUTTON").OnClick = () => { CloseWindow(); onAbort(); };
 
 			widget.GetWidget<LabelWidget>("CONNECTING_DESC").GetText = () =>
@@ -73,8 +68,8 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 		public static void Connect(string host, int port, Action onConnect, Action onAbort)
 		{
 			Game.JoinServer(host, port);
-			Widget.OpenWindow("CONNECTING_PANEL", new WidgetArgs()
-            {
+			Ui.OpenWindow("CONNECTING_PANEL", new WidgetArgs()
+			{
 				{ "host", host },
 				{ "port", port },
 				{ "onConnect", onConnect },
@@ -82,22 +77,19 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 				{ "onRetry", () => Connect(host, port, onConnect, onAbort) }
 			});
 		}
-    }
+	}
 
-	public class CncConnectionFailedLogic
+	public class ConnectionFailedLogic
 	{
 		[ObjectCreator.UseCtor]
-		public CncConnectionFailedLogic([ObjectCreator.Param] Widget widget,
-		                          		[ObjectCreator.Param] string host,
-		                                [ObjectCreator.Param] int port,
-		                                [ObjectCreator.Param] Action onRetry,
-		                          		[ObjectCreator.Param] Action onAbort)
+		public ConnectionFailedLogic(Widget widget, string host, int port, Action onRetry, Action onAbort)
 		{
-			var panel = widget.GetWidget("CONNECTIONFAILED_PANEL");
-			panel.GetWidget<ButtonWidget>("ABORT_BUTTON").OnClick = () => { Widget.CloseWindow(); onAbort(); };
-			panel.GetWidget<ButtonWidget>("RETRY_BUTTON").OnClick = () => { Widget.CloseWindow(); onRetry(); };
+			var panel = widget;
+			panel.GetWidget<ButtonWidget>("ABORT_BUTTON").OnClick = () => { Ui.CloseWindow(); onAbort(); };
+			panel.GetWidget<ButtonWidget>("RETRY_BUTTON").OnClick = () => { Ui.CloseWindow(); onRetry(); };
 
 			widget.GetWidget<LabelWidget>("CONNECTING_DESC").GetText = () =>
 				"Could not connect to {0}:{1}".F(host, port);
 		}
-    }}
+	}
+}

@@ -28,6 +28,7 @@ namespace OpenRA.Mods.RA.Crates
 	class GiveUnitCrateAction : CrateAction
 	{
 		GiveUnitCrateActionInfo Info;
+
 		public GiveUnitCrateAction(Actor self, GiveUnitCrateActionInfo info)
 			: base(self, info) { Info = info; }
 
@@ -51,7 +52,7 @@ namespace OpenRA.Mods.RA.Crates
 			if (location != null)
 				collector.World.AddFrameEndTask(
 					w => w.CreateActor(Info.Unit, new TypeDictionary
-				    {
+					{
 						new LocationInit( location.Value ),
 						new OwnerInit( Info.Owner ?? collector.Owner.InternalName )
 					}));
@@ -61,7 +62,8 @@ namespace OpenRA.Mods.RA.Crates
 
 		IEnumerable<int2> GetSuitableCells(int2 near)
 		{
-			var mi = Rules.Info[Info.Unit].Traits.GetOrDefault<MobileInfo>();
+			var mi = Rules.Info[Info.Unit].Traits.Get<MobileInfo>();
+
 			for (var i = -1; i < 2; i++)
 				for (var j = -1; j < 2; j++)
 					if (mi.CanEnterCell(self.World, self.Owner, near + new int2(i, j), null, true))

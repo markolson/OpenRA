@@ -8,7 +8,7 @@
  */
 #endregion
 
-using System.Linq;
+using System;
 using OpenRA.Widgets;
 
 namespace OpenRA.Mods.RA.Widgets.Logic
@@ -16,36 +16,28 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 	public class DirectConnectLogic
 	{
 		[ObjectCreator.UseCtor]
-		public DirectConnectLogic( [ObjectCreator.Param] Widget widget )
+		public DirectConnectLogic(Widget widget, Action onExit, Action openLobby)
 		{
-			var dc = widget.GetWidget("DIRECTCONNECT_BG");
+			var panel = widget;
+			var ipField = panel.GetWidget<TextFieldWidget>("IP");
+			var portField = panel.GetWidget<TextFieldWidget>("PORT");
 
-			dc.GetWidget<TextFieldWidget>("SERVER_ADDRESS").Text = Game.Settings.Player.LastServer;
+			var last = Game.Settings.Player.LastServer.Split(':');
+			ipField.Text = last.Length > 1 ? last[0] : "localhost";
+			portField.Text = last.Length > 2 ? last[1] : "1234";
 
-            dc.GetWidget<ButtonWidget>("JOIN_BUTTON").OnClick = () =>
-            {
-                var address = dc.GetWidget<TextFieldWidget>("SERVER_ADDRESS").Text;
-                var addressParts = address.Split(':').ToArray();
-                if (addressParts.Length < 1 || addressParts.Length > 2)
-                    return;
-
-                int port;
-                if (addressParts.Length != 2 || !int.TryParse(addressParts[1], out port))
-                    port = 1234;
-
-                Game.Settings.Player.LastServer = address;
-                Game.Settings.Save();
-
-                Widget.CloseWindow();
-                Game.JoinServer(addressParts[0], port);
-            };
-
-			dc.GetWidget<ButtonWidget>("CANCEL_BUTTON").OnClick = () =>
+			panel.GetWidget<ButtonWidget>("JOIN_BUTTON").OnClick = () =>
 			{
-				Widget.CloseWindow();
-				Widget.OpenWindow("MAINMENU_BG");
+				var port = Exts.WithDefault(1234, () => int.Parse(portField.Text));
+
+				Game.Settings.Player.LastServer = "{0}:{1}".F(ipField.Text, port);
+				Game.Settings.Save();
+
+				Ui.CloseWindow();
+				ConnectionLogic.Connect(ipField.Text, port, openLobby, onExit);
 			};
+
+			panel.GetWidget<ButtonWidget>("BACK_BUTTON").OnClick = () => { Ui.CloseWindow(); onExit(); };
 		}
 	}
 }
-

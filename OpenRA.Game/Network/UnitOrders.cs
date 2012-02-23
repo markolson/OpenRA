@@ -50,6 +50,7 @@ namespace OpenRA.Network
 							Game.AddChatLine(Color.White, "(player {0})".F(clientId), order.TargetString);
 						break;
 					}
+
 				case "Disconnected": /* reports that the target player disconnected */
 					{
 						var client = orderManager.LobbyInfo.ClientWithIndex(clientId);
@@ -59,6 +60,7 @@ namespace OpenRA.Network
 						}
 						break;
 					}
+
 				case "TeamChat":
 					{
 						var client = orderManager.LobbyInfo.ClientWithIndex(clientId);
@@ -68,68 +70,65 @@ namespace OpenRA.Network
 							if (world == null)
 							{
 								if (client.Team == orderManager.LocalClient.Team)
-                                    Game.AddChatLine(client.ColorRamp.GetColor(0), client.Name + " (Team)",
-													 order.TargetString);
+									Game.AddChatLine(client.ColorRamp.GetColor(0), client.Name + " (Team)",
+										order.TargetString);
 							}
 							else
 							{
 								var player = world.FindPlayerByClient(client);
-								var display = player != null
-											  &&
-											  (world.LocalPlayer != null &&
-											   player.Stances[world.LocalPlayer] == Stance.Ally
-											   || player.WinState == WinState.Lost);
+								if (player == null) return;
 
-								if (display)
+								if (world.LocalPlayer != null && player.Stances[world.LocalPlayer] == Stance.Ally || player.WinState == WinState.Lost)
 								{
-									var suffix = (player != null && player.WinState == WinState.Lost)
-													 ? " (Dead)"
-													 : " (Team)";
-                                    Game.AddChatLine(client.ColorRamp.GetColor(0), client.Name + suffix, order.TargetString);
+									var suffix = player.WinState == WinState.Lost ? " (Dead)" : " (Team)";
+									Game.AddChatLine(client.ColorRamp.GetColor(0), client.Name + suffix, order.TargetString);
 								}
 							}
 						}
 						break;
 					}
+
 				case "StartGame":
 					{
 						Game.AddChatLine(Color.White, "Server", "The game has started.");
-						Game.StartGame(orderManager.LobbyInfo.GlobalSettings.Map);
+						Game.StartGame(orderManager.LobbyInfo.GlobalSettings.Map, false);
 						break;
 					}
 
 				case "HandshakeRequest":
-				{
-					var request = HandshakeRequest.Deserialize(order.TargetString);
-
-					// Check that the map exists on the client
-					if (!Game.modData.AvailableMaps.ContainsKey(request.Map))
-						throw new InvalidOperationException("Missing map {0}".F(request.Map));
-
-					var info = new Session.Client()
 					{
-						Name = Game.Settings.Player.Name,
-						ColorRamp = Game.Settings.Player.ColorRamp,
-						Country = "random",
-						SpawnPoint = 0,
-						Team = 0,
-						State = Session.ClientState.NotReady
-					};
+						var request = HandshakeRequest.Deserialize(order.TargetString);
 
-					var localMods = orderManager.LobbyInfo.GlobalSettings.Mods.Select(m => "{0}@{1}".F(m,Mod.AllMods[m].Version)).ToArray();
-					var response = new HandshakeResponse()
-					{
-						Client = info,
-						Mods = localMods,
-						Password = "Foo"
-					};
+						// Check that the map exists on the client
+						if (!Game.modData.AvailableMaps.ContainsKey(request.Map))
+							throw new InvalidOperationException("Missing map {0}".F(request.Map));
 
-					orderManager.IssueOrder(Order.HandshakeResponse(response.Serialize()));
-					break;
-				}
+						var info = new Session.Client()
+						{
+							Name = Game.Settings.Player.Name,
+							ColorRamp = Game.Settings.Player.ColorRamp,
+							Country = "random",
+							SpawnPoint = 0,
+							Team = 0,
+							State = Session.ClientState.NotReady
+						};
+
+						var localMods = orderManager.LobbyInfo.GlobalSettings.Mods.Select(m => "{0}@{1}".F(m,Mod.AllMods[m].Version)).ToArray();
+						var response = new HandshakeResponse()
+						{
+							Client = info,
+							Mods = localMods,
+							Password = "Foo"
+						};
+
+						orderManager.IssueOrder(Order.HandshakeResponse(response.Serialize()));
+						break;
+					}
+
 				case "ServerError":
 					orderManager.ServerError = order.TargetString;
-				break;
+					break;
+
 				case "SyncInfo":
 					{
 						orderManager.LobbyInfo = Session.Deserialize(order.TargetString);
@@ -186,8 +185,7 @@ namespace OpenRA.Network
 		{
 			var oldStance = p.Stances[target];
 			p.Stances[target] = s;
-			if (target == w.LocalPlayer)
-				w.WorldActor.Trait<Shroud>().UpdatePlayerStance(w, p, oldStance, s);
+			target.Shroud.UpdatePlayerStance(w, p, oldStance, s);
 
 			foreach (var nsc in w.ActorsWithTrait<INotifyStanceChanged>())
 				nsc.Trait.StanceChanged(nsc.Actor, p, target, oldStance, s);

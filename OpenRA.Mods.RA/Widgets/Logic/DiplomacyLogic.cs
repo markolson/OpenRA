@@ -25,10 +25,10 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 		readonly World world;
 
 		[ObjectCreator.UseCtor]
-		public DiplomacyLogic( [ObjectCreator.Param] World world )
+		public DiplomacyLogic(World world)
 		{
 			this.world = world;
-			var root = Widget.RootWidget.GetWidget("INGAME_ROOT");
+			var root = Ui.Root.GetWidget("INGAME_ROOT");
 			var diplomacyBG = root.GetWidget("DIPLOMACY_BG");
 			var diplomacy = root.GetWidget<ButtonWidget>("INGAME_DIPLOMACY_BUTTON");
 
@@ -122,12 +122,12 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 
 		void ShowDropDown(Player p, DropDownButtonWidget dropdown)
 		{
-			var stances = Enum.GetValues(typeof(Stance)).OfType<Stance>().ToList();
+			var stances = Enum<Stance>.GetValues();
 			Func<Stance, ScrollItemWidget, ScrollItemWidget> setupItem = (s, template) =>
 			{
 				var item = ScrollItemWidget.Setup(template,
-				                                  () => s == world.LocalPlayer.Stances[ p ],
-				                                  () => SetStance(dropdown, p, s));
+					() => s == world.LocalPlayer.Stances[ p ],
+					() => SetStance(dropdown, p, s));
 
 				item.GetWidget<LabelWidget>("LABEL").GetText = () => s.ToString();
 				return item;
@@ -141,8 +141,8 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 			if (p.World.LobbyInfo.GlobalSettings.LockTeams)
 				return;	// team changes are banned
 
-			world.IssueOrder(new Order("SetStance", world.LocalPlayer.PlayerActor,
-				false) { TargetLocation = new int2((int)ss, 0), TargetString = p.InternalName });
+			world.IssueOrder(new Order("SetStance", world.LocalPlayer.PlayerActor, false)
+				{ TargetLocation = new int2((int)ss, 0), TargetString = p.InternalName });
 
 			bw.Text = ss.ToString();
 		}

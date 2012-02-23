@@ -8,7 +8,6 @@
  */
 #endregion
 
-using OpenRA.Support;
 using OpenRA.Widgets;
 
 namespace OpenRA.Mods.Cnc.Widgets.Logic
@@ -16,8 +15,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 	public class ButtonTooltipLogic
 	{
 		[ObjectCreator.UseCtor]
-		public ButtonTooltipLogic([ObjectCreator.Param] Widget widget,
-		                         [ObjectCreator.Param] ToggleButtonWidget button)
+		public ButtonTooltipLogic(Widget widget, ToggleButtonWidget button)
 		{
 			var label = widget.GetWidget<LabelWidget>("LABEL");
 			var hotkey = widget.GetWidget<LabelWidget>("HOTKEY");

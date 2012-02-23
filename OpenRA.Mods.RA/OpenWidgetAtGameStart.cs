@@ -34,7 +34,7 @@ namespace OpenRA.Mods.RA
 		public void WorldLoaded(World world)
 		{
 			// Remove all open widgets
-			Widget.ResetAll();
+			Ui.ResetAll();
 
 			if (world.LocalPlayer != null)
 				Game.OpenWindow(world, Info.Widget);
@@ -47,7 +47,7 @@ namespace OpenRA.Mods.RA
 	public class LoadWidgetAtGameStartInfo : ITraitInfo
 	{
 		public readonly string Widget = null;
-		public readonly bool ClearRootWidget = true;
+		public readonly bool ClearRoot = true;
 		public object Create(ActorInitializer init) { return new LoadWidgetAtGameStart(this); }
 	}
 
@@ -62,10 +62,10 @@ namespace OpenRA.Mods.RA
 		public void WorldLoaded(World world)
 		{
 			// Clear any existing widget state
-			if (Info.ClearRootWidget)
-				Widget.ResetAll();
+			if (Info.ClearRoot)
+				Ui.ResetAll();
 
-			Game.LoadWidget(world, Info.Widget, Widget.RootWidget, new WidgetArgs());
+			Game.LoadWidget(world, Info.Widget, Ui.Root, new WidgetArgs());
 		}
 	}
 }

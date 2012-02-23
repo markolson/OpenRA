@@ -113,10 +113,10 @@ namespace OpenRA
 			return r.Contains(p.ToPointF());
 		}
 
-        public static bool HasModifier(this Modifiers k, Modifiers mod)
-        {
-            return (k & mod) == mod;
-        }
+		public static bool HasModifier(this Modifiers k, Modifiers mod)
+		{
+			return (k & mod) == mod;
+		}
 
 		public static bool IsValidInput(this KeyInput key)
 		{
@@ -125,36 +125,36 @@ namespace OpenRA
 					char.IsPunctuation(key.UnicodeChar);
 		}
 
-        public static V GetOrAdd<K, V>(this Dictionary<K, V> d, K k)
-            where V : new()
-        {
-            return d.GetOrAdd(k, _ => new V());
-        }
+		public static V GetOrAdd<K, V>(this Dictionary<K, V> d, K k)
+			where V : new()
+		{
+			return d.GetOrAdd(k, _ => new V());
+		}
 
-        public static V GetOrAdd<K, V>(this Dictionary<K, V> d, K k, Func<K, V> createFn)
-        {
-            V ret;
-            if (!d.TryGetValue(k, out ret))
-                d.Add(k, ret = createFn(k));
-            return ret;
-        }
+		public static V GetOrAdd<K, V>(this Dictionary<K, V> d, K k, Func<K, V> createFn)
+		{
+			V ret;
+			if (!d.TryGetValue(k, out ret))
+				d.Add(k, ret = createFn(k));
+			return ret;
+		}
 
-        public static T Random<T>(this IEnumerable<T> ts, Thirdparty.Random r)
-        {
-            var xs = ts.ToArray();
-            return xs[r.Next(xs.Length)];
-        }
+		public static T Random<T>(this IEnumerable<T> ts, Thirdparty.Random r)
+		{
+			var xs = ts.ToArray();
+			return xs[r.Next(xs.Length)];
+		}
 
-        public static float Product(this IEnumerable<float> xs)
-        {
-            return xs.Aggregate(1f, (a, x) => a * x);
-        }
+		public static float Product(this IEnumerable<float> xs)
+		{
+			return xs.Aggregate(1f, (a, x) => a * x);
+		}
 
-        public static IEnumerable<T> SymmetricDifference<T>(this IEnumerable<T> xs, IEnumerable<T> ys)
-        {
-            // this is probably a shockingly-slow way to do this, but it's concise.
-            return xs.Except(ys).Concat(ys.Except(xs));
-        }
+		public static IEnumerable<T> SymmetricDifference<T>(this IEnumerable<T> xs, IEnumerable<T> ys)
+		{
+			// this is probably a shockingly-slow way to do this, but it's concise.
+			return xs.Except(ys).Concat(ys.Except(xs));
+		}
 
 		public static IEnumerable<T> Iterate<T>( this T t, Func<T,T> f )
 		{
@@ -171,5 +171,43 @@ namespace OpenRA
 			++v;
 			return v;
 		}
+
+		public static Size NextPowerOf2(this Size s) { return new Size(NextPowerOf2(s.Width), NextPowerOf2(s.Height)); }
+
+		public static string JoinWith<T>(this IEnumerable<T> ts, string j)
+		{
+			return string.Join(j, ts.Select(t => t.ToString()).ToArray());
+		}
+
+		public static IEnumerable<T> Append<T>( this IEnumerable<T> ts, params T[] moreTs)
+		{
+			return ts.Concat(moreTs);
+		}
+
+		public static Color ColorLerp(float t, Color c1, Color c2)
+		{
+			return Color.FromArgb(
+				(int)(t * c2.A + (1 - t) * c1.A),
+				(int)(t * c2.R + (1 - t) * c1.R),
+				(int)(t * c2.G + (1 - t) * c1.G),
+				(int)(t * c2.B + (1 - t) * c1.B));
+		}
+
+		public static T[] MakeArray<T>(int count, Func<int, T> f)
+		{
+			T[] result = new T[count];
+			for (int i = 0; i < count; i++)
+				result[i] = f(i);
+
+			return result;
+		}
+
+		public static Rectangle Bounds(this Bitmap b) { return new Rectangle(0, 0, b.Width, b.Height); }
+	}
+
+	public static class Enum<T>
+	{
+		public static T Parse(string s) { return (T)Enum.Parse(typeof(T), s); }
+		public static T[] GetValues() { return (T[])Enum.GetValues(typeof(T)); }
 	}
 }

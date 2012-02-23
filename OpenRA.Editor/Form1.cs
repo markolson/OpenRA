@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -56,6 +57,7 @@ namespace OpenRA.Editor
 
 			surface1.AfterChange += OnMapChanged;
 			surface1.MousePositionChanged += s => toolStripStatusLabelMousePosition.Text = s;
+			surface1.ActorDoubleClicked += ActorDoubleClicked;
 
 			if (args.Length >= 2)
 				LoadMap(args[1]);
@@ -67,7 +69,31 @@ namespace OpenRA.Editor
 			pmMiniMap.Image = Minimap.AddStaticResources(surface1.Map, Minimap.TerrainBitmap(surface1.Map, true));
 		}
 
+		void ActorDoubleClicked(KeyValuePair<string,ActorReference> kv)
+		{
+			using( var apd = new ActorPropertiesDialog() )
+			{
+				var name = kv.Key;
+				apd.AddRow("(Name)", apd.MakeEditorControl(typeof(string), () => name, v => name = (string)v));
+				apd.AddRow("(Type)", apd.MakeEditorControl(typeof(string), () => kv.Value.Type, v => kv.Value.Type = (string)v));
+
+				var objSaved = kv.Value.Save();
+
+				// TODO: make this work properly
+				foreach( var init in Rules.Info[kv.Value.Type].GetInitKeys() )
+					apd.AddRow(init.First,
+						apd.MakeEditorControl(init.Second,
+							() => objSaved.NodesDict.ContainsKey( init.First ) ? objSaved.NodesDict[init.First].Value : null,
+							_ => {}));
+
+				apd.ShowDialog();
+
+				// TODO: writeback
+			}
+		}
+
 		void MakeDirty() { dirty = true; }
+
 		string loadedMapName;
 		string currentMod = "ra";
 		TileSet tileset;
@@ -157,9 +183,9 @@ namespace OpenRA.Editor
 
 					var etf = info.Traits.GetOrDefault<EditorTilesetFilterInfo>();
 					if (etf != null && etf.ExcludeTilesets != null
-					    && etf.ExcludeTilesets.Contains(tileset.Id)) continue;
+						&& etf.ExcludeTilesets.Contains(tileset.Id)) continue;
 					if (etf != null && etf.RequireTilesets != null
-					    && !etf.RequireTilesets.Contains(tileset.Id)) continue;
+						&& !etf.RequireTilesets.Contains(tileset.Id)) continue;
 
 					var template = RenderUtils.RenderActor(info, tileset, palette);
 					var ibox = new PictureBox
@@ -233,6 +259,16 @@ namespace OpenRA.Editor
 			saveToolStripMenuItem.Enabled = true;
 			saveAsToolStripMenuItem.Enabled = true;
 			mnuMinimapToPNG.Enabled = true;	// todo: what is this VB naming bullshit doing here?
+
+			PopulateActorOwnerChooser();
+		}
+
+		void PopulateActorOwnerChooser()
+		{
+			actorOwnerChooser.Items.Clear();
+			actorOwnerChooser.Items.AddRange(surface1.Map.Players.Values.ToArray());
+			actorOwnerChooser.SelectedIndex = 0;
+			surface1.NewActorOwner = (actorOwnerChooser.SelectedItem as PlayerReference).Name;
 		}
 
 		void ResizeClicked(object sender, EventArgs e)
@@ -250,9 +286,9 @@ namespace OpenRA.Editor
 					return;
 
 				surface1.Map.ResizeCordon((int)rd.cordonLeft.Value,
-									   (int)rd.cordonTop.Value,
-									   (int)rd.cordonRight.Value,
-									   (int)rd.cordonBottom.Value);
+					(int)rd.cordonTop.Value,
+					(int)rd.cordonRight.Value,
+					(int)rd.cordonBottom.Value);
 
 				if ((int)rd.width.Value != surface1.Map.MapSize.X || (int)rd.height.Value != surface1.Map.MapSize.Y)
 				{
@@ -408,11 +444,15 @@ namespace OpenRA.Editor
 
 		void ExportMinimap(object sender, EventArgs e)
 		{
-			saveFileDialog.InitialDirectory = Path.Combine(Environment.CurrentDirectory, "maps");
-			saveFileDialog.FileName = Path.ChangeExtension(loadedMapName, ".png");
-
-			if (DialogResult.OK == saveFileDialog.ShowDialog())
-				pmMiniMap.Image.Save(saveFileDialog.FileName);
+			using( var sfd = new SaveFileDialog() { 
+				InitialDirectory = Path.Combine(Environment.CurrentDirectory, "maps"),
+				DefaultExt = "*.png",
+				Filter = "PNG Image (*.png)|*.png",
+				Title = "Export Minimap to PNG",
+				FileName = Path.ChangeExtension(loadedMapName, ".png"),
+				RestoreDirectory = true } )
+				if (DialogResult.OK == sfd.ShowDialog())
+					pmMiniMap.Image.Save(sfd.FileName);
 		}
 
 		void ShowActorNamesClicked(object sender, EventArgs e)
@@ -446,6 +486,41 @@ namespace OpenRA.Editor
 
 			surface1.Chunks.Clear();
 			surface1.Invalidate();
+		}
+
+		void SetupDefaultPlayers(object sender, EventArgs e)
+		{
+			dirty = true;
+			surface1.Map.MakeDefaultPlayers();
+
+			surface1.Chunks.Clear();
+			surface1.Invalidate();
+
+			PopulateActorOwnerChooser();
+		}
+
+		void DrawPlayerListItem(object sender, DrawItemEventArgs e)
+		{
+			// color block
+			var player = e.Index >= 0 ? (PlayerReference)(sender as ComboBox).Items[e.Index] : null;
+
+			e.DrawBackground();
+			e.DrawFocusRectangle();
+
+			if (player == null)
+				return;
+
+			var color = player.ColorRamp.GetColor(0);
+			using( var brush = new SolidBrush(color) )
+				e.Graphics.FillRectangle( brush, e.Bounds.Left + 2, e.Bounds.Top + 2, e.Bounds.Height + 6, e.Bounds.Height - 4 );
+			using( var foreBrush = new SolidBrush(e.ForeColor) )
+				e.Graphics.DrawString( player.Name, e.Font, foreBrush, e.Bounds.Left + e.Bounds.Height + 12, e.Bounds.Top );
+		}
+
+		void OnSelectedPlayerChanged(object sender, EventArgs e)
+		{
+			var player = actorOwnerChooser.SelectedItem as PlayerReference;
+			surface1.NewActorOwner = player.Name;
 		}
 	}
 }

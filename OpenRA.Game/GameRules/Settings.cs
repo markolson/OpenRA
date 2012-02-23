@@ -49,7 +49,7 @@ namespace OpenRA.GameRules
 		public bool PerfText = false;
 		public bool PerfGraph = false;
 		public float LongTickThreshold = 0.001f;
-        public bool SanityCheckUnsyncedCode = false;
+		public bool SanityCheckUnsyncedCode = false;
 		public int Samples = 25;
 	}
 
@@ -60,6 +60,8 @@ namespace OpenRA.GameRules
 		public int2 FullscreenSize = new int2(0,0);
 		public int2 WindowedSize = new int2(1024, 768);
 		public bool PixelDouble = false;
+		public bool CapFramerate = false;
+		public int MaxFramerate = 60;
 
 		public int BatchSize = 8192;
 		public int NumTempBuffers = 8;
@@ -79,7 +81,7 @@ namespace OpenRA.GameRules
 	public class PlayerSettings
 	{
 		public string Name = "Newbie";
-        public ColorRamp ColorRamp = new ColorRamp(75, 255, 180, 25);
+		public ColorRamp ColorRamp = new ColorRamp(75, 255, 180, 25);
 		public string LastServer = "localhost:1234";
 	}
 
@@ -90,13 +92,16 @@ namespace OpenRA.GameRules
 		public string[] Mods = { "ra" };
 
 		public bool TeamChatToggle = false;
+		public bool ShowShellmap = true;
 
-        public bool ViewportEdgeScroll = true;
-        public MouseScrollType MouseScroll = MouseScrollType.Standard;
+		public bool ViewportEdgeScroll = true;
+		public MouseScrollType MouseScroll = MouseScrollType.Standard;
 		public float ViewportEdgeScrollStep = 10f;
 
 		// Internal game settings
 		public int Timestep = 40;
+
+		public string ConnectTo = "";
 	}
 
 	public class Settings
@@ -109,7 +114,9 @@ namespace OpenRA.GameRules
 		public GraphicSettings Graphics = new GraphicSettings();
 		public ServerSettings Server = new ServerSettings();
 		public DebugSettings Debug = new DebugSettings();
+
 		public Dictionary<string, object> Sections;
+
 		public Settings(string file, Arguments args)
 		{
 			SettingsFile = file;
@@ -123,7 +130,6 @@ namespace OpenRA.GameRules
 				{"Debug", Debug},
 			};
 
-
 			// Override fieldloader to ignore invalid entries
 			var err1 = FieldLoader.UnknownFieldAction;
 			var err2 = FieldLoader.InvalidValueAction;
@@ -135,7 +141,6 @@ namespace OpenRA.GameRules
 
 			if (File.Exists(SettingsFile))
 			{
-				//Console.WriteLine("Loading settings file {0}",SettingsFile);
 				var yaml = MiniYaml.DictFromFile(SettingsFile);
 
 				foreach (var kv in Sections)
@@ -164,11 +169,11 @@ namespace OpenRA.GameRules
 
 		void LoadSectionYaml(MiniYaml yaml, object section)
 		{
-			object defaults = Activator.CreateInstance(section.GetType());
+			var defaults = Activator.CreateInstance(section.GetType());
 			FieldLoader.InvalidValueAction = (s,t,f) =>
 			{
-				object ret = defaults.GetType().GetField(f).GetValue(defaults);
-				System.Console.WriteLine("FieldLoader: Cannot parse `{0}` into `{2}:{1}`; substituting default `{3}`".F(s,t.Name,f,ret) );
+				var ret = defaults.GetType().GetField(f).GetValue(defaults);
+				Console.WriteLine("FieldLoader: Cannot parse `{0}` into `{2}:{1}`; substituting default `{3}`".F(s,t.Name,f,ret) );
 				return ret;
 			};
 

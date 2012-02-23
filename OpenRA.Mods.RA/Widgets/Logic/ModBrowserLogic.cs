@@ -9,29 +9,26 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using OpenRA.FileFormats;
 using OpenRA.Widgets;
 
-namespace OpenRA.Mods.Cnc.Widgets.Logic
+namespace OpenRA.Mods.RA.Widgets.Logic
 {
-	public class CncModBrowserLogic
+	public class ModBrowserLogic
 	{
 		Mod currentMod;
 
 		[ObjectCreator.UseCtor]
-		public CncModBrowserLogic([ObjectCreator.Param] Widget widget,
-		                            [ObjectCreator.Param] Action onSwitch,
-		                            [ObjectCreator.Param] Action onExit)
+		public ModBrowserLogic(Widget widget, Action onSwitch, Action onExit)
 		{
-			var panel = widget.GetWidget("MODS_PANEL");
+			var panel = widget;
 			var modList = panel.GetWidget<ScrollPanelWidget>("MOD_LIST");
 			var loadButton = panel.GetWidget<ButtonWidget>("LOAD_BUTTON");
 			loadButton.OnClick = () => LoadMod(currentMod.Id, onSwitch);
 			loadButton.IsDisabled = () => currentMod.Id == Game.CurrentMods.Keys.First();
 
-			panel.GetWidget<ButtonWidget>("BACK_BUTTON").OnClick = () => { Widget.CloseWindow(); onExit(); };
+			panel.GetWidget<ButtonWidget>("BACK_BUTTON").OnClick = () => { Ui.CloseWindow(); onExit(); };
 			currentMod = Mod.AllMods[Game.modData.Manifest.Mods[0]];
 
 			// Mod list
@@ -54,9 +51,9 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 
 			Game.RunAfterTick(() =>
 			{
-				Widget.CloseWindow();
+				Ui.CloseWindow();
 				onSwitch();
-				Game.InitializeWithMods(mods.ToArray());
+				Game.InitializeWithMods(mods);
 			});
 		}
 	}

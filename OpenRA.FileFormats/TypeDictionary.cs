@@ -48,29 +48,34 @@ namespace OpenRA.FileFormats
 
 		public bool Contains<T>()
 		{
-			return dataSingular.ContainsKey( typeof( T ) ) || dataMultiple.ContainsKey( typeof( T ) );
+			return dataSingular.ContainsKey(typeof(T)) || dataMultiple.ContainsKey(typeof(T));
 		}
 
 		public T Get<T>()
 		{
-			if( dataMultiple.ContainsKey( typeof( T ) ) )
-				throw new InvalidOperationException( string.Format( "TypeDictionary contains multiple instance of type `{0}`", typeof( T ) ) );
+			if (dataMultiple.ContainsKey(typeof(T)))
+				throw new InvalidOperationException("TypeDictionary contains multiple instance of type `{0}`".F(typeof(T)));
 
 			object ret;
-			if( !dataSingular.TryGetValue( typeof( T ), out ret ) )
-				throw new InvalidOperationException(string.Format("TypeDictionary does not contain instance of type `{0}`", typeof(T)));
+			if (!dataSingular.TryGetValue(typeof(T), out ret))
+				throw new InvalidOperationException("TypeDictionary does not contain instance of type `{0}`".F(typeof(T)));
 			return (T)ret;
 		}
 
 		public T GetOrDefault<T>()
 		{
-			if( dataMultiple.ContainsKey( typeof( T ) ) )
-				throw new InvalidOperationException( string.Format( "TypeDictionary contains multiple instance of type `{0}`", typeof( T ) ) );
+			return (T)GetOrDefault(typeof(T));
+		}
+
+		public object GetOrDefault(Type t)
+		{
+			if (dataMultiple.ContainsKey(t))
+				throw new InvalidOperationException("TypeDictionary contains multiple instances of type `{0}`".F(t));
 
 			object ret;
-			if( !dataSingular.TryGetValue( typeof( T ), out ret ) )
-				return default( T );
-			return (T)ret;
+			if (!dataSingular.TryGetValue(t, out ret))
+				return null;
+			return ret;
 		}
 
 		public IEnumerable<T> WithInterface<T>()

@@ -21,11 +21,9 @@ namespace OpenRA.Mods.RA.Widgets
 	{
 		public int TooltipDelay = 10;
 		readonly World world;
+
 		[ObjectCreator.UseCtor]
-		public WorldTooltipWidget( [ObjectCreator.Param] World world )
-		{
-			this.world = world;
-		}
+		public WorldTooltipWidget(World world) { this.world = world; }
 
 		public override void Draw()
 		{
@@ -35,7 +33,7 @@ namespace OpenRA.Mods.RA.Widgets
 			var cell = Game.viewport.ViewToWorld(Viewport.LastMousePos).ToInt2();
 			if (!world.Map.IsInMap(cell)) return;
 
-			if (world.LocalPlayer != null && !world.LocalPlayer.Shroud.IsExplored(cell))
+			if (world.LocalPlayer != null && !world.RenderedShroud.IsExplored(cell))
 			{
 				var utext = "Unexplored Terrain";
 				var usz = Game.Renderer.Fonts["Bold"].Measure(utext) + new int2(20, 24);
@@ -62,7 +60,7 @@ namespace OpenRA.Mods.RA.Widgets
 			var nameText = itt.Name();
 			var ownerText = !owner.NonCombatant ? owner.PlayerName : "";
 			var stanceText = (world.LocalPlayer != null && owner != actor.World.LocalPlayer
-			                  && !owner.NonCombatant) ? " ({0})".F(itt.Stance()) : "";
+							  && !owner.NonCombatant) ? " ({0})".F(itt.Stance()) : "";
 
 			var nameSize = Game.Renderer.Fonts["Bold"].Measure(nameText);
 			var ownerSize = Game.Renderer.Fonts["Regular"].Measure(ownerText);

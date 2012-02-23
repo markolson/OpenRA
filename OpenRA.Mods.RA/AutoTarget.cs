@@ -18,11 +18,12 @@ namespace OpenRA.Mods.RA
 	{
 		public readonly bool AllowMovement = true;
 		public readonly int ScanRadius = -1;
+		public readonly UnitStance InitialStance = UnitStance.AttackAnything;
 
 		public object Create(ActorInitializer init) { return new AutoTarget(init.self, this); }
 	}
 
-	public enum UnitStance { HoldFire, ReturnFire, AttackAnything };
+	public enum UnitStance { HoldFire, ReturnFire, Defend, AttackAnything };
 
 	public class AutoTarget : INotifyIdle, INotifyDamage, ITick, IResolveOrder
 	{
@@ -30,12 +31,15 @@ namespace OpenRA.Mods.RA
 		readonly AttackBase attack;
 
 		[Sync] int nextScanTime = 0;
-		[Sync] public UnitStance stance = UnitStance.AttackAnything;
+		[Sync] public UnitStance stance;
+		public UnitStance predictedStance;		/* NOT SYNCED: do not refer to this anywhere other than UI code */
 
 		public AutoTarget(Actor self, AutoTargetInfo info)
 		{
 			Info = info;
 			attack = self.Trait<AttackBase>();
+			stance = Info.InitialStance;
+			predictedStance = stance;
 		}
 
 		public void ResolveOrder(Actor self, Order order)
@@ -60,26 +64,25 @@ namespace OpenRA.Mods.RA
 
 			if (e.Damage < 0) return;	// don't retaliate against healers
 
-			attack.AttackTarget(Target.FromActor(e.Attacker), false, Info.AllowMovement);
+			attack.AttackTarget(Target.FromActor(e.Attacker), false, Info.AllowMovement && stance != UnitStance.Defend);
 		}
 
 		public void TickIdle(Actor self)
 		{
-			if (stance < UnitStance.AttackAnything) return;
+			if (stance < UnitStance.Defend) return;
 
 			var target = ScanForTarget(self, null);
 			if (target != null)
 			{
 				self.SetTargetLine(Target.FromActor(target), Color.Red, false);
-				self.QueueActivity(attack.GetAttackActivity(self,
-					Target.FromActor(target),
-					Info.AllowMovement));
+				attack.AttackTarget(Target.FromActor(target), false, Info.AllowMovement && stance != UnitStance.Defend);
 			}
 		}
 
 		public void Tick(Actor self)
 		{
-			--nextScanTime;
+			if (nextScanTime > 0)
+				--nextScanTime;
 		}
 
 		public Actor ScanForTarget(Actor self, Actor currentTarget)
@@ -93,11 +96,11 @@ namespace OpenRA.Mods.RA
 			return currentTarget;
 		}
 
-		public void ScanAndAttack(Actor self, bool allowMovement, bool holdStill)
+		public void ScanAndAttack(Actor self)
 		{
 			var targetActor = ScanForTarget(self, null);
 			if (targetActor != null)
-				attack.AttackTarget(Target.FromActor(targetActor), false, allowMovement && !holdStill);
+				attack.AttackTarget(Target.FromActor(targetActor), false, Info.AllowMovement && stance != UnitStance.Defend);
 		}
 
 		Actor ChooseTarget(Actor self, float range)
@@ -108,11 +111,21 @@ namespace OpenRA.Mods.RA
 
 			var inRange = self.World.FindUnitsInCircle(self.CenterLocation, (int)(Game.CellSize * range));
 
-			return inRange
-				.Where(a => a.AppearsHostileTo(self))
-				.Where(a => !a.HasTrait<AutoTargetIgnore>())
-				.Where(a => attack.HasAnyValidWeapons(Target.FromActor(a)))
-				.ClosestTo( self.CenterLocation );
+			if (self.Owner.HasFogVisibility()) {
+				return inRange
+					.Where(a => a.AppearsHostileTo(self))
+					.Where(a => !a.HasTrait<AutoTargetIgnore>())
+					.Where(a => attack.HasAnyValidWeapons(Target.FromActor(a)))
+					.ClosestTo( self.CenterLocation );
+			}
+			else {
+				return inRange
+					.Where(a => a.AppearsHostileTo(self))
+					.Where(a => !a.HasTrait<AutoTargetIgnore>())
+					.Where(a => attack.HasAnyValidWeapons(Target.FromActor(a)))
+					.Where(a => self.Owner.Shroud.IsTargetable(a))
+					.ClosestTo( self.CenterLocation );
+			}
 		}
 	}
 

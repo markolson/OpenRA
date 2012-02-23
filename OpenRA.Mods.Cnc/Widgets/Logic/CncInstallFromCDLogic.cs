@@ -29,27 +29,25 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 		string[] filesToCopy, filesToExtract;
 
 		[ObjectCreator.UseCtor]
-		public CncInstallFromCDLogic([ObjectCreator.Param] Widget widget,
-			[ObjectCreator.Param] Action afterInstall,
-			[ObjectCreator.Param] string[] filesToCopy,
-			[ObjectCreator.Param] string[] filesToExtract)
+		public CncInstallFromCDLogic(Widget widget, Action afterInstall, string[] filesToCopy, string[] filesToExtract)
 		{
 			this.afterInstall = afterInstall;
 			this.filesToCopy = filesToCopy;
 			this.filesToExtract = filesToExtract;
 
-			panel = widget.GetWidget("INSTALL_FROMCD_PANEL");
+			panel = widget;
 			progressBar = panel.GetWidget<ProgressBarWidget>("PROGRESS_BAR");
 			statusLabel = panel.GetWidget<LabelWidget>("STATUS_LABEL");
 
 			backButton = panel.GetWidget<ButtonWidget>("BACK_BUTTON");
-			backButton.OnClick = Widget.CloseWindow;
+			backButton.OnClick = Ui.CloseWindow;
 
 			retryButton = panel.GetWidget<ButtonWidget>("RETRY_BUTTON");
 			retryButton.OnClick = CheckForDisk;
 
 			installingContainer = panel.GetWidget("INSTALLING");
 			insertDiskContainer = panel.GetWidget("INSERT_DISK");
+
 			CheckForDisk();
 		}
 
@@ -104,7 +102,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 				retryButton.IsDisabled = () => false;
 			}));
 
-			var t = new Thread( _ =>
+			new Thread( _ =>
 			{
 				try
 				{
@@ -112,11 +110,11 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 						return;
 
 					if (!InstallUtils.ExtractFromPackage(source, extractPackage, filesToExtract, dest, onProgress, onError))
-				    	return;
+						return;
 
 					Game.RunAfterTick(() =>
 					{
-						Widget.CloseWindow();
+						Ui.CloseWindow();
 						afterInstall();
 					});
 				}
@@ -124,8 +122,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 				{
 					onError("Installation failed");
 				}
-			}) { IsBackground = true };
-			t.Start();
+			}) { IsBackground = true }.Start();
 		}
 	}
 }

@@ -10,8 +10,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using OpenRA.Traits;
 using OpenRA.Mods.RA.Orders;
+using OpenRA.Traits;
 
 namespace OpenRA.Mods.RA
 {
@@ -54,12 +54,12 @@ namespace OpenRA.Mods.RA
 				return;
 			}
 
-            // THIS IS SHIT
+			// THIS IS SHIT
 			// Cancel existing primaries
 			foreach (var p in self.Info.Traits.Get<ProductionInfo>().Produces)
 				foreach (var b in self.World
 					.ActorsWithTrait<PrimaryBuilding>()
-                    .Where(a => a.Actor.Owner == self.Owner)
+					.Where(a => a.Actor.Owner == self.Owner)
 					.Where(x => x.Trait.IsPrimary
 						&& (x.Actor.Info.Traits.Get<ProductionInfo>().Produces.Contains(p))))
 					b.Trait.SetPrimaryProducer(b.Actor, false);

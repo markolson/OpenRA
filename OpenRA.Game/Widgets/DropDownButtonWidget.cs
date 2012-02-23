@@ -57,8 +57,8 @@ namespace OpenRA.Widgets
 			if (panel == null)
 				return;
 
-			Widget.RootWidget.RemoveChild(fullscreenMask);
-			Widget.RootWidget.RemoveChild(panel);
+			Ui.Root.RemoveChild(fullscreenMask);
+			Ui.Root.RemoveChild(panel);
 			panel = fullscreenMask = null;
 		}
 
@@ -72,17 +72,17 @@ namespace OpenRA.Widgets
 			fullscreenMask = new MaskWidget();
 			fullscreenMask.Bounds = new Rectangle(0, 0, Game.viewport.Width, Game.viewport.Height);
 			fullscreenMask.OnMouseDown = mi => RemovePanel();
-			Widget.RootWidget.AddChild(fullscreenMask);
+			Ui.Root.AddChild(fullscreenMask);
 
 			var oldBounds = panel.Bounds;
 			panel.Bounds = new Rectangle(RenderOrigin.X, RenderOrigin.Y + Bounds.Height, oldBounds.Width, oldBounds.Height);
-			Widget.RootWidget.AddChild(panel);
+			Ui.Root.AddChild(panel);
 		}
 
-		public void ShowDropDown<T>(string panelTemplate, int height, List<T> options, Func<T, ScrollItemWidget, ScrollItemWidget> setupItem)
+		public void ShowDropDown<T>(string panelTemplate, int height, IEnumerable<T> options, Func<T, ScrollItemWidget, ScrollItemWidget> setupItem)
 		{
 			var substitutions = new Dictionary<string,int>() {{ "DROPDOWN_WIDTH", Bounds.Width }};
-			var panel = (ScrollPanelWidget)Widget.LoadWidget(panelTemplate, null, new WidgetArgs()
+			var panel = (ScrollPanelWidget)Ui.LoadWidget(panelTemplate, null, new WidgetArgs()
 				{{ "substitutions", substitutions }});
 
 			var itemTemplate = panel.GetWidget<ScrollItemWidget>("TEMPLATE");
@@ -91,7 +91,7 @@ namespace OpenRA.Widgets
 			{
 				var o = option;
 
-				ScrollItemWidget item = setupItem(o, itemTemplate);
+				var item = setupItem(o, itemTemplate);
 				var onClick = item.OnClick;
 				item.OnClick = () => { onClick(); RemovePanel(); };
 
@@ -104,27 +104,27 @@ namespace OpenRA.Widgets
 	}
 
 	public class MaskWidget : Widget
-    {
-       	public Action<MouseInput> OnMouseDown = _ => {};
+	{
+	   	public Action<MouseInput> OnMouseDown = _ => {};
 		public MaskWidget() : base() { }
-        public MaskWidget(MaskWidget other)
-            : base(other)
+		public MaskWidget(MaskWidget other)
+			: base(other)
 		{
 			OnMouseDown = other.OnMouseDown;
 		}
 
 		public override bool HandleMouseInput(MouseInput mi)
-        {
-            if (mi.Event != MouseInputEvent.Down && mi.Event != MouseInputEvent.Up)
+		{
+			if (mi.Event != MouseInputEvent.Down && mi.Event != MouseInputEvent.Up)
 				return false;
 
 			if (mi.Event == MouseInputEvent.Down)
 				OnMouseDown(mi);
 
 			return true;
-        }
+		}
 
-        public override string GetCursor(int2 pos) { return null; }
-        public override Widget Clone() { return new MaskWidget(this); }
-    }
+		public override string GetCursor(int2 pos) { return null; }
+		public override Widget Clone() { return new MaskWidget(this); }
+	}
 }

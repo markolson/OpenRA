@@ -18,14 +18,7 @@ using OpenRA.Support;
 namespace OpenRA.Graphics
 {
 	[Flags]
-	public enum ScrollDirection
-	{
-		None = 0,
-		Up = 1,
-		Left = 2,
-		Down = 4,
-		Right = 8
-	}
+	public enum ScrollDirection { None = 0, Up = 1, Left = 2, Down = 4, Right = 8 }
 
 	public class Viewport
 	{
@@ -44,9 +37,9 @@ namespace OpenRA.Graphics
 			get
 			{
 				return new Rectangle(scrollPosition.X / Game.CellSize,
-				                     scrollPosition.Y / Game.CellSize,
-				                     (int)(screenSize.X / Zoom / Game.CellSize),
-				                     (int)(screenSize.Y / Zoom / Game.CellSize));
+									 scrollPosition.Y / Game.CellSize,
+									 (int)(screenSize.X / Zoom / Game.CellSize),
+									 (int)(screenSize.Y / Zoom / Game.CellSize));
 			}
 		}
 
@@ -70,9 +63,9 @@ namespace OpenRA.Graphics
 				var viewBR = (Game.CellSize*new float2(mapBounds.Right, mapBounds.Bottom)).ToInt2();
 				var border = (.5f/Zoom * screenSize.ToFloat2()).ToInt2();
 				scrollLimits = Rectangle.FromLTRB(viewTL.X - border.X,
-			                                  viewTL.Y - border.Y,
-			                                  viewBR.X - border.X,
-			                                  viewBR.Y - border.Y);
+											  viewTL.Y - border.Y,
+											  viewBR.X - border.X,
+											  viewBR.Y - border.Y);
 				// Re-center viewport
 				scrollPosition = NormalizeScrollPosition((oldCenter - 0.5f / Zoom * screenSize.ToFloat2()).ToInt2());
 			}
@@ -133,15 +126,15 @@ namespace OpenRA.Graphics
 
 			using( new PerfSample("render_widgets") )
 			{
-				Widget.DoDraw();
-				var cursorName = Widget.RootWidget.GetCursorOuter(Viewport.LastMousePos) ?? "default";
-	            var cursorSequence = CursorProvider.GetCursorSequence(cursorName);
+				Ui.Draw();
+				var cursorName = Ui.Root.GetCursorOuter(Viewport.LastMousePos) ?? "default";
+				var cursorSequence = CursorProvider.GetCursorSequence(cursorName);
 				var cursorSprite = cursorSequence.GetSprite((int)cursorFrame);
 
 				renderer.SpriteRenderer.DrawSprite(cursorSprite,
-				                                   Viewport.LastMousePos - cursorSequence.Hotspot,
-				                                   Game.modData.Palette.GetPaletteIndex(cursorSequence.Palette),
-				                                   cursorSprite.size);
+					Viewport.LastMousePos - cursorSequence.Hotspot,
+					Game.modData.Palette.GetPaletteIndex(cursorSequence.Palette),
+					cursorSprite.size);
 			}
 
 			using( new PerfSample("render_flip") )
@@ -201,7 +194,7 @@ namespace OpenRA.Graphics
 		{
 			if (cachedScroll != scrollPosition)
 			{
-				int2 boundary = new int2(1,1); // Add a curtain of cells around the viewport to account for rounding errors
+				var boundary = new int2(1,1); // Add a curtain of cells around the viewport to account for rounding errors
 				var tl = ViewToWorld(int2.Zero).ToInt2() - boundary;
 				var br = ViewToWorld(new int2(Width, Height)).ToInt2() + boundary;
 
@@ -209,7 +202,7 @@ namespace OpenRA.Graphics
 				cachedScroll = scrollPosition;
 			}
 
-			var b = world.LocalShroud.Bounds;
+			var b = world.RenderedShroud.Bounds;
 			return (b.HasValue) ? Rectangle.Intersect(cachedRect, b.Value) : cachedRect;
 		}
 	}

@@ -10,7 +10,6 @@
 
 using System;
 using OpenRA.Mods.RA;
-using OpenRA.Support;
 using OpenRA.Widgets;
 
 namespace OpenRA.Mods.Cnc.Widgets.Logic
@@ -18,9 +17,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 	public class SupportPowerTooltipLogic
 	{
 		[ObjectCreator.UseCtor]
-		public SupportPowerTooltipLogic([ObjectCreator.Param] Widget widget,
-		                                [ObjectCreator.Param] TooltipContainerWidget tooltipContainer,
-		                                [ObjectCreator.Param] SupportPowersWidget palette)
+		public SupportPowerTooltipLogic(Widget widget, TooltipContainerWidget tooltipContainer, SupportPowersWidget palette)
 		{
 			widget.IsVisible = () => palette.TooltipPower != null;
 			var nameLabel = widget.GetWidget<LabelWidget>("NAME");
@@ -43,7 +40,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 					return;
 
 				time = "{0} / {1}".F(WidgetUtils.FormatTime(sp.RemainingTime),
-				                     WidgetUtils.FormatTime(sp.Info.ChargeTime*25));
+									 WidgetUtils.FormatTime(sp.Info.ChargeTime*25));
 
 				if (sp == lastPower)
 					return;

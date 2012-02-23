@@ -18,35 +18,29 @@ namespace OpenRA.Traits
 	{
 		public readonly int Ticks = 60;
 
-		public virtual object Create(ActorInitializer init) { return new DrawLineToTarget(this); }
+		public virtual object Create(ActorInitializer init) { return new DrawLineToTarget(init.self, this); }
 	}
 
 	public class DrawLineToTarget : IPostRenderSelection
 	{
+		Actor self;
 		DrawLineToTargetInfo Info;
-		public DrawLineToTarget(DrawLineToTargetInfo info)
-		{
-			this.Info = info;
-		}
-
 		Target target;
-		int lifetime;
 		Color c;
+		int lifetime;
 
-		public void SetTarget(Actor self, Target target, Color c)
-		{
-			this.target = target;
-			lifetime = Info.Ticks;
-			this.c = c;
-		}
+		public DrawLineToTarget(Actor self, DrawLineToTargetInfo info) { this.self = self; this.Info = info; }
 
-		public void SetTargetSilently(Actor self, Target target, Color c)
+		public void SetTarget(Actor self, Target target, Color c, bool display)
 		{
 			this.target = target;
 			this.c = c;
+
+			if (display)
+				lifetime = Info.Ticks;
 		}
 
-		public void RenderAfterWorld(WorldRenderer wr, Actor self)
+		public void RenderAfterWorld(WorldRenderer wr)
 		{
 			if (self.IsIdle) return;
 
@@ -57,19 +51,22 @@ namespace OpenRA.Traits
 			if (!target.IsValid)
 				return;
 
-			var p = target.CenterLocation;
 			var move = self.TraitOrDefault<IMove>();
 			var origin = move != null ? self.CenterLocation - new int2(0, move.Altitude) : self.CenterLocation;
 
 			var wlr = Game.Renderer.WorldLineRenderer;
-			wlr.DrawLine(origin, p, c, c);
-			for (bool b = false; !b; p = origin, b = true)
-			{
-				wlr.DrawLine(p + new float2(-1, -1), p + new float2(-1, 1), c, c);
-				wlr.DrawLine(p + new float2(-1, 1), p + new float2(1, 1), c, c);
-				wlr.DrawLine(p + new float2(1, 1), p + new float2(1, -1), c, c);
-				wlr.DrawLine(p + new float2(1, -1), p + new float2(-1, -1), c, c);
-			}
+
+			wlr.DrawLine(origin, target.CenterLocation, c, c);
+			DrawTargetMarker(wlr, target.CenterLocation);
+			DrawTargetMarker(wlr, origin);
+		}
+
+		void DrawTargetMarker(LineRenderer wlr, float2 p)
+		{
+			wlr.DrawLine(p + new float2(-1, -1), p + new float2(-1, 1), c, c);
+			wlr.DrawLine(p + new float2(-1, 1), p + new float2(1, 1), c, c);
+			wlr.DrawLine(p + new float2(1, 1), p + new float2(1, -1), c, c);
+			wlr.DrawLine(p + new float2(1, -1), p + new float2(-1, -1), c, c);
 		}
 	}
 
@@ -93,10 +90,7 @@ namespace OpenRA.Traits
 
 				var line = self.TraitOrDefault<DrawLineToTarget>();
 				if (line != null)
-					if (display)
-						line.SetTarget(self, target, color);
-					else
-						line.SetTargetSilently(self, target, color);
+					line.SetTarget(self, target, color, display);
 			});
 		}
 	}

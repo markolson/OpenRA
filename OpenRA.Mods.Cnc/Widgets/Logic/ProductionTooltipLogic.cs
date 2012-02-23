@@ -11,20 +11,17 @@
 using System;
 using System.Drawing;
 using System.Linq;
-using OpenRA.Support;
-using OpenRA.Traits;
-using OpenRA.Widgets;
 using OpenRA.Mods.RA;
 using OpenRA.Mods.RA.Buildings;
+using OpenRA.Traits;
+using OpenRA.Widgets;
 
 namespace OpenRA.Mods.Cnc.Widgets.Logic
 {
 	public class ProductionTooltipLogic
 	{
 		[ObjectCreator.UseCtor]
-		public ProductionTooltipLogic([ObjectCreator.Param] Widget widget,
-		                              [ObjectCreator.Param] TooltipContainerWidget tooltipContainer,
-		                              [ObjectCreator.Param] ProductionPaletteWidget palette)
+		public ProductionTooltipLogic(Widget widget, TooltipContainerWidget tooltipContainer, ProductionPaletteWidget palette)
 		{
 			var pm = palette.world.LocalPlayer.PlayerActor.Trait<PowerManager>();
 			var pr = palette.world.LocalPlayer.PlayerActor.Trait<PlayerResources>();
@@ -55,7 +52,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 				nameLabel.GetText = () => tooltip.Name;
 
 				var prereqs = buildable.Prerequisites.Select(a => ActorName(a));
-				var requiresString = prereqs.Any() ? "Requires {0}".F(string.Join(", ", prereqs.ToArray())) : "";
+				var requiresString = prereqs.Any() ? "Requires {0}".F(prereqs.JoinWith(", ")) : "";
 				requiresLabel.GetText = () => requiresString;
 
 				var power = bi != null ? bi.Power : 0;
@@ -71,7 +68,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 				var costString = "$: {0}".F(cost);
 				costLabel.GetText = () => costString;
 				costLabel.GetColor = () => pr.DisplayCash + pr.DisplayOre >= cost
-				    ? Color.White : Color.Red;
+					? Color.White : Color.Red;
 
 				var leftWidth = Math.Max(font.Measure(tooltip.Name).X, requiresFont.Measure(requiresString).X);
 				var rightWidth = new [] {font.Measure(powerString).X, font.Measure(timeString).X, font.Measure(costString).X}.Aggregate(Math.Max);

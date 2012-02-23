@@ -36,8 +36,18 @@ namespace OpenRA
 		public readonly PlayerReference PlayerReference;
 		public bool IsBot;
 
-		public Shroud Shroud { get { return World.LocalShroud; }}
+		public Shroud Shroud;
 		public World World { get; private set; }
+
+		static CountryInfo ChooseCountry(World world, string name)
+		{
+			var selectableCountries = Rules.Info["world"].Traits
+				.WithInterface<CountryInfo>().Where( c => c.Selectable )
+				.ToArray();
+
+			return selectableCountries.FirstOrDefault(c => c.Race == name)
+				?? selectableCountries.Random(world.SharedRandom);
+		}
 
 		public Player(World world, Session.Client client, Session.Slot slot, PlayerReference pr)
 		{
@@ -50,29 +60,24 @@ namespace OpenRA
 			if (client != null)
 			{
 				ClientIndex = client.Index;
-            	ColorRamp = client.ColorRamp;
+				ColorRamp = client.ColorRamp;
 				PlayerName = client.Name;
 				botType = client.Bot;
-
-				Country = world.GetCountries()
-					.FirstOrDefault(c => client.Country == c.Race)
-					?? world.GetCountries().Random(world.SharedRandom);
+				Country = ChooseCountry(world, client.Country);
 			}
 			else
 			{
 				// Map player
-				ClientIndex = 0; // Owned by the host (todo: fix this)
+				ClientIndex = -1; // Owned by the host (todo: fix this)
 				ColorRamp = pr.ColorRamp;
 				PlayerName = pr.Name;
 				NonCombatant = pr.NonCombatant;
 				botType = pr.Bot;
-
-				Country = world.GetCountries()
-					.FirstOrDefault(c => pr.Race == c.Race)
-					?? world.GetCountries().Random(world.SharedRandom);
+				Country = ChooseCountry(world, pr.Race);
 			}
 			PlayerActor = world.CreateActor("Player", new TypeDictionary { new OwnerInit(this) });
-
+			Shroud = PlayerActor.Trait<Shroud>();
+			Shroud.Owner = this;
 			// Enable the bot logic on the host
 			IsBot = botType != null;
 			if (IsBot && Game.IsHost)
@@ -84,6 +89,11 @@ namespace OpenRA
 				else
 					logic.Activate(this);
 			}
+		}
+
+		public override string ToString()
+		{
+			return PlayerName;
 		}
 
 		public void GiveAdvice(string advice)

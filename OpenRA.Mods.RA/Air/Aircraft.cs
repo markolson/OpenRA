@@ -67,7 +67,7 @@ namespace OpenRA.Mods.RA.Air
 		[Sync] public int foo { get { return a.Altitude; } }
 	}
 
-	public class AircraftInfo : ITraitInfo, IFacingInfo
+	public class AircraftInfo : ITraitInfo, IFacingInfo, UsesInit<AltitudeInit>, UsesInit<LocationInit>, UsesInit<FacingInit>
 	{
 		public readonly int CruiseAltitude = 30;
 		[ActorReference]
@@ -165,7 +165,7 @@ namespace OpenRA.Mods.RA.Air
 
 		public bool AircraftCanEnter(Actor a)
 		{
-			if( self.Owner != a.Owner ) return false;
+			if( self.AppearsHostileTo(a) ) return false;
 			return Info.RearmBuildings.Contains( a.Info.Name )
 				|| Info.RepairBuildings.Contains( a.Info.Name );
 		}
@@ -204,13 +204,13 @@ namespace OpenRA.Mods.RA.Air
 			return Info.LandableTerrainTypes.Contains(type);
 		}
 
-		public void QueueResupplyActivities(Actor a)
+		public IEnumerable<Activity> GetResupplyActivities(Actor a)
 		{
 			var name = a.Info.Name;
 			if (Info.RearmBuildings.Contains(name))
-				self.QueueActivity(new Rearm(self));
+				yield return new Rearm(self);
 			if (Info.RepairBuildings.Contains(name))
-				self.QueueActivity(new Repair(a));
+				yield return new Repair(a);
 		}
 
 		public IEnumerable<IOrderTargeter> Orders
@@ -245,6 +245,21 @@ namespace OpenRA.Mods.RA.Air
 				return "Move";
 			default: return null;
 			}
+		}
+	}
+
+	public class ResupplyAircraft : Activity
+	{
+		public override Activity Tick(Actor self)
+		{
+			var aircraft = self.Trait<Aircraft>();
+			var host = aircraft.GetActorBelow();
+
+			if (host == null)
+				return NextActivity;
+
+			return Util.SequenceActivities(
+				aircraft.GetResupplyActivities(host).Append(NextActivity).ToArray());
 		}
 	}
 

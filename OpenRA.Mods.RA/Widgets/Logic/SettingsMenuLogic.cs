@@ -20,9 +20,10 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 	public class SettingsMenuLogic
 	{
 		Widget bg;
+
 		public SettingsMenuLogic()
 		{
-			bg = Widget.RootWidget.GetWidget<BackgroundWidget>("SETTINGS_MENU");
+			bg = Ui.Root.GetWidget<BackgroundWidget>("SETTINGS_MENU");
 			var tabs = bg.GetWidget<ContainerWidget>("TAB_CONTAINER");
 
 			//Tabs
@@ -46,15 +47,15 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 				else
 					Game.Settings.Player.Name = name.Text;
 			};
-            name.OnEnterKey = () => { name.LoseFocus(); return true; };
+			name.OnEnterKey = () => { name.LoseFocus(); return true; };
 
 			var edgescrollCheckbox = general.GetWidget<CheckboxWidget>("EDGE_SCROLL");
 			edgescrollCheckbox.IsChecked = () => Game.Settings.Game.ViewportEdgeScroll;
 			edgescrollCheckbox.OnClick = () => Game.Settings.Game.ViewportEdgeScroll ^= true;
 
-            var edgeScrollSlider = general.GetWidget<SliderWidget>("EDGE_SCROLL_AMOUNT");
+			var edgeScrollSlider = general.GetWidget<SliderWidget>("EDGE_SCROLL_AMOUNT");
 			edgeScrollSlider.Value = Game.Settings.Game.ViewportEdgeScrollStep;
-            edgeScrollSlider.OnChange += x => Game.Settings.Game.ViewportEdgeScrollStep = x;
+			edgeScrollSlider.OnChange += x => Game.Settings.Game.ViewportEdgeScrollStep = x;
 
 			var inversescroll = general.GetWidget<CheckboxWidget>("INVERSE_SCROLL");
 			inversescroll.IsChecked = () => Game.Settings.Game.MouseScroll == MouseScrollType.Inverted;
@@ -63,6 +64,10 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 			var teamchatCheckbox = general.GetWidget<CheckboxWidget>("TEAMCHAT_TOGGLE");
 			teamchatCheckbox.IsChecked = () => Game.Settings.Game.TeamChatToggle;
 			teamchatCheckbox.OnClick = () => Game.Settings.Game.TeamChatToggle ^= true;
+
+			var showShellmapCheckbox = general.GetWidget<CheckboxWidget>("SHOW_SHELLMAP");
+			showShellmapCheckbox.IsChecked = () => Game.Settings.Game.ShowShellmap;
+			showShellmapCheckbox.OnClick = () => Game.Settings.Game.ShowShellmap ^= true;
 
 			// Audio
 			var audio = bg.GetWidget("AUDIO_PANE");
@@ -117,7 +122,7 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 				int.TryParse(windowHeight.Text, out y);
 				gs.WindowedSize = new int2(x,y);
 				Game.Settings.Save();
-				Widget.CloseWindow();
+				Ui.CloseWindow();
 			};
 		}
 
@@ -151,7 +156,7 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 				return item;
 			};
 
-			dropdown.ShowDropDown("LABEL_DROPDOWN_TEMPLATE", 500, options.Keys.ToList(), setupItem);
+			dropdown.ShowDropDown("LABEL_DROPDOWN_TEMPLATE", 500, options.Keys, setupItem);
 			return true;
 		}
 	}

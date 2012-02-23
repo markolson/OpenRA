@@ -67,6 +67,10 @@ namespace OpenRA.Graphics
 		public void Draw()
 		{
 			RefreshPalette();
+
+			if (world.IsShellmap && !Game.Settings.Game.ShowShellmap)
+				return;
+
 			var bounds = Game.viewport.ViewBounds(world);
 			Game.Renderer.EnableScissor(bounds.Left, bounds.Top, bounds.Width, bounds.Height);
 
@@ -85,8 +89,8 @@ namespace OpenRA.Graphics
 			if (world.OrderGenerator != null)
 				world.OrderGenerator.RenderBeforeWorld(this, world);
 
-            foreach (var image in SpritesToRender() )
-                image.Sprite.DrawAt(image.Pos, this.GetPaletteIndex(image.Palette), image.Scale);
+			foreach (var image in SpritesToRender())
+				image.Sprite.DrawAt(image.Pos, this.GetPaletteIndex(image.Palette), image.Scale);
 
 			// added for contrails
 			foreach (var a in world.ActorsWithTrait<IPostRender>())
@@ -99,10 +103,11 @@ namespace OpenRA.Graphics
 			shroudRenderer.Draw( this );
 			Game.Renderer.DisableScissor();
 
-			foreach (var a in world.Selection.Actors)
-				if (!a.Destroyed)
-					foreach (var t in a.TraitsImplementing<IPostRenderSelection>())
-						t.RenderAfterWorld(this, a);
+			foreach (var g in world.Selection.Actors.Where(a => !a.Destroyed)
+				.SelectMany(a => a.TraitsImplementing<IPostRenderSelection>())
+				.GroupBy(prs => prs.GetType()))
+				foreach (var t in g)
+					t.RenderAfterWorld(this);
 
 			Game.Renderer.Flush();
 		}

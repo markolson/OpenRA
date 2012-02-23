@@ -7,6 +7,7 @@
  * see COPYING.
  */
 #endregion
+
 using System;
 using System.Drawing;
 using System.Linq;
@@ -21,9 +22,12 @@ namespace OpenRA.Mods.RA.Widgets
 		public int AnimationLength = 5;
 		public string RadarOnlineSound = null;
 		public string RadarOfflineSound = null;
+
 		float radarMinimapHeight;
 		int AnimationFrame = 0;
 		bool hasRadar = false;
+		bool animating = false;
+		int updateTicks = 0;
 
 		float previewScale = 0;
 		RectangleF mapRect = Rectangle.Empty;
@@ -35,11 +39,9 @@ namespace OpenRA.Mods.RA.Widgets
 		Sprite shroudSprite;
 
 		readonly World world;
+
 		[ObjectCreator.UseCtor]
-		public RadarWidget( [ObjectCreator.Param] World world )
-		{
-			this.world = world;
-		}
+		public RadarWidget(World world) { this.world = world; }
 
 		public override void Initialize(WidgetArgs args)
 		{
@@ -86,7 +88,7 @@ namespace OpenRA.Mods.RA.Widgets
 
 		public override bool HandleMouseInput(MouseInput mi)
 		{
-			if (!hasRadar || Animating) return false;
+			if (!hasRadar || animating) return false;
 
 			if (!mapRect.Contains(mi.Location))
 				return false;
@@ -108,7 +110,7 @@ namespace OpenRA.Mods.RA.Widgets
 
 				if (WorldInteractionController != null)
 				{
-					var controller = Widget.RootWidget.GetWidget<WorldInteractionControllerWidget>(WorldInteractionController);
+					var controller = Ui.Root.GetWidget<WorldInteractionControllerWidget>(WorldInteractionController);
 					controller.HandleMouseInput(fakemi);
 					fakemi.Event = MouseInputEvent.Up;
 					controller.HandleMouseInput(fakemi);
@@ -126,6 +128,7 @@ namespace OpenRA.Mods.RA.Widgets
 		public override void Draw()
 		{
 			if (world == null) return;
+			if( world.LocalPlayer.WinState != WinState.Undefined ) return;
 
 			var o = new float2(mapRect.Location.X, mapRect.Location.Y + world.Map.Bounds.Height * previewScale * (1 - radarMinimapHeight)/2);
 			var s = new float2(mapRect.Size.Width, mapRect.Size.Height*radarMinimapHeight);
@@ -136,7 +139,7 @@ namespace OpenRA.Mods.RA.Widgets
 			rsr.DrawSprite(shroudSprite, o, s);
 
 			// Draw viewport rect
-			if (hasRadar && !Animating)
+			if (hasRadar && !animating)
 			{
 				var wr = Game.viewport.WorldRect;
 				var wro = new int2(wr.X, wr.Y);
@@ -149,8 +152,6 @@ namespace OpenRA.Mods.RA.Widgets
 			}
 		}
 
-		bool Animating = false;
-		int updateTicks = 0;
 		public override void Tick()
 		{
 			var hasRadarNew = world.LocalPlayer == null || world.LocalPlayer.WinState != WinState.Undefined ||
@@ -158,7 +159,7 @@ namespace OpenRA.Mods.RA.Widgets
 
 			if (hasRadarNew != hasRadar)
 			{
-				Animating = true;
+				animating = true;
 				Sound.Play(hasRadarNew ? RadarOnlineSound : RadarOfflineSound);
 			}
 			hasRadar = hasRadarNew;
@@ -180,7 +181,7 @@ namespace OpenRA.Mods.RA.Widgets
 					shroudSprite.sheet.Texture.SetData(Minimap.ShroudBitmap(world));
 			}
 
-			if (!Animating)
+			if (!animating)
 				return;
 
 			// Increment frame
@@ -194,17 +195,23 @@ namespace OpenRA.Mods.RA.Widgets
 
 			// Animation is complete
 			if (AnimationFrame == (hasRadar ? AnimationLength : 0))
-				Animating = false;
+				animating = false;
 		}
 
 		int2 CellToMinimapPixel(int2 p)
 		{
-			return new int2((int)(mapRect.X + previewScale*(p.X - world.Map.Bounds.Left)), (int)(mapRect.Y + previewScale*(p.Y - world.Map.Bounds.Top)));
+			var viewOrigin = new float2(mapRect.X, mapRect.Y);
+			var mapOrigin = new float2(world.Map.Bounds.Left, world.Map.Bounds.Top);
+
+			return (viewOrigin + previewScale * (p - mapOrigin)).ToInt2();
 		}
 
 		int2 MinimapPixelToCell(int2 p)
 		{
-			return new int2(world.Map.Bounds.Left + (int)((p.X - mapRect.X)/previewScale), world.Map.Bounds.Top + (int)((p.Y - mapRect.Y)/previewScale));
+			var viewOrigin = new float2(mapRect.X, mapRect.Y);
+			var mapOrigin = new float2(world.Map.Bounds.Left, world.Map.Bounds.Top);
+
+			return (mapOrigin + (1/previewScale) * (p - viewOrigin)).ToInt2();
 		}
 	}
 }

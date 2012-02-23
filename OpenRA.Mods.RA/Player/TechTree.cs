@@ -13,7 +13,7 @@ using System.Linq;
 using OpenRA.FileFormats;
 using OpenRA.Traits;
 
-namespace OpenRA.Mods.RA.Buildings
+namespace OpenRA.Mods.RA
 {
 	public class TechTreeInfo : ITraitInfo
 	{
@@ -24,6 +24,7 @@ namespace OpenRA.Mods.RA.Buildings
 	{
 		readonly List<Watcher> watchers = new List<Watcher>();
 		readonly Player player;
+
 		public TechTree(ActorInitializer init)
 		{
 			player = init.self.Owner;
@@ -61,8 +62,8 @@ namespace OpenRA.Mods.RA.Buildings
 				return ret;
 
 
-            foreach (var b in player.World.ActorsWithTrait<ITechTreePrerequisite>()
-                	.Where(a => a.Actor.IsInWorld && !a.Actor.IsDead() && a.Actor.Owner == player))
+			foreach (var b in player.World.ActorsWithTrait<ITechTreePrerequisite>()
+					.Where(a => a.Actor.IsInWorld && !a.Actor.IsDead() && a.Actor.Owner == player))
 				foreach (var p in b.Trait.ProvidesPrerequisites)
 					ret[ p ].Add( b.Actor );
 
@@ -85,15 +86,18 @@ namespace OpenRA.Mods.RA.Buildings
 				this.hasPrerequisites = false;
 			}
 
+			bool HasPrerequisites(Cache<string, List<Actor>> buildings)
+			{
+				foreach (var p in prerequisites)
+					if (p.StartsWith("!") ^
+						!buildings.Keys.Contains(p.Replace("!","")))
+						return false;
+				return true;
+			}
+
 			public void Update(Cache<string, List<Actor>> buildings)
 			{
-				var nowHasPrerequisites = true;
-				foreach (var p in prerequisites)
-					if (!buildings.Keys.Contains(p))
-					{
-						nowHasPrerequisites = false;
-						break;
-					}
+				var nowHasPrerequisites = HasPrerequisites(buildings);
 
 				if( nowHasPrerequisites && !hasPrerequisites )
 					watcher.PrerequisitesAvailable(key);
@@ -106,26 +110,17 @@ namespace OpenRA.Mods.RA.Buildings
 		}
 	}
 
-	public interface ITechTreeElement
-	{
-		void PrerequisitesAvailable(string key);
-		void PrerequisitesUnavailable(string key);
-	}
-
-	public interface ITechTreePrerequisite
-	{
-		IEnumerable<string> ProvidesPrerequisites {get;}
-	}
-
 	public class ProvidesCustomPrerequisiteInfo : ITraitInfo
 	{
-		public string Prerequisite;
+		public readonly string Prerequisite;
+
 		public object Create(ActorInitializer init) { return new ProvidesCustomPrerequisite(this);}
 	}
 
 	public class ProvidesCustomPrerequisite : ITechTreePrerequisite
 	{
 		ProvidesCustomPrerequisiteInfo Info;
+
 		public IEnumerable<string> ProvidesPrerequisites { get { yield return Info.Prerequisite; } }
 
 		public ProvidesCustomPrerequisite(ProvidesCustomPrerequisiteInfo info)

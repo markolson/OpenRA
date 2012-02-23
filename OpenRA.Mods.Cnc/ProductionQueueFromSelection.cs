@@ -19,6 +19,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 	class ProductionQueueFromSelectionInfo : ITraitInfo
 	{
 		public string ProductionTabsWidget = null;
+
 		public object Create( ActorInitializer init ) { return new ProductionQueueFromSelection(init.world, this); }
 	}
 
@@ -31,16 +32,17 @@ namespace OpenRA.Mods.Cnc.Widgets
 		{
 			this.world = world;
 
-			tabsWidget = new Lazy<ProductionTabsWidget>(() =>
-				Widget.RootWidget.GetWidget<ProductionTabsWidget>(info.ProductionTabsWidget));
+			tabsWidget = Lazy.New(() =>
+				Ui.Root.GetWidget<ProductionTabsWidget>(info.ProductionTabsWidget));
 		}
 
 		public void SelectionChanged()
 		{
 			// Find an actor with a queue
 			var producer = world.Selection.Actors.FirstOrDefault(a => a.IsInWorld
-			                                                     && a.World.LocalPlayer == a.Owner
-			                                                     && a.HasTrait<ProductionQueue>());
+				&& a.World.LocalPlayer == a.Owner
+				&& a.HasTrait<ProductionQueue>());
+
 			if (producer != null)
 				tabsWidget.Value.CurrentQueue = producer.TraitsImplementing<ProductionQueue>().First();
 		}

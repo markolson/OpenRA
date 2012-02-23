@@ -23,29 +23,20 @@ namespace OpenRA
 
 		public ActorInfo( string name, MiniYaml node, Dictionary<string, MiniYaml> allUnits )
 		{
-            try
-            {
-                var mergedNode = MergeWithParent(node, allUnits).NodesDict;
+			try
+			{
+				var mergedNode = MergeWithParent(node, allUnits).NodesDict;
 
-                Name = name;
-                foreach (var t in mergedNode)
-                    if (t.Key != "Inherits" && !t.Key.StartsWith("-"))
-                        Traits.Add(LoadTraitInfo(t.Key.Split('@')[0], t.Value));
-            }
-            catch (YamlException e)
-            {
-                throw new YamlException("Actor type {0}: {1}".F(name, e.Message));
-            }
+				Name = name;
+				foreach (var t in mergedNode)
+					if (t.Key != "Inherits" && !t.Key.StartsWith("-"))
+						Traits.Add(LoadTraitInfo(t.Key.Split('@')[0], t.Value));
+			}
+			catch (YamlException e)
+			{
+				throw new YamlException("Actor type {0}: {1}".F(name, e.Message));
+			}
 		}
-
-        static IEnumerable<MiniYaml> GetInheritanceChain(MiniYaml node, Dictionary<string, MiniYaml> allUnits)
-        {
-            while (node != null)
-            {
-                yield return node;
-                node = GetParent(node, allUnits);
-            }
-        }
 
 		static MiniYaml GetParent( MiniYaml node, Dictionary<string, MiniYaml> allUnits )
 		{
@@ -56,9 +47,9 @@ namespace OpenRA
 
 			MiniYaml parent;
 			allUnits.TryGetValue( inherits.Value, out parent );
-            if (parent == null)
-                throw new InvalidOperationException(
-                    "Bogus inheritance -- actor type {0} does not exist".F(inherits.Value));
+			if (parent == null)
+				throw new InvalidOperationException(
+					"Bogus inheritance -- actor type {0} does not exist".F(inherits.Value));
 
 			return parent;
 		}
@@ -66,14 +57,14 @@ namespace OpenRA
 		static MiniYaml MergeWithParent( MiniYaml node, Dictionary<string, MiniYaml> allUnits )
 		{
 			var parent = GetParent( node, allUnits );
-            if (parent != null)
-            {
-                var result = MiniYaml.MergeStrict(node, MergeWithParent(parent, allUnits));
+			if (parent != null)
+			{
+				var result = MiniYaml.MergeStrict(node, MergeWithParent(parent, allUnits));
 
-                // strip the '-'
-                result.Nodes.RemoveAll(a => a.Key.StartsWith("-"));
-                return result;
-            }
+				// strip the '-'
+				result.Nodes.RemoveAll(a => a.Key.StartsWith("-"));
+				return result;
+			}
 			return node;
 		}
 
@@ -102,14 +93,14 @@ namespace OpenRA
 				else if (++index >= t.Count)
 					throw new InvalidOperationException("Trait prerequisites not satisfied (or prerequisite loop) Actor={0} Unresolved={1} Missing={2}".F(
 						Name,
-						string.Join(",", t.Select(x => x.GetType().Name).ToArray()),
-						string.Join(",", unsatisfied.Select(x => x.Name).ToArray())));
+						t.Select(x => x.GetType().Name).JoinWith(","),
+						unsatisfied.Select(x => x.Name).JoinWith(",")));
 			}
 
 			return ret;
 		}
 
-		static List<Type> PrerequisitesOf( ITraitInfo info )
+		static List<Type> PrerequisitesOf(ITraitInfo info)
 		{
 			return info
 				.GetType()
@@ -117,6 +108,20 @@ namespace OpenRA
 				.Where( t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof( Requires<> ) )
 				.Select( t => t.GetGenericArguments()[ 0 ] )
 				.ToList();
+		}
+
+		public IEnumerable<Pair<string, Type>> GetInitKeys()
+		{
+			var inits = Traits.WithInterface<ITraitInfo>().SelectMany(
+				t => t.GetType().GetInterfaces()
+					.Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(UsesInit<>))
+					.Select(i => i.GetGenericArguments()[0])).ToList();
+
+			inits.Add( typeof(OwnerInit) );		/* not exposed by a trait; this is used by the Actor itself */
+
+			return inits.Select(
+				i => Pair.New(
+					i.Name.Replace( "Init", "" ), i ));
 		}
 	}
 }

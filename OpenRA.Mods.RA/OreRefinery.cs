@@ -19,9 +19,7 @@ namespace OpenRA.Mods.RA
 {
 	public class OreRefineryInfo : ITraitInfo
 	{
-		public readonly int PipCount = 0;
-		public readonly PipType PipColor = PipType.Red;
-		public readonly int2 DockOffset = new int2 (1, 2);
+		public readonly int2 DockOffset = new int2(1, 2);
 
 		public readonly bool ShowTicks = true;
 		public readonly int TickLifetime = 30;
@@ -40,20 +38,14 @@ namespace OpenRA.Mods.RA
 		int currentDisplayTick = 0;
 		int currentDisplayValue = 0;
 
-		[Sync]
-		public int Ore = 0;
-
-		[Sync]
-		Actor dockedHarv = null;
-		[Sync]
-		bool preventDock = false;
+		[Sync] public int Ore = 0;
+		[Sync] Actor dockedHarv = null;
+		[Sync] bool preventDock = false;
 
 		public bool AllowDocking { get { return !preventDock; } }
 		public int2 DeliverOffset { get { return Info.DockOffset; } }
-		public virtual Activity DockSequence(Actor harv, Actor self)
-		{
-			return new RAHarvesterDockSequence(harv, self);
-		}
+
+		public virtual Activity DockSequence(Actor harv, Actor self) { return new RAHarvesterDockSequence(harv, self); }
 
 		public OreRefinery(Actor self, OreRefineryInfo info)
 		{
@@ -63,16 +55,13 @@ namespace OpenRA.Mods.RA
 			currentDisplayTick = Info.TickRate;
 		}
 
-        public IEnumerable<TraitPair<Harvester>> GetLinkedHarvesters()
-        {
-            return self.World.ActorsWithTrait<Harvester>()
-                .Where(a => a.Trait.LinkedProc == self);
-        }
-
-		public bool CanGiveOre(int amount)
+		public IEnumerable<TraitPair<Harvester>> GetLinkedHarvesters()
 		{
-			return PlayerResources.CanGiveOre(amount);
+			return self.World.ActorsWithTrait<Harvester>()
+				.Where(a => a.Trait.LinkedProc == self);
 		}
+
+		public bool CanGiveOre(int amount) { return PlayerResources.CanGiveOre(amount); }
 
 		public void GiveOre(int amount)
 		{
@@ -135,9 +124,9 @@ namespace OpenRA.Mods.RA
 				dockedHarv.ChangeOwner(newOwner);
 
 			// Unlink any non-docked harvs
-            foreach (var harv in GetLinkedHarvesters())
-                if (harv.Actor.Owner == oldOwner)
-                    harv.Trait.UnlinkProc(harv.Actor, self);
+			foreach (var harv in GetLinkedHarvesters())
+				if (harv.Actor.Owner == oldOwner)
+					harv.Trait.UnlinkProc(harv.Actor, self);
 
 			PlayerResources = newOwner.PlayerActor.Trait<PlayerResources>();
 		}
@@ -145,8 +134,8 @@ namespace OpenRA.Mods.RA
 		public void Selling(Actor self) { CancelDock(self); }
 		public void Sold(Actor self)
 		{
-            foreach (var harv in GetLinkedHarvesters())
-                harv.Trait.UnlinkProc(harv.Actor, self);
+			foreach (var harv in GetLinkedHarvesters())
+				harv.Trait.UnlinkProc(harv.Actor, self);
 		}
 
 		public bool ShouldExplode(Actor self) { return Ore > 0; }

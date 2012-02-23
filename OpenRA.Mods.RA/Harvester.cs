@@ -34,28 +34,19 @@ namespace OpenRA.Mods.RA
 	{
 		Dictionary<ResourceTypeInfo, int> contents = new Dictionary<ResourceTypeInfo, int>();
 
-		[Sync]
-		public Actor LinkedProc = null;
-
+		[Sync] public Actor LinkedProc = null;
+		[Sync] int currentUnloadTicks;
 		public int2? LastHarvestedCell = null;
-
-		[Sync]
-		public int ContentValue { get { return contents.Sum(c => c.Key.ValuePerUnit*c.Value); } }
-
-		[Sync]
-		int currentUnloadTicks;
-
+		[Sync] public int ContentValue { get { return contents.Sum(c => c.Key.ValuePerUnit*c.Value); } }
 		readonly HarvesterInfo Info;
+
 		public Harvester(Actor self, HarvesterInfo info)
 		{
 			Info = info;
 			self.QueueActivity( new CallFunc( () => ChooseNewProc(self, null)));
 		}
 
-		public void ChooseNewProc(Actor self, Actor ignore)
-		{
-			LinkedProc = ClosestProc(self, ignore);
-		}
+		public void ChooseNewProc(Actor self, Actor ignore) { LinkedProc = ClosestProc(self, ignore); }
 
 		public void ContinueHarvesting(Actor self)
 		{
@@ -70,18 +61,20 @@ namespace OpenRA.Mods.RA
 
 		Actor ClosestProc(Actor self, Actor ignore)
 		{
-            var refs = self.World.ActorsWithTrait<IAcceptOre>()
-                .Where(x => x.Actor != ignore && x.Actor.Owner == self.Owner)
-                .ToList();
+			var refs = self.World.ActorsWithTrait<IAcceptOre>()
+				.Where(x => x.Actor != ignore && x.Actor.Owner == self.Owner)
+				.ToList();
 			var mi = self.Info.Traits.Get<MobileInfo>();
 			var path = self.World.WorldActor.Trait<PathFinder>().FindPath(
 				PathSearch.FromPoints(self.World, mi, self.Owner,
-                    refs.Select(r => r.Actor.Location + r.Trait.DeliverOffset),
+					refs.Select(r => r.Actor.Location + r.Trait.DeliverOffset),
 					self.Location, false));
+
 			path.Reverse();
+
 			if (path.Count != 0)
 				return refs.Where(x => x.Actor.Location + x.Trait.DeliverOffset == path[0])
-                    .Select(a => a.Actor).FirstOrDefault();
+					.Select(a => a.Actor).FirstOrDefault();
 			else
 				return null;
 		}
@@ -154,9 +147,12 @@ namespace OpenRA.Mods.RA
 			{
 				var mobile = self.Trait<Mobile>();
 				self.CancelActivity();
-				self.QueueActivity(mobile.MoveTo(order.TargetLocation, 0));
+				if (order.TargetLocation != int2.Zero)
+				{
+					self.QueueActivity(mobile.MoveTo(order.TargetLocation, 0));
+					self.SetTargetLine(Target.FromOrder(order), Color.Red);
+				}
 				self.QueueActivity(new FindResources());
-				self.SetTargetLine(Target.FromOrder(order), Color.Red);
 			}
 			else if (order.OrderString == "Deliver")
 			{
@@ -179,10 +175,8 @@ namespace OpenRA.Mods.RA
 
 		public void UnlinkProc(Actor self, Actor proc)
 		{
-			if (LinkedProc != proc)
-				return;
-
-			ChooseNewProc(self, proc);
+			if (LinkedProc == proc)
+				ChooseNewProc(self, proc);
 		}
 
 		PipType GetPipAt(int i)
@@ -215,8 +209,9 @@ namespace OpenRA.Mods.RA
 
 		class HarvestOrderTargeter : IOrderTargeter
 		{
-			public string OrderID { get { return "Harvest";}}
+			public string OrderID { get { return "Harvest"; } }
 			public int OrderPriority { get { return 10; } }
+			public bool IsQueued { get; protected set; }
 
 			public bool CanTargetActor(Actor self, Actor target, bool forceAttack, bool forceQueued, ref string cursor)
 			{
@@ -226,7 +221,7 @@ namespace OpenRA.Mods.RA
 			public bool CanTargetLocation(Actor self, int2 location, List<Actor> actorsAtLocation, bool forceAttack, bool forceQueued, ref string cursor)
 			{
 				// Don't leak info about resources under the shroud
-				if (!self.World.LocalShroud.IsExplored(location)) return false;
+				if (!self.Owner.Shroud.IsExplored(location)) return false;
 
 				var res = self.World.WorldActor.Trait<ResourceLayer>().GetResource( location );
 				var info = self.Info.Traits.Get<HarvesterInfo>();
@@ -238,7 +233,6 @@ namespace OpenRA.Mods.RA
 
 				return true;
 			}
-			public bool IsQueued { get; protected set; }
 		}
 	}
 }

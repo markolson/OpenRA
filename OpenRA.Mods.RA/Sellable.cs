@@ -8,23 +8,21 @@
  */
 #endregion
 
-using System;
-using System.Collections.Generic;
-using OpenRA.Orders;
-using OpenRA.Traits;
-using OpenRA.Mods.RA.Render;
 using OpenRA.Mods.RA.Activities;
+using OpenRA.Mods.RA.Render;
+using OpenRA.Traits;
 
 namespace OpenRA.Mods.RA
 {
-	class SellableInfo : TraitInfo<Sellable>
+	public class SellableInfo : TraitInfo<Sellable>
 	{
 		public readonly int RefundPercent = 50;
 	}
 
-	class Sellable : IResolveOrder
+	public class Sellable : IResolveOrder
 	{
 		bool selling = false;
+
 		public void ResolveOrder(Actor self, Order order)
 		{
 			if (order.OrderString == "Sell" && !selling)

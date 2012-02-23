@@ -42,10 +42,29 @@ namespace OpenRA
 		public Player LocalPlayer { get; private set; }
 		public readonly Shroud LocalShroud;
 
+		public Player RenderedPlayer;
+		public Shroud RenderedShroud {
+			get {
+				if(RenderedPlayer == null)
+				{
+					return LocalShroud;
+				}else{
+					return RenderedPlayer.Shroud;
+				}
+			}
+		}
+		
+
 		public void SetLocalPlayer(string pr)
 		{
 			if (!(orderManager.Connection is ReplayConnection))
-				LocalPlayer = Players.FirstOrDefault(p => p.InternalName == pr);
+			{
+	 			LocalPlayer = Players.FirstOrDefault(p => p.InternalName == pr);
+				RenderedPlayer = LocalPlayer;
+			}else{
+				
+			}
+				
 		}
 
 		public readonly Actor WorldActor;
@@ -139,6 +158,7 @@ namespace OpenRA
 			a.IsInWorld = false;
 			actors.Remove(a);
 			ActorRemoved(a);
+			
 		}
 
 		public void Add(IEffect b) { effects.Add(b); }
@@ -150,11 +170,19 @@ namespace OpenRA
 		public event Action<Actor> ActorRemoved = _ => { };
 
 		// Will do bad things in multiplayer games
-		public bool DisableTick = false;
+		public bool EnableTick = true;
+		public bool IsShellmap = false;
+
+		bool ShouldTick()
+		{
+			if (!EnableTick) return false;
+			return !IsShellmap || Game.Settings.Game.ShowShellmap;
+		}
+
 		public void Tick()
 		{
 			// Todo: Expose this as an order so it can be synced
-			if (!DisableTick)
+			if (ShouldTick())
 			{
 				using( new PerfSample("tick_idle") )
 					foreach( var ni in ActorsWithTrait<INotifyIdle>() )
@@ -170,7 +198,8 @@ namespace OpenRA
 					x.Trait.Tick( x.Actor );
 				}, "[{2}] Trait: {0} ({1:0.000} ms)", Game.Settings.Debug.LongTickThreshold );
 
-				effects.DoTimed( e => e.Tick( this ), "[{2}] Effect: {0} ({1:0.000} ms)", Game.Settings.Debug.LongTickThreshold );
+				effects.DoTimed( e => e.Tick( this ), "[{2}] Effect: {0} ({1:0.000} ms)",
+					Game.Settings.Debug.LongTickThreshold );
 			}
 
 			while (frameEndActions.Count != 0)
@@ -200,7 +229,7 @@ namespace OpenRA
 
 				// hash all the traits that tick
 				foreach (var x in traitDict.ActorsWithTraitMultiple<ISync>(this))
-					ret += n++*(int) (1+x.Actor.ActorID)*Sync.CalculateSyncHash(x.Trait);
+					ret += n++ * (int)(1+x.Actor.ActorID) * Sync.CalculateSyncHash(x.Trait);
 
 				// Hash the shared rng
 				ret += SharedRandom.Last;
@@ -209,10 +238,10 @@ namespace OpenRA
 			}
 		}
 
-        public IEnumerable<TraitPair<T>> ActorsWithTrait<T>()
-        {
-            return traitDict.ActorsWithTraitMultiple<T>(this);
-        }
+		public IEnumerable<TraitPair<T>> ActorsWithTrait<T>()
+		{
+			return traitDict.ActorsWithTraitMultiple<T>(this);
+		}
 	}
 
 	public struct TraitPair<T>

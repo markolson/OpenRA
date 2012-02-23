@@ -24,7 +24,7 @@ namespace OpenRA
 		public static IEnumerable<Actor> FindUnitsAtMouse(this World world, int2 mouseLocation)
 		{
 			var loc = Game.viewport.ViewToWorldPx(mouseLocation);
-			return FindUnits(world, loc, loc).Where(a => world.LocalShroud.IsVisible(a));
+			return FindUnits(world, loc, loc).Where(a => world.RenderedShroud.IsVisible(a));
 		}
 
 		public static IEnumerable<Actor> FindUnits(this World world, int2 a, int2 b)
@@ -102,14 +102,9 @@ namespace OpenRA
 				r.Next(w.Map.Bounds.Top, w.Map.Bounds.Bottom));
 		}
 
-		public static IEnumerable<CountryInfo> GetCountries(this World w)
-		{
-			return w.WorldActor.Info.Traits.WithInterface<CountryInfo>();
-		}
-
 		public static float Gauss1D(this Thirdparty.Random r, int samples)
 		{
-			return Graphics.Util.MakeArray(samples, _ => (float)r.NextDouble() * 2 - 1f)
+			return Exts.MakeArray(samples, _ => (float)r.NextDouble() * 2 - 1f)
 				.Sum() / samples;
 		}
 
@@ -122,13 +117,15 @@ namespace OpenRA
 
 		public static bool HasVoice(this Actor a)
 		{
-			return a.Info.Traits.Contains<SelectableInfo>() && a.Info.Traits.Get<SelectableInfo>().Voice != null;
+			var selectable = a.Info.Traits.GetOrDefault<SelectableInfo>();
+			return selectable != null && selectable.Voice != null;
 		}
 
 		public static VoiceInfo GetVoice(this Actor a)
 		{
-			if (!a.Info.Traits.Contains<SelectableInfo>()) return null;
-			var v = a.Info.Traits.Get<SelectableInfo>().Voice;
+			var selectable = a.Info.Traits.GetOrDefault<SelectableInfo>();
+			if (selectable == null) return null;
+			var v = selectable.Voice;
 			return (v == null) ? null : Rules.Voices[v];
 		}
 

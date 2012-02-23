@@ -39,7 +39,7 @@ namespace OpenRA.Mods.RA
 		public ProductionQueueInfo Info;
 		PowerManager PlayerPower;
 		PlayerResources playerResources;
-		string Race;
+		CountryInfo Race;
 
 		// A list of things we are currently building
 		public List<ProductionItem> Queue = new List<ProductionItem>();
@@ -67,7 +67,7 @@ namespace OpenRA.Mods.RA
 			playerResources = playerActor.Trait<PlayerResources>();
 			PlayerPower = playerActor.Trait<PowerManager>();
 
-			Race = self.Owner.Country.Race;
+			Race = self.Owner.Country;
 			Produceable = InitTech(playerActor);
 		}
 
@@ -110,7 +110,7 @@ namespace OpenRA.Mods.RA
 			{
 				var bi = a.Traits.Get<BuildableInfo>();
 				// Can our race build this by satisfying normal prereqs?
-				var buildable = bi.Owner.Contains(Race);
+				var buildable = bi.Owner.Contains(Race.Race);
 				tech.Add(a, new ProductionState() { Visible = buildable && !bi.Hidden });
 				if (buildable)
 					ttc.Add(a.Name, a.Traits.Get<BuildableInfo>().Prerequisites.ToList(), this);
@@ -256,9 +256,17 @@ namespace OpenRA.Mods.RA
 
 			if (self.World.LobbyInfo.GlobalSettings.AllowCheats && self.Owner.PlayerActor.Trait<DeveloperMode>().FastBuild) return 0;
 			var cost = unit.Traits.Contains<ValuedInfo>() ? unit.Traits.Get<ValuedInfo>().Cost : 0;
+			
+			var selfsameBuildings = self.World.ActorsWithTrait<Production>()
+				.Where(p => p.Trait.Info.Produces.Contains(unit.Traits.Get<BuildableInfo>().Queue))
+				.Where(p => p.Actor.Owner == self.Owner).ToArray();
+			var speedUp = 1.0;
+			if (selfsameBuildings.Count() > 0)
+				speedUp = 1 - (selfsameBuildings.First().Trait.Info.SpeedUp  * (selfsameBuildings.Count() - 1)).Clamp(0, selfsameBuildings.First().Trait.Info.MaxSpeedUp);
+
 			var time = cost
-				* Info.BuildSpeed
-				* (25 * 60) /* frames per min */				/* todo: build acceleration, if we do that */
+				* (Info.BuildSpeed * speedUp)
+				* (25 * 60) /* frames per min */
 				 / 1000;
 			return (int) time;
 		}

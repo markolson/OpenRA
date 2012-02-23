@@ -13,17 +13,15 @@ using OpenRA.FileFormats;
 using OpenRA.Graphics;
 using OpenRA.Widgets;
 
-namespace OpenRA.Mods.Cnc.Widgets.Logic
+namespace OpenRA.Mods.RA.Widgets.Logic
 {
-	public class CncColorPickerLogic
+	public class ColorPickerLogic
 	{
 		ColorRamp ramp;
+
 		[ObjectCreator.UseCtor]
-		public CncColorPickerLogic([ObjectCreator.Param] Widget widget,
-		                           [ObjectCreator.Param] ColorRamp initialRamp,
-		                           [ObjectCreator.Param] Action<ColorRamp> onChange,
-		                           [ObjectCreator.Param] Action<ColorRamp> onSelect,
-		                           [ObjectCreator.Param] WorldRenderer worldRenderer)
+		public ColorPickerLogic(Widget widget, ColorRamp initialRamp, Action<ColorRamp> onChange,
+			Action<ColorRamp> onSelect, WorldRenderer worldRenderer)
 		{
 			var panel = widget.GetWidget("COLOR_CHOOSER");
 			ramp = initialRamp;
@@ -34,9 +32,9 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 			Action sliderChanged = () =>
 			{
 				ramp = new ColorRamp((byte)(255*hueSlider.Value),
-				                     (byte)(255*satSlider.Value),
-				                     (byte)(255*lumSlider.Value),
-				                     10);
+									 (byte)(255*satSlider.Value),
+									 (byte)(255*lumSlider.Value),
+									 10);
 				onChange(ramp);
 			};
 
@@ -52,16 +50,19 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 			};
 
 			panel.GetWidget<ButtonWidget>("SAVE_BUTTON").OnClick = () => onSelect(ramp);
-			panel.GetWidget<ButtonWidget>("RANDOM_BUTTON").OnClick = () =>
-			{
-				var hue = (byte)Game.CosmeticRandom.Next(255);
-				var sat = (byte)Game.CosmeticRandom.Next(255);
-				var lum = (byte)Game.CosmeticRandom.Next(51,255);
 
-				ramp = new ColorRamp(hue, sat, lum, 10);
-				updateSliders();
-				sliderChanged();
-			};
+			var randomButton = panel.GetWidget<ButtonWidget>("RANDOM_BUTTON");
+			if (randomButton != null)
+				randomButton.OnClick = () =>
+				{
+					var hue = (byte)Game.CosmeticRandom.Next(255);
+					var sat = (byte)Game.CosmeticRandom.Next(255);
+					var lum = (byte)Game.CosmeticRandom.Next(51,255);
+
+					ramp = new ColorRamp(hue, sat, lum, 10);
+					updateSliders();
+					sliderChanged();
+				};
 
 			// Set the initial state
 			updateSliders();

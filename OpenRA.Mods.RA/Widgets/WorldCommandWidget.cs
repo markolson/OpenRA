@@ -1,4 +1,4 @@
-﻿#region Copyright & License Information
+#region Copyright & License Information
 /*
  * Copyright 2007-2011 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
@@ -29,13 +29,13 @@ namespace OpenRA.Mods.RA.Widgets
 		public string DeployKey = "f";
 		public string StanceCycleKey = "z";
 		public string BaseCycleKey = "backspace";
+		public string ViewCycleKey = "v";
+		public string GotoLastEventKey = "space";
+
 		public readonly OrderManager OrderManager;
 
 		[ObjectCreator.UseCtor]
-		public WorldCommandWidget([ObjectCreator.Param] OrderManager orderManager )
-		{
-			OrderManager = orderManager;
-		}
+		public WorldCommandWidget(OrderManager orderManager) { OrderManager = orderManager; }
 
 		public override string GetCursor(int2 pos) { return null; }
 		public override Rectangle GetEventBounds() { return Rectangle.Empty; }
@@ -43,7 +43,6 @@ namespace OpenRA.Mods.RA.Widgets
 		public override bool HandleKeyPress(KeyInput e)
 		{
 			if (World == null) return false;
-			if (World.LocalPlayer == null) return false;
 
 			return ProcessInput(e);
 		}
@@ -53,12 +52,18 @@ namespace OpenRA.Mods.RA.Widgets
 			if (e.Modifiers == Modifiers.None && e.Event == KeyInputEvent.Down)
 			{
 				if (e.KeyName == BaseCycleKey)
-                    return CycleBases();
+					return CycleBases();
+					
+				if (e.KeyName == ViewCycleKey)
+					return PerformViewCycle();
+
+				if (e.KeyName == GotoLastEventKey)
+					return GotoLastEvent();
 
 				if (!World.Selection.Actors.Any())
 					return false;
 
-            	if (e.KeyName == AttackMoveKey)
+				if (e.KeyName == AttackMoveKey)
 					return PerformAttackMove();
 
 				if (e.KeyName == StopKey)
@@ -130,36 +135,73 @@ namespace OpenRA.Mods.RA.Widgets
 			if (actor.First == null)
 				return true;
 
-			var stances = (UnitStance[])Enum.GetValues(typeof(UnitStance));
+			var stances = Enum<UnitStance>.GetValues();
 
-			var nextStance = stances.Concat(stances).SkipWhile(s => s != actor.Second.stance).Skip(1).First();
+			var nextStance = stances.Concat(stances).SkipWhile(s => s != actor.Second.predictedStance).Skip(1).First();
 
 			PerformKeyboardOrderOnSelection(a =>
-				new Order("SetUnitStance", a, false) { TargetLocation = new int2((int)nextStance, 0) });
+			{
+				var at = a.TraitOrDefault<AutoTarget>();
+				if (at != null) at.predictedStance = nextStance;
+				return new Order("SetUnitStance", a, false) { TargetLocation = new int2((int)nextStance, 0) };
+			});
 
 			Game.Debug( "Unit stance set to: {0}".F(nextStance) );
 
 			return true;
 		}
 
-        bool CycleBases()
-        {
-            var bases = World.ActorsWithTrait<BaseBuilding>()
-                .Where( a => a.Actor.Owner == World.LocalPlayer ).ToArray();
-            if (!bases.Any()) return true;
+		bool CycleBases()
+		{
+			var bases = World.ActorsWithTrait<BaseBuilding>()
+				.Where( a => a.Actor.Owner == World.LocalPlayer ).ToArray();
+			if (!bases.Any()) return true;
 
-            var next = bases
-                .Select(b => b.Actor)
-                .SkipWhile(b => !World.Selection.Actors.Contains(b))
-                .Skip(1)
-                .FirstOrDefault();
+			var next = bases
+				.Select(b => b.Actor)
+				.SkipWhile(b => !World.Selection.Actors.Contains(b))
+				.Skip(1)
+				.FirstOrDefault();
 
-            if (next == null)
-                next = bases.Select(b => b.Actor).First();
+			if (next == null)
+				next = bases.Select(b => b.Actor).First();
 
-            World.Selection.Combine(World, new Actor[] { next }, false, true);
-            Game.viewport.Center(World.Selection.Actors);
-            return true;
-        }
+			World.Selection.Combine(World, new Actor[] { next }, false, true);
+			Game.viewport.Center(World.Selection.Actors);
+			return true;
+		}
+		
+		bool PerformViewCycle()
+		{
+			if(World.LocalPlayer != null) return true;
+			var shrouds = World.ActorsWithTrait<Traits.Shroud>().Select(a => a.Actor.Owner).Where(a => a.ClientIndex >= 0).Distinct();
+			var next = shrouds.SkipWhile( a => a.Shroud != World.RenderedShroud ).Skip(1).FirstOrDefault();
+			if(next == null) 
+			{
+				next = (World.RenderedPlayer == null) ? shrouds.First() : null;
+			}
+			World.RenderedPlayer = next;
+			World.RenderedShroud.Jank();
+			Game.Debug("Viewing through {0}".F( (World.RenderedPlayer == null) ? "Observer" : World.RenderedPlayer.ToString() ) );
+			
+			return true;
+			
+		}
+
+		bool GotoLastEvent()
+		{
+			if (World.LocalPlayer == null)
+				return true;
+
+			var eventNotifier = World.LocalPlayer.PlayerActor.TraitOrDefault<BaseAttackNotifier>();
+			if (eventNotifier == null)
+				return true;
+
+			if (eventNotifier.lastAttackTime < 0)
+				return true;
+
+			Game.viewport.Center(eventNotifier.lastAttackLocation);
+			return true;
+		}
 	}
 }
