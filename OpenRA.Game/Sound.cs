@@ -29,7 +29,7 @@ namespace OpenRA
 
 		static ISoundSource LoadSound(string filename)
 		{
-            return LoadSoundRaw(AudLoader.LoadSound(FileSystem.Open(filename)));
+			return LoadSoundRaw(AudLoader.LoadSound(FileSystem.Open(filename)));
 		}
 
 		static ISoundSource LoadSoundRaw(byte[] rawData)
@@ -238,13 +238,16 @@ namespace OpenRA
 
 			var vi = Rules.Voices[mi.Voice.ToLowerInvariant()];
 
+			if (!vi.Pools.Value.ContainsKey(phrase))
+				return false;
+
 			var clip = vi.Pools.Value[phrase].GetNext();
 			if (clip == null)
 				return false;
 
-			var variantext = (vi.Variants.ContainsKey(variant) && !vi.DisableVariants.Contains(phrase)) ?
+			var variantExt = (vi.Variants.ContainsKey(variant) && !vi.DisableVariants.Contains(phrase)) ?
 				  vi.Variants[variant][voicedUnit.ActorID % vi.Variants[variant].Length] : vi.DefaultVariant;
-			Play(clip + variantext);
+			Play(clip + variantExt);
 			return true;
 		}
 	}

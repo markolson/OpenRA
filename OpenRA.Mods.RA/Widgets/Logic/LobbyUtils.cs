@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using OpenRA.FileFormats;
 using OpenRA.Network;
 using OpenRA.Traits;
 using OpenRA.Widgets;
@@ -97,7 +98,7 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 				return item;
 			};
 
-			var options = Graphics.Util.MakeArray(map.SpawnPoints.Count() + 1, i => i).ToList();
+			var options = Exts.MakeArray(map.GetSpawnPoints().Length + 1, i => i).ToList();
 			dropdown.ShowDropDown("TEAM_DROPDOWN_TEMPLATE", 150, options, setupItem);
 		}
 
@@ -116,7 +117,65 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 				return item;
 			};
 
-			dropdown.ShowDropDown("RACE_DROPDOWN_TEMPLATE", 150, countryNames.Keys.ToList(), setupItem);
+			dropdown.ShowDropDown("RACE_DROPDOWN_TEMPLATE", 150, countryNames.Keys, setupItem);
+		}
+
+		public static void ShowColorDropDown(DropDownButtonWidget color, Session.Client client,
+			OrderManager orderManager, ColorPickerPaletteModifier preview)
+		{
+			Action<ColorRamp> onSelect = c =>
+			{
+				if (client.Bot == null)
+				{
+					Game.Settings.Player.ColorRamp = c;
+					Game.Settings.Save();
+				}
+
+				color.RemovePanel();
+				orderManager.IssueOrder(Order.Command("color {0} {1}".F(client.Index, c)));
+			};
+
+			Action<ColorRamp> onChange = c => preview.Ramp = c;
+
+			var colorChooser = Game.LoadWidget(orderManager.world, "COLOR_CHOOSER", null, new WidgetArgs()
+			{
+				{ "onSelect", onSelect },
+				{ "onChange", onChange },
+				{ "initialRamp", client.ColorRamp }
+			});
+
+			color.AttachPanel(colorChooser);
+		}
+
+		public static Dictionary<int2, Color> GetSpawnColors(OrderManager orderManager, Map map)
+		{
+			var spawns = map.GetSpawnPoints();
+			return orderManager.LobbyInfo.Clients
+				.Where( c => c.SpawnPoint != 0 )
+				.ToDictionary(
+					c => spawns[c.SpawnPoint - 1],
+					c => c.ColorRamp.GetColor(0));
+		}
+
+		public static void SelectSpawnPoint(OrderManager orderManager, MapPreviewWidget mapPreview, Map map, MouseInput mi)
+		{
+			if (map == null || mi.Button != MouseButton.Left
+				|| orderManager.LocalClient.State == Session.ClientState.Ready)
+				return;
+
+			var selectedSpawn = map.GetSpawnPoints()
+				.Select((sp, i) => Pair.New(mapPreview.ConvertToPreview(sp), i))
+				.Where(a => (a.First - mi.Location).LengthSquared < 64)
+				.Select(a => a.Second + 1)
+				.FirstOrDefault();
+
+			var owned = orderManager.LobbyInfo.Clients.Any(c => c.SpawnPoint == selectedSpawn);
+			if (selectedSpawn == 0 || !owned)
+			{
+				var locals = orderManager.LobbyInfo.Clients.Where(c => c.Index == orderManager.LocalClient.Index || (Game.IsHost && c.Bot != null));
+				var playerToMove = locals.Where(c => (selectedSpawn == 0) ^ (c.SpawnPoint == 0)).FirstOrDefault();
+				orderManager.IssueOrder(Order.Command("spawn {0} {1}".F((playerToMove ?? orderManager.LocalClient).Index, selectedSpawn)));
+			}
 		}
 	}
 }

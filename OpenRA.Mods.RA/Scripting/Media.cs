@@ -19,7 +19,7 @@ namespace OpenRA.Scripting
 		{
 			var playerRoot = Game.OpenWindow(w, "FMVPLAYER");
 			var player = playerRoot.GetWidget<VqaPlayerWidget>("PLAYER");
-			w.DisableTick = true;
+			w.EnableTick = false;
 			player.Load(movie);
 
 			// Mute world sounds
@@ -37,9 +37,9 @@ namespace OpenRA.Scripting
 				if (music)
 					Sound.PlayMusic();
 
-				Widget.CloseWindow();
+				Ui.CloseWindow();
 				Sound.SoundVolumeModifier = oldModifier;
-				w.DisableTick = false;
+				w.EnableTick = true;
 				onComplete();
 			});
 		}

@@ -38,36 +38,36 @@ namespace OpenRA.FileFormats
 
 		static IFolder OpenPackage(string filename)
 		{
-            return OpenPackage(filename, order++);
+			return OpenPackage(filename, order++);
 		}
 
 		public static IFolder CreatePackage(string filename, int order, Dictionary<string, byte[]> content)
-        {
+		{
 			if (filename.EndsWith(".mix", StringComparison.InvariantCultureIgnoreCase))
-                return new MixFile(filename, order, content);
-            else if (filename.EndsWith(".zip", StringComparison.InvariantCultureIgnoreCase))
-                return new ZipFile(filename, order, content);
-            else if (filename.EndsWith(".oramap", StringComparison.InvariantCultureIgnoreCase))
-                return new ZipFile(filename, order, content);
-            else if (filename.EndsWith(".Z", StringComparison.InvariantCultureIgnoreCase))
-                throw new NotImplementedException("Creating .Z archives is unsupported");
-            else
-                return new Folder(filename, order, content);
-        }
+				return new MixFile(filename, order, content);
+			else if (filename.EndsWith(".zip", StringComparison.InvariantCultureIgnoreCase))
+				return new ZipFile(filename, order, content);
+			else if (filename.EndsWith(".oramap", StringComparison.InvariantCultureIgnoreCase))
+				return new ZipFile(filename, order, content);
+			else if (filename.EndsWith(".Z", StringComparison.InvariantCultureIgnoreCase))
+				throw new NotImplementedException("Creating .Z archives is unsupported");
+			else
+				return new Folder(filename, order, content);
+		}
 
-        public static IFolder OpenPackage(string filename, int order)
-        {
-            if (filename.EndsWith(".mix", StringComparison.InvariantCultureIgnoreCase))
-                return new MixFile(filename, order);
-            else if (filename.EndsWith(".zip", StringComparison.InvariantCultureIgnoreCase))
-                return new ZipFile(filename, order);
-            else if (filename.EndsWith(".oramap", StringComparison.InvariantCultureIgnoreCase))
-                return new ZipFile(filename, order);
-            else if (filename.EndsWith(".Z", StringComparison.InvariantCultureIgnoreCase))
-                return new InstallShieldPackage(filename, order);
-            else
-                return new Folder(filename, order);
-        }
+		public static IFolder OpenPackage(string filename, int order)
+		{
+			if (filename.EndsWith(".mix", StringComparison.InvariantCultureIgnoreCase))
+				return new MixFile(filename, order);
+			else if (filename.EndsWith(".zip", StringComparison.InvariantCultureIgnoreCase))
+				return new ZipFile(filename, order);
+			else if (filename.EndsWith(".oramap", StringComparison.InvariantCultureIgnoreCase))
+				return new ZipFile(filename, order);
+			else if (filename.EndsWith(".Z", StringComparison.InvariantCultureIgnoreCase))
+				return new InstallShieldPackage(filename, order);
+			else
+				return new Folder(filename, order);
+		}
 
 		public static void Mount(string name)
 		{
@@ -123,25 +123,7 @@ namespace OpenRA.FileFormats
 			return null;
 		}
 
-		public static Stream Open(string filename)
-		{
-			if( filename.IndexOfAny( new char[] { '/', '\\' } ) == -1 )
-			{
-				var ret = GetFromCache( allFiles, filename );
-				if( ret != null )
-					return ret;
-			}
-
-			var folder = mountedFolders
-				.Where(x => x.Exists(filename))
-				.OrderByDescending(x => x.Priority)
-				.FirstOrDefault();
-
-			if (folder != null)
-				return folder.GetContent(filename);
-
-			throw new FileNotFoundException( string.Format( "File not found: {0}", filename ), filename );
-		}
+		public static Stream Open(string filename) { return OpenWithExts(filename, ""); }
 
 		public static Stream OpenWithExts( string filename, params string[] exts )
 		{
@@ -157,42 +139,39 @@ namespace OpenRA.FileFormats
 
 			foreach( var ext in exts )
 			{
-				foreach( IFolder folder in mountedFolders )
-					if (folder.Exists(filename + ext))
-						return folder.GetContent( filename + ext );
+				var folder = mountedFolders
+					.Where(x => x.Exists(filename + ext))
+					.OrderByDescending(x => x.Priority)
+					.FirstOrDefault();
+
+				if (folder != null)
+					return folder.GetContent(filename + ext);
 			}
 
-			throw new FileNotFoundException( string.Format( "File not found: {0}", filename ), filename );
+			throw new FileNotFoundException("File not found: {0}".F(filename), filename);
 		}
 
-		public static bool Exists(string filename)
-		{
-			foreach (var folder in mountedFolders)
-				if (folder.Exists(filename))
-				    return true;
-			return false;
-		}
+		public static bool Exists(string filename) { return mountedFolders.Any(f => f.Exists(filename)); }
 
 		static Dictionary<string, Assembly> assemblyCache = new Dictionary<string, Assembly>();
 
 		public static Assembly ResolveAssembly(object sender, ResolveEventArgs e)
 		{
 			foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-			{
 				if (assembly.FullName == e.Name)
 					return assembly;
-			}
 
-			string[] frags = e.Name.Split(',');
+			var frags = e.Name.Split(',');
 			var filename = frags[0] + ".dll";
+
 			Assembly a;
 			if (assemblyCache.TryGetValue(filename, out a))
 				return a;
 
 			if (FileSystem.Exists(filename))
-				using (Stream s = FileSystem.Open(filename))
+				using (var s = FileSystem.Open(filename))
 				{
-					byte[] buf = new byte[s.Length];
+					var buf = new byte[s.Length];
 					s.Read(buf, 0, buf.Length);
 					a = Assembly.Load(buf);
 					assemblyCache.Add(filename, a);

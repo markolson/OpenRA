@@ -9,7 +9,6 @@
 #endregion
 
 using System;
-using OpenRA.Support;
 using OpenRA.Widgets;
 
 namespace OpenRA.Mods.Cnc.Widgets.Logic
@@ -17,9 +16,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 	public class SimpleTooltipLogic
 	{
 		[ObjectCreator.UseCtor]
-		public SimpleTooltipLogic([ObjectCreator.Param] Widget widget,
-		                          [ObjectCreator.Param] TooltipContainerWidget tooltipContainer,
-		                          [ObjectCreator.Param] Func<string> getText)
+		public SimpleTooltipLogic(Widget widget, TooltipContainerWidget tooltipContainer, Func<string> getText)
 		{
 			var label = widget.GetWidget<LabelWidget>("LABEL");
 

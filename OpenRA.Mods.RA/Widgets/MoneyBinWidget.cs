@@ -21,7 +21,7 @@ namespace OpenRA.Mods.RA.Widgets
 		readonly PlayerResources playerResources;
 
 		[ObjectCreator.UseCtor]
-		public MoneyBinWidget( [ObjectCreator.Param] World world )
+		public MoneyBinWidget(World world)
 		{
 			this.world = world;
 			playerResources = world.LocalPlayer.PlayerActor.Trait<PlayerResources>();
@@ -30,6 +30,7 @@ namespace OpenRA.Mods.RA.Widgets
 		public override void Draw()
 		{
 			if( world.LocalPlayer == null ) return;
+			if( world.LocalPlayer.WinState != WinState.Undefined ) return;
 
 			var digitCollection = "digits-" + world.LocalPlayer.Country.Race;
 			var chromeCollection = "chrome-" + world.LocalPlayer.Country.Race;

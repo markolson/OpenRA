@@ -20,12 +20,12 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 
 		// WTF duplication
 		[ObjectCreator.UseCtor]
-		public IngameObserverChromeLogic([ObjectCreator.Param] World world)
+		public IngameObserverChromeLogic(World world)
 		{
 			Game.AddChatLine += AddChatLine;
 			Game.BeforeGameStart += UnregisterEvents;
 
-			var r = Widget.RootWidget;
+			var r = Ui.Root;
 			gameRoot = r.GetWidget("OBSERVER_ROOT");
 			var optionsBG = gameRoot.GetWidget("INGAME_OPTIONS_BG");
 
@@ -37,12 +37,12 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 				optionsBG.Visible = false;
 				Game.Disconnect();
 				Game.LoadShellMap();
-				Widget.CloseWindow();
-				Widget.OpenWindow("MAINMENU_BG");
+				Ui.CloseWindow();
+				Ui.OpenWindow("MAINMENU_BG");
 			};
 
-			optionsBG.GetWidget<ButtonWidget>("SETTINGS").OnClick = () => Widget.OpenWindow("SETTINGS_MENU");
-			optionsBG.GetWidget<ButtonWidget>("MUSIC").OnClick = () => Widget.OpenWindow("MUSIC_MENU");
+			optionsBG.GetWidget<ButtonWidget>("SETTINGS").OnClick = () => Ui.OpenWindow("SETTINGS_MENU");
+			optionsBG.GetWidget<ButtonWidget>("MUSIC").OnClick = () => Ui.OpenWindow("MUSIC_MENU");
 			optionsBG.GetWidget<ButtonWidget>("RESUME").OnClick = () => optionsBG.Visible = false;
 			optionsBG.GetWidget<ButtonWidget>("SURRENDER").IsVisible = () => false;
 		}

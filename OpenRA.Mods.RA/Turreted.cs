@@ -12,7 +12,7 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.RA
 {
-	public class TurretedInfo : ITraitInfo
+	public class TurretedInfo : ITraitInfo, UsesInit<TurretFacingInit>
 	{
 		public readonly int ROT = 255;
 		public readonly int InitialFacing = 128;
@@ -45,13 +45,13 @@ namespace OpenRA.Mods.RA
 			facing = init.self.TraitOrDefault<IFacing>();
 		}
 
-		public void Tick( Actor self )
+		public void Tick(Actor self)
 		{
 			var df = desiredFacing ?? ( facing != null ? facing.Facing : turretFacing );
 			turretFacing = Util.TickFacing(turretFacing, df, info.ROT);
 		}
 
-		public bool FaceTarget( Actor self, Target target )
+		public bool FaceTarget(Actor self, Target target)
 		{
 			desiredFacing = Util.GetFacing( target.CenterLocation - self.CenterLocation, turretFacing );
 			return turretFacing == desiredFacing;

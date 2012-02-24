@@ -55,19 +55,21 @@ namespace OpenRA.Widgets
 			{ ScrollDirection.Right, "scroll-r" },
 		};
 
-		public override string GetCursor(int2 pos)
+		public static string GetScrollCursor(Widget w, ScrollDirection edge, int2 pos)
 		{
-			if (!Game.Settings.Game.ViewportEdgeScroll)
+			if (!Game.Settings.Game.ViewportEdgeScroll || Ui.MouseOverWidget != w)
 				return null;
 
 			var blockedDirections = Game.viewport.GetBlockedDirections();
 
 			foreach( var dir in directions )
-				if (Edge.Includes( dir.Key ))
+				if (edge.Includes( dir.Key ))
 					return dir.Value + (blockedDirections.Includes( dir.Key ) ? "-blocked" : "");
 
 			return null;
 		}
+
+		public override string GetCursor(int2 pos) { return GetScrollCursor(this, Edge, pos); }
 
 		public override bool LoseFocus (MouseInput mi)
 		{
@@ -79,10 +81,10 @@ namespace OpenRA.Widgets
 		{
 			switch (e.KeyName)
 			{
-				case "up": Keyboard = Keyboard.Set(ScrollDirection.Up, (e.Event == KeyInputEvent.Down)); return true;
-				case "down": Keyboard = Keyboard.Set(ScrollDirection.Down, (e.Event == KeyInputEvent.Down)); return true;
-				case "left": Keyboard = Keyboard.Set(ScrollDirection.Left, (e.Event == KeyInputEvent.Down)); return true;
-				case "right": Keyboard = Keyboard.Set(ScrollDirection.Right, (e.Event == KeyInputEvent.Down)); return true;
+				case "up": Keyboard = Keyboard.Set(ScrollDirection.Up, e.Event == KeyInputEvent.Down); return true;
+				case "down": Keyboard = Keyboard.Set(ScrollDirection.Down, e.Event == KeyInputEvent.Down); return true;
+				case "left": Keyboard = Keyboard.Set(ScrollDirection.Left, e.Event == KeyInputEvent.Down); return true;
+				case "right": Keyboard = Keyboard.Set(ScrollDirection.Right, e.Event == KeyInputEvent.Down); return true;
 			}
 			return false;
 		}
@@ -105,17 +107,16 @@ namespace OpenRA.Widgets
 
 			if(Keyboard != ScrollDirection.None || Edge != ScrollDirection.None)
 			{
-                var scroll = new float2(0, 0);
+				var scroll = new float2(0, 0);
 
-                // Modified to use the ViewportEdgeScrollStep setting - Gecko
-                if (Keyboard.Includes(ScrollDirection.Up) || Edge.Includes(ScrollDirection.Up))
-                    scroll += new float2(0, -1);
-                if (Keyboard.Includes(ScrollDirection.Right) || Edge.Includes(ScrollDirection.Right))
-                    scroll += new float2(1, 0);
-                if (Keyboard.Includes(ScrollDirection.Down) || Edge.Includes(ScrollDirection.Down))
-                    scroll += new float2(0, 1);
-                if (Keyboard.Includes(ScrollDirection.Left) || Edge.Includes(ScrollDirection.Left))
-                    scroll += new float2(-1, 0);
+				if (Keyboard.Includes(ScrollDirection.Up) || Edge.Includes(ScrollDirection.Up))
+					scroll += new float2(0, -1);
+				if (Keyboard.Includes(ScrollDirection.Right) || Edge.Includes(ScrollDirection.Right))
+					scroll += new float2(1, 0);
+				if (Keyboard.Includes(ScrollDirection.Down) || Edge.Includes(ScrollDirection.Down))
+					scroll += new float2(0, 1);
+				if (Keyboard.Includes(ScrollDirection.Left) || Edge.Includes(ScrollDirection.Left))
+					scroll += new float2(-1, 0);
 
 				float length = Math.Max(1, scroll.Length);
 				scroll.X = (scroll.X / length) * Game.Settings.Game.ViewportEdgeScrollStep;

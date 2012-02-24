@@ -38,8 +38,11 @@ namespace OpenRA.Editor
 		public bool ShowActorNames;
 		public bool ShowGrid;
 
+		public string NewActorOwner;
+
 		public event Action AfterChange = () => { };
 		public event Action<string> MousePositionChanged = _ => { };
+		public event Action<KeyValuePair<string, ActorReference>> ActorDoubleClicked = _ => { };
 
 		Dictionary<string, ActorTemplate> ActorTemplates = new Dictionary<string, ActorTemplate>();
 		Dictionary<int, ResourceTemplate> ResourceTemplates = new Dictionary<int, ResourceTemplate>();
@@ -87,6 +90,15 @@ namespace OpenRA.Editor
 		{
 			Offset -= dx;
 			Invalidate();
+		}
+
+		protected override void OnDoubleClick(EventArgs e)
+		{
+			base.OnDoubleClick(e);
+
+			var x = Map.Actors.Value.FirstOrDefault(a => a.Value.Location() == GetBrushLocation());
+			if (x.Key != null)
+				ActorDoubleClicked(x);
 		}
 
 		protected override void OnMouseWheel(MouseEventArgs e)
@@ -200,7 +212,7 @@ namespace OpenRA.Editor
 
 			var bitmap = new Bitmap(ChunkSize * TileSet.TileSize, ChunkSize * TileSet.TileSize);
 
-			var data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height),
+			var data = bitmap.LockBits(bitmap.Bounds(),
 				ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
 
 			unsafe
@@ -222,7 +234,7 @@ namespace OpenRA.Editor
 						if (Map.MapResources.Value[u * ChunkSize + i, v * ChunkSize + j].type != 0)
 						{
 							var resourceImage = ResourceTemplates[Map.MapResources.Value[u * ChunkSize + i, v * ChunkSize + j].type].Bitmap;
-							var srcdata = resourceImage.LockBits(new Rectangle(0, 0, resourceImage.Width, resourceImage.Height),
+							var srcdata = resourceImage.LockBits(resourceImage.Bounds(),
 								ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
 
 							int* q = (int*)srcdata.Scan0.ToPointer();
@@ -292,7 +304,7 @@ namespace OpenRA.Editor
 			if (cp != null) bmp.Palette = restorePalette;
 		}
 
-		void DrawActorBorder(System.Drawing.Graphics g, int2 p, ActorTemplate t)
+		void DrawActorBorder(SGraphics g, int2 p, ActorTemplate t)
 		{
 			var centered = t.Appearance == null || !t.Appearance.RelativeToTopLeft;
 			var drawPos = GetDrawPosition(p, t.Bitmap, centered);
@@ -302,26 +314,31 @@ namespace OpenRA.Editor
 				t.Bitmap.Width * Zoom, t.Bitmap.Height * Zoom);
 		}
 
-		ColorPalette GetPaletteForPlayer(string name)
+		ColorPalette GetPaletteForPlayerInner(string name)
 		{
 			var pr = Map.Players[name];
 			var pcpi = Rules.Info["player"].Traits.Get<PlayerColorPaletteInfo>();
-			var remap = new PlayerColorRemap(pr.ColorRamp, pcpi.PaletteFormat);
+			var remap = new PlayerColorRemap(pcpi.PaletteFormat, pr.ColorRamp);
 			return new Palette(Palette, remap).AsSystemPalette();
 		}
 
 		Cache<string, ColorPalette> PlayerPalettes;
 
-		ColorPalette GetPaletteForActor(ActorReference ar)
+		public ColorPalette GetPaletteForPlayer(string player)
 		{
 			if (PlayerPalettes == null)
-				PlayerPalettes = new Cache<string, ColorPalette>(GetPaletteForPlayer);
+				PlayerPalettes = new Cache<string, ColorPalette>(GetPaletteForPlayerInner);
 
+			return PlayerPalettes[player];
+		}
+
+		ColorPalette GetPaletteForActor(ActorReference ar)
+		{
 			var ownerInit = ar.InitDict.GetOrDefault<OwnerInit>();
 			if (ownerInit == null)
 				return null;
 
-			return PlayerPalettes[ownerInit.PlayerName];
+			return GetPaletteForPlayer(ownerInit.PlayerName);
 		}
 
 		protected override void OnPaint(PaintEventArgs e)

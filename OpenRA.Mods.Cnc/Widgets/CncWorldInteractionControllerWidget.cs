@@ -17,13 +17,14 @@ using OpenRA.Widgets;
 
 namespace OpenRA.Mods.Cnc.Widgets
 {
+	public enum WorldTooltipType { None, Unexplored, Actor }
+
 	public class CncWorldInteractionControllerWidget : WorldInteractionControllerWidget
 	{
 		public readonly string TooltipTemplate = "WORLD_TOOLTIP";
 		public readonly string TooltipContainer;
 		Lazy<TooltipContainerWidget> tooltipContainer;
 
-		public enum WorldTooltipType { None, Unexplored, Actor }
 		public WorldTooltipType TooltipType { get; private set; }
 		public IToolTip ActorTooltip { get; private set; }
 
@@ -32,18 +33,18 @@ namespace OpenRA.Mods.Cnc.Widgets
 		ScrollDirection Edge;
 
 		[ObjectCreator.UseCtor]
-		public CncWorldInteractionControllerWidget([ObjectCreator.Param] World world,
-		                                           [ObjectCreator.Param] WorldRenderer worldRenderer)
+		public CncWorldInteractionControllerWidget(World world, WorldRenderer worldRenderer)
 			: base(world, worldRenderer)
 		{
-			tooltipContainer = new Lazy<TooltipContainerWidget>(() =>
-				Widget.RootWidget.GetWidget<TooltipContainerWidget>(TooltipContainer));
+			tooltipContainer = Lazy.New(() =>
+				Ui.Root.GetWidget<TooltipContainerWidget>(TooltipContainer));
 		}
 
 		public override void MouseEntered()
 		{
 			if (TooltipContainer == null) return;
-			tooltipContainer.Value.SetTooltip(TooltipTemplate, new WidgetArgs() {{ "world", world }, { "wic", this }});
+			tooltipContainer.Value.SetTooltip(TooltipTemplate,
+				new WidgetArgs() {{ "world", world }, { "wic", this }});
 		}
 
 		public override void MouseExited()
@@ -86,8 +87,8 @@ namespace OpenRA.Mods.Cnc.Widgets
 			if (scrolltype != OpenRA.GameRules.MouseScrollType.Disabled && mi.Event == MouseInputEvent.Move &&
 					(mi.Button == MouseButton.Middle || mi.Button == (MouseButton.Left | MouseButton.Right)))
 			{
-                var d = scrolltype == OpenRA.GameRules.MouseScrollType.Inverted ? -1 : 1;
-                Game.viewport.Scroll((Viewport.LastMousePos - mi.Location) * d);
+				var d = scrolltype == OpenRA.GameRules.MouseScrollType.Inverted ? -1 : 1;
+				Game.viewport.Scroll((Viewport.LastMousePos - mi.Location) * d);
 			}
 
 			return base.HandleMouseInput(mi);
@@ -95,60 +96,8 @@ namespace OpenRA.Mods.Cnc.Widgets
 
 		public override string GetCursor(int2 pos)
 		{
-			if (!Game.Settings.Game.ViewportEdgeScroll || Widget.MouseOverWidget != this)
-				return base.GetCursor(pos);
-
-			if (Edge.Includes(ScrollDirection.Up) && Edge.Includes(ScrollDirection.Left)){
-				ScrollDirection BlockedDirections = Game.viewport.GetBlockedDirections();
-				if(BlockedDirections.Includes(ScrollDirection.Up) && BlockedDirections.Includes(ScrollDirection.Left))
-					return "scroll-tl-blocked";
-				else
-					return "scroll-tl";
-			}
-			if (Edge.Includes(ScrollDirection.Up) && Edge.Includes(ScrollDirection.Right)){
-				ScrollDirection BlockedDirections = Game.viewport.GetBlockedDirections();
-				if (BlockedDirections.Includes(ScrollDirection.Up) && BlockedDirections.Includes(ScrollDirection.Right))
-					return "scroll-tr-blocked";
-				else
-					return "scroll-tr";
-			}
-			if (Edge.Includes(ScrollDirection.Down) && Edge.Includes(ScrollDirection.Left)){
-				ScrollDirection BlockedDirections = Game.viewport.GetBlockedDirections();
-				if (BlockedDirections.Includes(ScrollDirection.Down) && BlockedDirections.Includes(ScrollDirection.Left))
-					return "scroll-bl-blocked";
-				else
-					return "scroll-bl";
-			}
-			if (Edge.Includes(ScrollDirection.Down) && Edge.Includes(ScrollDirection.Right)){
-				ScrollDirection BlockedDirections = Game.viewport.GetBlockedDirections();
-				if (BlockedDirections.Includes(ScrollDirection.Down) && BlockedDirections.Includes(ScrollDirection.Right))
-					return "scroll-br-blocked";
-				else
-					return "scroll-br";
-			}
-
-			if (Edge.Includes(ScrollDirection.Up))
-				if (Game.viewport.GetBlockedDirections().Includes(ScrollDirection.Up))
-					return "scroll-t-blocked";
-				else
-					return "scroll-t";
-			if (Edge.Includes(ScrollDirection.Down))
-				if (Game.viewport.GetBlockedDirections().Includes(ScrollDirection.Down))
-					return "scroll-b-blocked";
-				else
-					return "scroll-b";
-			if (Edge.Includes(ScrollDirection.Left))
-				if (Game.viewport.GetBlockedDirections().Includes(ScrollDirection.Left))
-					return "scroll-l-blocked";
-				else
-					return "scroll-l";
-			if (Edge.Includes(ScrollDirection.Right))
-				if (Game.viewport.GetBlockedDirections().Includes(ScrollDirection.Right))
-					return "scroll-r-blocked";
-				else
-					return "scroll-r";
-
-			return base.GetCursor(pos);
+			return ViewportScrollControllerWidget.GetScrollCursor(this, Edge, pos)
+				?? base.GetCursor(pos);
 		}
 
 		public override bool LoseFocus(MouseInput mi)
@@ -172,7 +121,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 		public override void Tick()
 		{
 			Edge = ScrollDirection.None;
-			if (Game.Settings.Game.ViewportEdgeScroll && Game.HasInputFocus && Widget.MouseOverWidget == this)
+			if (Game.Settings.Game.ViewportEdgeScroll && Game.HasInputFocus && Ui.MouseOverWidget == this)
 			{
 				// Check for edge-scroll
 				if (Viewport.LastMousePos.X < EdgeScrollThreshold)
@@ -187,17 +136,17 @@ namespace OpenRA.Mods.Cnc.Widgets
 
 			if(Keyboard != ScrollDirection.None || Edge != ScrollDirection.None)
 			{
-                var scroll = new float2(0, 0);
+				var scroll = new float2(0, 0);
 
-                // Modified to use the ViewportEdgeScrollStep setting - Gecko
-                if (Keyboard.Includes(ScrollDirection.Up) || Edge.Includes(ScrollDirection.Up))
-                    scroll += new float2(0, -1);
-                if (Keyboard.Includes(ScrollDirection.Right) || Edge.Includes(ScrollDirection.Right))
-                    scroll += new float2(1, 0);
-                if (Keyboard.Includes(ScrollDirection.Down) || Edge.Includes(ScrollDirection.Down))
-                    scroll += new float2(0, 1);
-                if (Keyboard.Includes(ScrollDirection.Left) || Edge.Includes(ScrollDirection.Left))
-                    scroll += new float2(-1, 0);
+				// Modified to use the ViewportEdgeScrollStep setting - Gecko
+				if (Keyboard.Includes(ScrollDirection.Up) || Edge.Includes(ScrollDirection.Up))
+					scroll += new float2(0, -1);
+				if (Keyboard.Includes(ScrollDirection.Right) || Edge.Includes(ScrollDirection.Right))
+					scroll += new float2(1, 0);
+				if (Keyboard.Includes(ScrollDirection.Down) || Edge.Includes(ScrollDirection.Down))
+					scroll += new float2(0, 1);
+				if (Keyboard.Includes(ScrollDirection.Left) || Edge.Includes(ScrollDirection.Left))
+					scroll += new float2(-1, 0);
 
 				float length = Math.Max(1, scroll.Length);
 				scroll.X = (scroll.X / length) * Game.Settings.Game.ViewportEdgeScrollStep;

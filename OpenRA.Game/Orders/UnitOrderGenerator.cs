@@ -19,30 +19,26 @@ namespace OpenRA.Orders
 	{
 		public IEnumerable<Order> Order( World world, int2 xy, MouseInput mi )
 		{
-            var underCursor = world.FindUnitsAtMouse(mi.Location)
-                .Where(a => a.HasTrait<ITargetable>())
-                .OrderByDescending(
-                    a =>
-                    a.Info.Traits.Contains<SelectableInfo>()
-                        ? a.Info.Traits.Get<SelectableInfo>().Priority
-                        : int.MinValue)
-                .FirstOrDefault();
+			var underCursor = world.FindUnitsAtMouse(mi.Location)
+				.Where(a => a.HasTrait<ITargetable>())
+				.OrderByDescending(a => a.SelectionPriority())
+				.FirstOrDefault();
 
-            var orders = world.Selection.Actors
-                .Select(a => OrderForUnit(a, xy, mi, underCursor))
-                .Where(o => o != null)
-                .ToArray();
+			var orders = world.Selection.Actors
+				.Select(a => OrderForUnit(a, xy, mi, underCursor))
+				.Where(o => o != null)
+				.ToArray();
 
-            var actorsInvolved = orders.Select(o => o.self).Distinct();
+			var actorsInvolved = orders.Select(o => o.self).Distinct();
 			if (actorsInvolved.Any())
 				yield return new Order("CreateGroup", actorsInvolved.First().Owner.PlayerActor, false)
 				{
-					TargetString = string.Join(",", actorsInvolved.Select(a => a.ActorID.ToString()).ToArray())
+					TargetString = actorsInvolved.Select(a => a.ActorID).JoinWith(",")
 				};
 
 
-            foreach (var o in orders)
-                yield return CheckSameOrder(o.iot, o.trait.IssueOrder(o.self, o.iot, o.target, mi.Modifiers.HasModifier(Modifiers.Shift)));
+			foreach (var o in orders)
+				yield return CheckSameOrder(o.iot, o.trait.IssueOrder(o.self, o.iot, o.target, mi.Modifiers.HasModifier(Modifiers.Shift)));
 		}
 
 		public void Tick( World world ) { }
@@ -55,7 +51,7 @@ namespace OpenRA.Orders
 
 			var underCursor = world.FindUnitsAtMouse(mi.Location)
 				.Where(a => a.HasTrait<ITargetable>())
-				.OrderByDescending(a => a.Info.Traits.Contains<SelectableInfo>() ? a.Info.Traits.Get<SelectableInfo>().Priority : int.MinValue)
+				.OrderByDescending(a => a.SelectionPriority())
 				.FirstOrDefault();
 
 			if (mi.Modifiers.HasModifier(Modifiers.Shift) || !world.Selection.Actors.Any())
@@ -92,7 +88,7 @@ namespace OpenRA.Orders
 					var forceAttack = mi.Modifiers.HasModifier(Modifiers.Ctrl);
 					var forceQueue = mi.Modifiers.HasModifier(Modifiers.Shift);
 					string cursor = null;
-					if( underCursor != null )
+					if( underCursor != null && !forceAttack )
 						if (o.Order.CanTargetActor(self, underCursor, forceAttack, forceQueue, ref cursor))
 							return new UnitOrderResult( self, o.Order, o.Trait, cursor, Target.FromActor( underCursor ) );
 					if (o.Order.CanTargetLocation(self, xy, actorsAt, forceAttack, forceQueue, ref cursor))
@@ -128,6 +124,15 @@ namespace OpenRA.Orders
 				this.cursor = cursor;
 				this.target = target;
 			}
+		}
+	}
+
+	public static class SelectableExts
+	{
+		public static int SelectionPriority(this Actor a)
+		{
+			var selectableInfo = a.Info.Traits.GetOrDefault<SelectableInfo>();
+			return selectableInfo != null ? selectableInfo.Priority : int.MinValue;
 		}
 	}
 }

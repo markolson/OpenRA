@@ -11,15 +11,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using OpenRA.Traits;
 using OpenRA.FileFormats;
+using OpenRA.Traits;
 
 namespace OpenRA.Mods.RA.Buildings
 {
 	public class GivesBuildableAreaInfo : TraitInfo<GivesBuildableArea> {}
 	public class GivesBuildableArea {}
 
-	public class BuildingInfo : ITraitInfo
+	public class BuildingInfo : ITraitInfo, UsesInit<LocationInit>
 	{
 		public readonly int Power = 0;
 		public readonly string[] TerrainTypes = {};
@@ -34,8 +34,8 @@ namespace OpenRA.Mods.RA.Buildings
 
 		public bool IsCloseEnoughToBase(World world, Player p, string buildingName, int2 topLeft)
 		{
-            if (p.PlayerActor.Trait<DeveloperMode>().BuildAnywhere)
-                return true;
+			if (p.PlayerActor.Trait<DeveloperMode>().BuildAnywhere)
+				return true;
 
 			var buildingMaxBounds = Dimensions;
 			if( Rules.Info[ buildingName ].Traits.Contains<BibInfo>() )

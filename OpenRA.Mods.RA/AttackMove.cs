@@ -9,7 +9,6 @@
 #endregion
 
 using System.Drawing;
-using OpenRA.Effects;
 using OpenRA.Mods.RA.Move;
 using OpenRA.Traits;
 
@@ -85,7 +84,7 @@ namespace OpenRA.Mods.RA
 			{
 				if (--scanTicks <= 0)
 				{
-					self.Trait<AutoTarget>().ScanAndAttack(self, true, false);
+					self.Trait<AutoTarget>().ScanAndAttack(self);
 					scanTicks = ScanInterval;
 				}
 

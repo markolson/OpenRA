@@ -15,7 +15,6 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 using OpenRA.FileFormats;
 using OpenRA.FileFormats.Graphics;
 using OpenRA.GameRules;
@@ -87,7 +86,7 @@ namespace OpenRA.Utility
 				var x = 0;
 				bitmap.Palette = palette.AsSystemPalette();
 
-				foreach (var frame in srcImage)
+				foreach (var frame in srcImage.Frames)
 				{
 					var data = bitmap.LockBits(new Rectangle(x, 0, srcImage.Width, srcImage.Height), ImageLockMode.WriteOnly,
 						PixelFormat.Format8bppIndexed);
@@ -170,6 +169,52 @@ namespace OpenRA.Utility
 
 				File.WriteAllBytes( f, data );
 			}
+		}
+
+		static int ColorDistance(uint a, uint b)
+		{
+			var ca = Color.FromArgb((int)a);
+			var cb = Color.FromArgb((int)b);
+
+			return Math.Abs((int)ca.R - (int)cb.R) +
+				Math.Abs((int)ca.G - (int)cb.G) +
+				Math.Abs((int)ca.B - (int)cb.B);
+		}
+
+		public static void RemapShp(string[] args)
+		{
+			var remap = new Dictionary<int,int>();
+
+			/* the first 4 entries are fixed */
+			for( var i = 0; i < 4; i++ )
+				remap[i] = i;
+
+			var srcPaletteType = Enum<PaletteFormat>.Parse(args[1].Split(':')[0]);
+			var destPaletteType = Enum<PaletteFormat>.Parse(args[2].Split(':')[0]);
+
+			/* the remap range is always 16 entries, but their location and order changes */
+			for( var i = 0; i < 16; i++ )
+				remap[ PlayerColorRemap.GetRemapIndex(srcPaletteType, i) ]
+					= PlayerColorRemap.GetRemapIndex(destPaletteType, i);
+
+			/* map everything else to the best match based on channel-wise distance */
+			var srcPalette = Palette.Load(args[1].Split(':')[1], false);
+			var destPalette = Palette.Load(args[2].Split(':')[1], false);
+
+			var fullIndexRange = Exts.MakeArray<int>(256, x => x);
+
+			for( var i = 0; i < 256; i++ )
+				if (!remap.ContainsKey(i))
+					remap[i] = fullIndexRange
+						.Where(a => !remap.ContainsValue(a))
+						.OrderBy(a => ColorDistance(destPalette.Values[a], srcPalette.Values[i]))
+						.First();
+
+			var srcImage = ShpReader.Load(args[3]);
+
+			using( var destStream = File.Create(args[4]) )
+				ShpWriter.Write(destStream, srcImage.Width, srcImage.Height,
+					srcImage.Frames.Select( im => im.Image.Select(px => (byte)remap[px]).ToArray() ));
 		}
 	}
 }

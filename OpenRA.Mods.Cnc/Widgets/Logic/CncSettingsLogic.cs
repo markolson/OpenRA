@@ -14,6 +14,7 @@ using System.Linq;
 using OpenRA.FileFormats;
 using OpenRA.FileFormats.Graphics;
 using OpenRA.GameRules;
+using OpenRA.Mods.RA;
 using OpenRA.Mods.RA.Widgets.Logic;
 using OpenRA.Widgets;
 
@@ -24,13 +25,11 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 		enum PanelType { General, Input }
 
 		PanelType Settings = PanelType.General;
-		CncColorPickerPaletteModifier playerPalettePreview;
+		ColorPickerPaletteModifier playerPalettePreview;
 		World world;
 
 		[ObjectCreator.UseCtor]
-		public CncSettingsLogic([ObjectCreator.Param] Widget widget,
-		                        [ObjectCreator.Param] World world,
-		                        [ObjectCreator.Param] Action onExit)
+		public CncSettingsLogic(Widget widget, World world, Action onExit)
 		{
 			this.world = world;
 			var panel = widget.GetWidget("SETTINGS_PANEL");
@@ -53,7 +52,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 			var nameTextfield = generalPane.GetWidget<TextFieldWidget>("NAME_TEXTFIELD");
 			nameTextfield.Text = playerSettings.Name;
 
-			playerPalettePreview = world.WorldActor.Trait<CncColorPickerPaletteModifier>();
+			playerPalettePreview = world.WorldActor.Trait<ColorPickerPaletteModifier>();
 			playerPalettePreview.Ramp = playerSettings.ColorRamp;
 
 			var colorDropdown = generalPane.GetWidget<DropDownButtonWidget>("COLOR_DROPDOWN");
@@ -141,7 +140,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 				int.TryParse(windowHeight.Text, out y);
 				graphicsSettings.WindowedSize = new int2(x,y);
 				Game.Settings.Save();
-				Widget.CloseWindow();
+				Ui.CloseWindow();
 				onExit();
 			};
 		}
@@ -180,7 +179,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 				return item;
 			};
 
-			dropdown.ShowDropDown("LABEL_DROPDOWN_TEMPLATE", 500, options.Keys.ToList(), setupItem);
+			dropdown.ShowDropDown("LABEL_DROPDOWN_TEMPLATE", 500, options.Keys, setupItem);
 			return true;
 		}
 	}

@@ -8,7 +8,6 @@
  */
 #endregion
 
-using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -17,7 +16,6 @@ using OpenRA.Graphics;
 using OpenRA.Mods.RA;
 using OpenRA.Mods.RA.Buildings;
 using OpenRA.Mods.RA.Orders;
-using OpenRA.Traits;
 using OpenRA.Widgets;
 
 namespace OpenRA.Mods.Cnc.Widgets
@@ -43,17 +41,11 @@ namespace OpenRA.Mods.Cnc.Widgets
 
 		Lazy<TooltipContainerWidget> tooltipContainer;
 		ProductionQueue currentQueue;
+
 		public ProductionQueue CurrentQueue
 		{
-			get
-			{
-				return currentQueue;
-			}
-			set
-			{
-				currentQueue = value;
-				RefreshIcons();
-			}
+			get { return currentQueue; }
+			set { currentQueue = value; RefreshIcons(); }
 		}
 
 		public override Rectangle EventBounds { get { return eventBounds; } }
@@ -66,13 +58,12 @@ namespace OpenRA.Mods.Cnc.Widgets
 		readonly float2 holdOffset, readyOffset, timeOffset, queuedOffset;
 
 		[ObjectCreator.UseCtor]
-		public ProductionPaletteWidget([ObjectCreator.Param] World world,
-		                               [ObjectCreator.Param] WorldRenderer worldRenderer)
+		public ProductionPaletteWidget(World world, WorldRenderer worldRenderer)
 		{
 			this.world = world;
 			this.worldRenderer = worldRenderer;
-			tooltipContainer = new Lazy<TooltipContainerWidget>(() =>
-				Widget.RootWidget.GetWidget<TooltipContainerWidget>(TooltipContainer));
+			tooltipContainer = Lazy.New(() =>
+				Ui.Root.GetWidget<TooltipContainerWidget>(TooltipContainer));
 
 			cantBuild = new Animation("clock");
 			cantBuild.PlayFetchIndex("idle", () => 0);
@@ -83,7 +74,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 				.ToDictionary(
 					u => u.Name,
 					u => Game.modData.SpriteLoader.LoadAllSprites(
-                        u.Traits.Get<TooltipInfo>().Icon ?? (u.Name + "icon"))[0]);
+						u.Traits.Get<TooltipInfo>().Icon ?? (u.Name + "icon"))[0]);
 
 			overlayFont = Game.Renderer.Fonts["TinyBold"];
 			holdOffset = new float2(32,24) - overlayFont.Measure("On Hold") / 2;
@@ -103,14 +94,15 @@ namespace OpenRA.Mods.Cnc.Widgets
 
 		public override void MouseEntered()
 		{
-			if (TooltipContainer == null) return;
-			tooltipContainer.Value.SetTooltip(TooltipTemplate, new WidgetArgs() {{ "palette", this }});
+			if (TooltipContainer != null)
+				tooltipContainer.Value.SetTooltip(TooltipTemplate,
+					new WidgetArgs() {{ "palette", this }});
 		}
 
 		public override void MouseExited()
 		{
-			if (TooltipContainer == null) return;
-			tooltipContainer.Value.RemoveTooltip();
+			if (TooltipContainer != null)
+				tooltipContainer.Value.RemoveTooltip();
 		}
 
 		public override bool HandleMouseInput(MouseInput mi)
@@ -257,21 +249,21 @@ namespace OpenRA.Mods.Cnc.Widgets
 					var waiting = first != CurrentQueue.CurrentItem() && !first.Done;
 					if (first.Done)
 						overlayFont.DrawTextWithContrast("Ready",
-						                                 icon.Pos + readyOffset,
-						                                 Color.White, Color.Black, 1);
+														 icon.Pos + readyOffset,
+														 Color.White, Color.Black, 1);
 					else if (first.Paused)
 						overlayFont.DrawTextWithContrast("On Hold",
-						                                 icon.Pos + holdOffset,
-						                                 Color.White, Color.Black, 1);
+														 icon.Pos + holdOffset,
+														 Color.White, Color.Black, 1);
 					else if (!waiting)
 						overlayFont.DrawTextWithContrast(WidgetUtils.FormatTime(first.RemainingTimeActual),
-						                                 icon.Pos + timeOffset,
-						                                 Color.White, Color.Black, 1);
+														 icon.Pos + timeOffset,
+														 Color.White, Color.Black, 1);
 
 					if (total > 1 || waiting)
 						overlayFont.DrawTextWithContrast(total.ToString(),
-						                                 icon.Pos + queuedOffset,
-						                                 Color.White, Color.Black, 1);
+														 icon.Pos + queuedOffset,
+														 Color.White, Color.Black, 1);
 				}
 			}
 		}

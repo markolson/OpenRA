@@ -43,6 +43,8 @@ namespace OpenRA
 				return HasLocation.PxPosition;
 			}
 		}
+		
+		public Shroud.ActorVisibility Sight;
 
 		[Sync]
 		public Player Owner;
@@ -82,9 +84,19 @@ namespace OpenRA
 				// auto size from render
 				var firstSprite = TraitsImplementing<IRender>().SelectMany(ApplyIRender).FirstOrDefault();
 				if (firstSprite.Sprite == null) return int2.Zero;
-                return (firstSprite.Sprite.size * firstSprite.Scale).ToInt2();
+				return (firstSprite.Sprite.size * firstSprite.Scale).ToInt2();
 			});
 
+			if(this.HasTrait<RevealsShroud>())
+			{
+				Sight = new Shroud.ActorVisibility
+				{
+					range = this.Trait<RevealsShroud>().RevealRange,
+					vis = Shroud.GetVisOrigins(this).ToArray()
+				};
+					
+			}
+			
 			ApplyIRender = x => x.Render(this);
 			ApplyRenderModifier = (m, p) => p.ModifyRender(this, m);
 
@@ -99,13 +111,18 @@ namespace OpenRA
 
 			currentActivity = Util.RunActivity( this, currentActivity );
 		}
+		
+		public void UpdateSight()
+		{
+			Sight.vis = Shroud.GetVisOrigins(this).ToArray();
+		}
 
 		public bool IsIdle
 		{
 			get { return currentActivity == null; }
 		}
 
-        OpenRA.FileFormats.Lazy<int2> Size;
+		OpenRA.FileFormats.Lazy<int2> Size;
 
 		// note: these delegates are cached to avoid massive allocation.
 		Func<IRender, IEnumerable<Renderable>> ApplyIRender;

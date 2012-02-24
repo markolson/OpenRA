@@ -115,11 +115,15 @@ namespace OpenRA.Mods.Cnc
 			r.EndFrame(nih);
 		}
 
-		public void StartGame() { TestAndContinue(); }
+		public void StartGame()
+		{
+			TestAndContinue();
+			Game.JoinExternalGame();
+		}
 
 		void TestAndContinue()
 		{
-			Widget.ResetAll();
+			Ui.ResetAll();
 			if (!FileSystem.Exists(Info["TestFile"]))
 			{
 				var args = new WidgetArgs()
@@ -127,8 +131,8 @@ namespace OpenRA.Mods.Cnc
 					{ "continueLoading", () => TestAndContinue() },
 					{ "installData", Info }
 				};
-				Widget.LoadWidget(Info["InstallerBackgroundWidget"], Widget.RootWidget, args);
-				Widget.OpenWindow(Info["InstallerMenuWidget"], args);
+				Ui.LoadWidget(Info["InstallerBackgroundWidget"], Ui.Root, args);
+				Ui.OpenWindow(Info["InstallerMenuWidget"], args);
 			}
 			else
 				Game.LoadShellMap();

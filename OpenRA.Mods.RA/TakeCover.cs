@@ -9,8 +9,8 @@
 #endregion
 
 using OpenRA.GameRules;
-using OpenRA.Traits;
 using OpenRA.Mods.RA.Render;
+using OpenRA.Traits;
 
 namespace OpenRA.Mods.RA
 {
@@ -20,6 +20,7 @@ namespace OpenRA.Mods.RA
 		public readonly float ProneDamage = .5f;
 		public readonly decimal ProneSpeed = .5m;
 		public readonly int[] BarrelOffset = null;
+
 		public object Create(ActorInitializer init) { return new TakeCover(this); }
 	}
 

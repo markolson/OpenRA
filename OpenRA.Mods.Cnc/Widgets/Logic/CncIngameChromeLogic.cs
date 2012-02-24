@@ -10,11 +10,9 @@
 
 using System;
 using System.Drawing;
-using System.Linq;
+using OpenRA.Mods.RA.Orders;
 using OpenRA.Traits;
 using OpenRA.Widgets;
-using OpenRA.Mods.RA;
-using OpenRA.Mods.RA.Orders;
 
 namespace OpenRA.Mods.Cnc.Widgets.Logic
 {
@@ -65,8 +63,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 		}
 
 		[ObjectCreator.UseCtor]
-		public CncIngameChromeLogic([ObjectCreator.Param] Widget widget,
-		                            [ObjectCreator.Param] World world )
+		public CncIngameChromeLogic(Widget widget, World world)
 		{
 			this.world = world;
 			world.WorldActor.Trait<CncMenuPaletteEffect>()
@@ -89,12 +86,12 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 		{
 			if (menu != MenuType.None)
 			{
-				Widget.CloseWindow();
+				Ui.CloseWindow();
 				menu = MenuType.None;
 			}
 
 			ingameRoot.IsVisible = () => false;
-			Game.LoadWidget(world, "INGAME_MENU", Widget.RootWidget, new WidgetArgs()
+			Game.LoadWidget(world, "INGAME_MENU", Ui.Root, new WidgetArgs()
 			{
 				{ "onExit", () => ingameRoot.IsVisible = () => true }
 			});
@@ -114,19 +111,8 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 
 			var sidebarRoot = playerWidgets.GetWidget("SIDEBAR_BACKGROUND");
 
-			var sellButton = sidebarRoot.GetWidget<ToggleButtonWidget>("SELL_BUTTON");
-			sellButton.OnClick = () => world.ToggleInputMode<SellOrderGenerator>();
-			sellButton.IsToggled = () => world.OrderGenerator is SellOrderGenerator;
-			var sellIcon = sellButton.GetWidget<ImageWidget>("ICON");
-			sellIcon.GetImageName = () => world.OrderGenerator is SellOrderGenerator ? "sell-active" : "sell";
-
-			var repairButton = sidebarRoot.GetWidget<ToggleButtonWidget>("REPAIR_BUTTON");
-			repairButton.IsDisabled = () => !RepairOrderGenerator.PlayerIsAllowedToRepair( world );
-			repairButton.OnClick = () => world.ToggleInputMode<RepairOrderGenerator>();
-			repairButton.IsToggled = () => world.OrderGenerator is RepairOrderGenerator;
-			var repairIcon = repairButton.GetWidget<ImageWidget>("ICON");
-			repairIcon.GetImageName = () => repairButton.IsDisabled() ? "repair-disabled" :
-				world.OrderGenerator is RepairOrderGenerator ? "repair-active" : "repair";
+			BindOrderButton<SellOrderGenerator>(world, sidebarRoot, "SELL_BUTTON", "sell");
+			BindOrderButton<RepairOrderGenerator>(world, sidebarRoot, "REPAIR_BUTTON", "repair");
 
 			var playerResources = world.LocalPlayer.PlayerActor.Trait<PlayerResources>();
 			sidebarRoot.GetWidget<LabelWidget>("CASH_DISPLAY").GetText = () =>
@@ -149,7 +135,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 			cheatsButton.OnClick = () =>
 			{
 				if (menu != MenuType.None)
-					Widget.CloseWindow();
+					Ui.CloseWindow();
 
 				menu = MenuType.Cheats;
 				Game.OpenWindow("CHEATS_PANEL", new WidgetArgs() {{"onExit", () => menu = MenuType.None }});
@@ -166,6 +152,17 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 						InitObserverWidgets(world, playerRoot);
 					});
 			};
+		}
+
+		static void BindOrderButton<T>(World world, Widget parent, string button, string icon)
+			where T : IOrderGenerator, new()
+		{
+			var w = parent.GetWidget<ToggleButtonWidget>(button);
+			w.OnClick = () => world.ToggleInputMode<T>();
+			w.IsToggled = () => world.OrderGenerator is T;
+
+			w.GetWidget<ImageWidget>("ICON").GetImageName =
+				() => world.OrderGenerator is T ? icon+"-active" : icon;
 		}
 	}
 }

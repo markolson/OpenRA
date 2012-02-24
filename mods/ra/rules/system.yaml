@@ -130,11 +130,12 @@ Player:
 		SquadSize: 10
 	PlayerColorPalette:
 		BasePalette: terrain
-	SurrenderOnDisconnect:
 	DebugResourceCash:
 	DebugResourceOre:
 	DebugResourceOreCapacity:
 	GpsWatcher:
+	Shroud:
+	BaseAttackNotifier:
 
 World:	
 	OpenWidgetAtGameStart:
@@ -240,7 +241,8 @@ World:
 MINP:
 	Mine:
 		Weapon: APMine
-		CrushClasses: apmine
+		CrushClasses: apmine,atmine
+		DetonateClasses: apmine
 		AvoidFriendly: yes
 	Health:
 		HP: 1
@@ -255,7 +257,8 @@ MINP:
 MINV:
 	Mine:
 		Weapon: ATMine
-		CrushClasses: atmine
+		CrushClasses: atmine,apmine
+		DetonateClasses: atmine
 		AvoidFriendly: yes
 	Health:
 		HP: 1

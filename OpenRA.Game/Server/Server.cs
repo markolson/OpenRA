@@ -40,16 +40,14 @@ namespace OpenRA.Server
 		public readonly IPAddress Ip;
 		public readonly int Port;
 		int randomSeed;
+		public readonly Thirdparty.Random Random = new Thirdparty.Random();
 
 		public ServerSettings Settings;
 		public ModData ModData;
 		public Map Map;
 
 		volatile bool shutdown = false;
-		public void Shutdown()
-		{
-			shutdown = true;
-		}
+		public void Shutdown() { shutdown = true; }
 
 		public Server(IPEndPoint endpoint, string[] mods, ServerSettings settings, ModData modData)
 		{
@@ -127,16 +125,11 @@ namespace OpenRA.Server
 		/* lobby rework todo:
 		 *	- "teams together" option for team games -- will eliminate most need
 		 *		for manual spawnpoint choosing.
-		 *	- 256 max players is a dirty hack
 		 */
+		int nextPlayerIndex = 0;
 		public int ChooseFreePlayerIndex()
 		{
-			for (var i = 0; i < 256; i++)
-				if (conns.All(c => c.PlayerIndex != i) && preConns.All(c => c.PlayerIndex != i)
-				    && lobbyInfo.Clients.All(c => c.Index != i))
-					return i;
-
-			throw new InvalidOperationException("Already got 256 players");
+			return nextPlayerIndex++;
 		}
 
 		void AcceptConnection()
@@ -198,9 +191,9 @@ namespace OpenRA.Server
 
 				// Check that the client has compatable mods
 				var valid = mods.All( m => m.Contains('@')) && //valid format
-				            mods.Count() == Game.CurrentMods.Count() &&  //same number
-				            mods.Select( m => Pair.New(m.Split('@')[0], m.Split('@')[1])).All(kv => Game.CurrentMods.ContainsKey(kv.First) &&
-				     		(kv.Second == "{DEV_VERSION}" || Game.CurrentMods[kv.First].Version == "{DEV_VERSION}" || kv.Second == Game.CurrentMods[kv.First].Version));
+							mods.Count() == Game.CurrentMods.Count() &&  //same number
+							mods.Select( m => Pair.New(m.Split('@')[0], m.Split('@')[1])).All(kv => Game.CurrentMods.ContainsKey(kv.First) &&
+					 		(kv.Second == "{DEV_VERSION}" || Game.CurrentMods[kv.First].Version == "{DEV_VERSION}" || kv.Second == Game.CurrentMods[kv.First].Version));
 				if (!valid)
 				{
 					Log.Write("server", "Rejected connection from {0}; mods do not match.",
@@ -223,6 +216,9 @@ namespace OpenRA.Server
 					SyncClientToPlayerReference(client, Map.Players[client.Slot]);
 
 				lobbyInfo.Clients.Add(client);
+				//Assume that first validated client is server admin
+				if(lobbyInfo.Clients.Count==1)
+					client.IsAdmin=true;
 
 				Log.Write("server", "Client {0}: Accepted connection from {1}",
 					newConn.PlayerIndex, newConn.socket.RemoteEndPoint);
@@ -241,7 +237,7 @@ namespace OpenRA.Server
 			if (pr == null)
 				return;
 			if (pr.LockColor)
-                c.ColorRamp = pr.ColorRamp;
+				c.ColorRamp = pr.ColorRamp;
 			if (pr.LockRace)
 				c.Country = pr.Race;
 			if (pr.LockSpawn)
@@ -319,15 +315,15 @@ namespace OpenRA.Server
 				new ServerOrder(order, data).Serialize());
 		}
 
-        public void SendChat(Connection asConn, string text)
-        {
-            DispatchOrders(asConn, 0, new ServerOrder("Chat", text).Serialize());
-        }
+		public void SendChat(Connection asConn, string text)
+		{
+			DispatchOrders(asConn, 0, new ServerOrder("Chat", text).Serialize());
+		}
 
-        public void SendDisconnected(Connection asConn)
-        {
-            DispatchOrders(asConn, 0, new ServerOrder("Disconnected", "").Serialize());
-        }
+		public void SendDisconnected(Connection asConn)
+		{
+			DispatchOrders(asConn, 0, new ServerOrder("Disconnected", "").Serialize());
+		}
 
 		void InterpretServerOrder(Connection conn, ServerOrder so)
 		{
@@ -374,8 +370,8 @@ namespace OpenRA.Server
 				conns.Remove(toDrop);
 				SendChat(toDrop, "Connection Dropped");
 
-            	if (GameStarted)
-                	SendDisconnected(toDrop); /* Report disconnection */
+				if (GameStarted)
+					SendDisconnected(toDrop); /* Report disconnection */
 
 				lobbyInfo.Clients.RemoveAll(c => c.Index == toDrop.PlayerIndex);
 

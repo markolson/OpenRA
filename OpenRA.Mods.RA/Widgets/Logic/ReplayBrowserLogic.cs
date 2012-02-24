@@ -1,4 +1,4 @@
-﻿#region Copyright & License Information
+#region Copyright & License Information
 /*
  * Copyright 2007-2011 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
@@ -9,10 +9,8 @@
 #endregion
 
 using System;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using OpenRA.FileFormats;
 using OpenRA.Network;
 using OpenRA.Widgets;
 
@@ -20,128 +18,84 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 {
 	public class ReplayBrowserLogic
 	{
-		Widget widget;
+		Widget panel;
 
 		[ObjectCreator.UseCtor]
-		public ReplayBrowserLogic( [ObjectCreator.Param] Widget widget )
+		public ReplayBrowserLogic(Widget widget, Action onExit, Action onStart)
 		{
-			this.widget = widget;
+			panel = widget;
 
-			widget.GetWidget<ButtonWidget>("CANCEL_BUTTON").OnClick = () => Widget.CloseWindow();
+			panel.GetWidget<ButtonWidget>("CANCEL_BUTTON").OnClick = () => { Ui.CloseWindow(); onExit(); };
 
-			/* find some replays? */
-			var rl = widget.GetWidget<ScrollPanelWidget>("REPLAY_LIST");
+			var rl = panel.GetWidget<ScrollPanelWidget>("REPLAY_LIST");
 			var replayDir = Path.Combine(Platform.SupportDir, "Replays");
 
-			var template = widget.GetWidget<ScrollItemWidget>("REPLAY_TEMPLATE");
-			CurrentReplay = null;
+			var template = panel.GetWidget<ScrollItemWidget>("REPLAY_TEMPLATE");
 
 			rl.RemoveChildren();
 			if (Directory.Exists(replayDir))
-				foreach (var replayFile in Directory.GetFiles(replayDir, "*.rep").Reverse())
+			{
+				var files = Directory.GetFiles(replayDir, "*.rep").Reverse();
+				foreach (var replayFile in files)
 					AddReplay(rl, replayFile, template);
 
-			widget.GetWidget<ButtonWidget>("WATCH_BUTTON").OnClick = () =>
+				SelectReplay(files.FirstOrDefault());
+			}
+
+			var watch = panel.GetWidget<ButtonWidget>("WATCH_BUTTON");
+			watch.IsDisabled = () => currentReplay == null || currentMap == null || currentReplay.Duration == 0;
+			watch.OnClick = () =>
 			{
 				if (currentReplay != null)
 				{
-					Widget.CloseWindow();
-					Game.JoinReplay(CurrentReplay);
+					Game.JoinReplay(currentReplay.Filename);
+					Ui.CloseWindow();
+					onStart();
 				}
 			};
 
-			widget.GetWidget("REPLAY_INFO").IsVisible = () => currentReplay != null;
+			panel.GetWidget("REPLAY_INFO").IsVisible = () => currentReplay != null;
 		}
 
-		string currentReplay = null;
-		string CurrentReplay
-		{
-			get { return currentReplay; }
-			set
-			{
-				currentReplay = value;
-				if (currentReplay != null)
-				{
-					try
-					{
-						var summary = new ReplaySummary(currentReplay);
-						var mapStub = summary.Map();
+		Replay currentReplay;
+		Map currentMap;
 
-						widget.GetWidget<LabelWidget>("DURATION").GetText =
-							() => WidgetUtils.FormatTime(summary.Duration * 3	/* todo: 3:1 ratio isnt always true. */);
-						widget.GetWidget<MapPreviewWidget>("MAP_PREVIEW").Map = () => mapStub;
-						widget.GetWidget<LabelWidget>("MAP_TITLE").GetText =
-							() => mapStub != null ? mapStub.Title : "(Unknown Map)";
-					}
-					catch(Exception e)
-					{
-						Log.Write("debug", "Exception while parsing replay: {0}", e.ToString());
-						currentReplay = null;
-					}
-				}
+		void SelectReplay(string filename)
+		{
+			if (filename == null)
+				return;
+
+			try
+			{
+				currentReplay = new Replay(filename);
+				currentMap = currentReplay.Map();
+
+				panel.GetWidget<LabelWidget>("DURATION").GetText =
+					() => WidgetUtils.FormatTime(currentReplay.Duration * 3	/* todo: 3:1 ratio isnt always true. */);
+				panel.GetWidget<MapPreviewWidget>("MAP_PREVIEW").Map = () => currentMap;
+				panel.GetWidget<LabelWidget>("MAP_TITLE").GetText =
+					() => currentMap != null ? currentMap.Title : "(Unknown Map)";
+
+				var players = currentReplay.LobbyInfo.Slots
+					.Count(s => currentReplay.LobbyInfo.ClientInSlot(s.Key) != null);
+				panel.GetWidget<LabelWidget>("PLAYERS").GetText = () => players.ToString();
+			}
+			catch (Exception e)
+			{
+				Log.Write("debug", "Exception while parsing replay: {0}", e);
+				currentReplay = null;
+				currentMap = null;
 			}
 		}
 
 		void AddReplay(ScrollPanelWidget list, string filename, ScrollItemWidget template)
 		{
 			var item = ScrollItemWidget.Setup(template,
-			                                  () => CurrentReplay == filename,
-			                                  () => CurrentReplay = filename);
+				() => currentReplay != null && currentReplay.Filename == filename,
+				() => SelectReplay(filename));
 			var f = Path.GetFileName(filename);
 			item.GetWidget<LabelWidget>("TITLE").GetText = () => f;
 			list.AddChild(item);
-		}
-	}
-
-	/* a maze of twisty little hacks,... */
-	public class ReplaySummary
-	{
-		public readonly string Filename;
-		public readonly int Duration;
-		public readonly Session LobbyInfo;
-
-		public ReplaySummary(string filename)
-		{
-			Filename = filename;
-			var lastFrame = 0;
-			var hasSeenGameStart = false;
-			var lobbyInfo = null as Session;
-			using (var conn = new ReplayConnection(filename))
-				conn.Receive((client, packet) =>
-					{
-						var frame = BitConverter.ToInt32(packet, 0);
-						if (packet.Length == 5 && packet[4] == 0xBF)
-							return;	// disconnect
-						else if (packet.Length >= 5 && packet[4] == 0x65)
-							return;	// sync
-						else if (frame == 0)
-						{
-							/* decode this to recover lobbyinfo, etc */
-							var orders = packet.ToOrderList(null);
-							foreach (var o in orders)
-								if (o.OrderString == "StartGame")
-									hasSeenGameStart = true;
-								else if (o.OrderString == "SyncInfo" && !hasSeenGameStart)
-									lobbyInfo = Session.Deserialize(o.TargetString);
-						}
-						else
-							lastFrame = Math.Max(lastFrame, frame);
-					});
-
-			Duration = lastFrame;
-			LobbyInfo = lobbyInfo;
-		}
-
-		public Map Map()
-		{
-			if (LobbyInfo == null)
-				return null;
-
-			var map = LobbyInfo.GlobalSettings.Map;
-			if (!Game.modData.AvailableMaps.ContainsKey(map))
-				return null;
-
-			return Game.modData.AvailableMaps[map];
 		}
 	}
 }

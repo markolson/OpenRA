@@ -22,14 +22,14 @@ namespace OpenRA
 {
 	public class Map
 	{
-		[FieldLoader.Ignore] protected IFolder Container;
-		public string Path {get; protected set;}
+		[FieldLoader.Ignore] IFolder Container;
+		public string Path { get; private set; }
 
 		// Yaml map data
-		public string Uid { get; protected set; }
+		public string Uid { get; private set; }
 		public int MapFormat;
 		public bool Selectable;
-        public bool UseAsShellmap;
+		public bool UseAsShellmap;
 		public string RequiresMod;
 
 		public string Title;
@@ -41,7 +41,14 @@ namespace OpenRA
 		[FieldLoader.Ignore] public Lazy<Dictionary<string, ActorReference>> Actors;
 
 		public int PlayerCount { get { return Players.Count(p => p.Value.Playable); } }
-		public IEnumerable<int2> SpawnPoints { get { return Actors.Value.Values.Where(a => a.Type == "mpspawn").Select(a => a.InitDict.Get<LocationInit>().value); } }
+
+		public int2[] GetSpawnPoints()
+		{
+			return Actors.Value.Values
+				.Where(a => a.Type == "mpspawn")
+				.Select(a => a.InitDict.Get<LocationInit>().value)
+				.ToArray();
+		}
 
 		public Rectangle Bounds;
 
@@ -49,16 +56,9 @@ namespace OpenRA
 		[FieldLoader.Ignore] public Dictionary<string, PlayerReference> Players = new Dictionary<string, PlayerReference>();
 		[FieldLoader.Ignore] public Lazy<List<SmudgeReference>> Smudges;
 
-		// Rules overrides
 		[FieldLoader.Ignore] public List<MiniYamlNode> Rules = new List<MiniYamlNode>();
-
-		// Sequences overrides
 		[FieldLoader.Ignore] public List<MiniYamlNode> Sequences = new List<MiniYamlNode>();
-
-		// Weapon overrides
 		[FieldLoader.Ignore] public List<MiniYamlNode> Weapons = new List<MiniYamlNode>();
-
-		// Voices overrides
 		[FieldLoader.Ignore] public List<MiniYamlNode> Voices = new List<MiniYamlNode>();
 
 		// Binary map data
@@ -69,10 +69,7 @@ namespace OpenRA
 		[FieldLoader.Ignore] public Lazy<TileReference<byte, byte>[,]> MapResources;
 		[FieldLoader.Ignore] public string [,] CustomTerrain;
 
-		public Map()
-		{
-			// Do nothing; not a valid map (editor hack)
-		}
+		public Map() {}	/* doesn't really produce a valid map, but enough for loading a mod */
 
 		public static Map FromTileset(string tileset)
 		{
@@ -95,14 +92,6 @@ namespace OpenRA
 			return map;
 		}
 
-		class Format2ActorReference
-		{
-			public string Id = null;
-			public string Type = null;
-			public int2 Location = int2.Zero;
-			public string Owner = null;
-		}
-
 		void AssertExists(string filename)
 		{
 			using(var s = Container.GetContent(filename))
@@ -120,10 +109,7 @@ namespace OpenRA
 
 			var yaml = new MiniYaml( null, MiniYaml.FromStream(Container.GetContent("map.yaml")) );
 			FieldLoader.Load(this, yaml);
-            Uid = ComputeHash();
-
-			// 'Simple' metadata
-			FieldLoader.Load( this, yaml );
+			Uid = ComputeHash();
 
 			// Support for formats 1-3 dropped 2011-02-11.
 			// Use release-20110207 to convert older maps to format 4
@@ -141,11 +127,8 @@ namespace OpenRA
 			Actors = Lazy.New(() =>
 			{
 				var ret =  new Dictionary<string, ActorReference>();
-				// Load actors
 				foreach (var kv in yaml.NodesDict["Actors"].NodesDict)
 					ret.Add(kv.Key, new ActorReference(kv.Value.Value, kv.Value.NodesDict));
-
-				// Add waypoint actors
 				return ret;
 			});
 
@@ -155,26 +138,18 @@ namespace OpenRA
 				var ret = new List<SmudgeReference>();
 				foreach (var kv in yaml.NodesDict["Smudges"].NodesDict)
 				{
-					string[] vals = kv.Key.Split(' ');
-					string[] loc = vals[1].Split(',');
+					var vals = kv.Key.Split(' ');
+					var loc = vals[1].Split(',');
 					ret.Add(new SmudgeReference(vals[0], new int2(int.Parse(loc[0]), int.Parse(loc[1])), int.Parse(vals[2])));
 				}
 
 				return ret;
 			});
 
-
-			// Rules
-			Rules = yaml.NodesDict["Rules"].Nodes;
-
-			// Sequences
-			Sequences = (yaml.NodesDict.ContainsKey("Sequences")) ? yaml.NodesDict["Sequences"].Nodes : new List<MiniYamlNode>();
-
-			// Weapons
-			Weapons = (yaml.NodesDict.ContainsKey("Weapons")) ? yaml.NodesDict["Weapons"].Nodes : new List<MiniYamlNode>();
-
-			// Voices
-			Voices = (yaml.NodesDict.ContainsKey("Voices")) ? yaml.NodesDict["Voices"].Nodes : new List<MiniYamlNode>();
+			Rules = NodesOrEmpty(yaml, "Rules");
+			Sequences = NodesOrEmpty(yaml, "Sequences");
+			Weapons = NodesOrEmpty(yaml, "Weapons");
+			Voices = NodesOrEmpty(yaml, "Voices");
 
 			CustomTerrain = new string[MapSize.X, MapSize.Y];
 
@@ -182,12 +157,17 @@ namespace OpenRA
 			MapResources = Lazy.New(() => LoadResourceTiles());
 		}
 
+		static List<MiniYamlNode> NodesOrEmpty(MiniYaml y, string s)
+		{
+			return y.NodesDict.ContainsKey(s) ? y.NodesDict[s].Nodes : new List<MiniYamlNode>();
+		}
+
 		public void Save(string toPath)
 		{
 			MapFormat = 5;
 
 			var root = new List<MiniYamlNode>();
-			var fields = new string[]
+			var fields = new []
 			{
 				"Selectable",
 				"MapFormat",
@@ -225,7 +205,7 @@ namespace OpenRA
 			root.Add(new MiniYamlNode("Weapons", null, Weapons));
 			root.Add(new MiniYamlNode("Voices", null, Voices));
 
-			Dictionary<string, byte[]> entries = new Dictionary<string, byte[]>();
+			var entries = new Dictionary<string, byte[]>();
 			entries.Add("map.bin", SaveBinaryData());
 			var s = root.WriteToString();
 			entries.Add("map.yaml", Encoding.UTF8.GetBytes(s));
@@ -236,7 +216,7 @@ namespace OpenRA
 				Path = toPath;
 
 				// Create a new map package
-				// TODO: Add other files (resources, rules) to the entries list
+				// TODO: Add other files (custom assets) to the entries list
 				Container = FileSystem.CreatePackage(Path, int.MaxValue, entries);
 			}
 
@@ -312,8 +292,8 @@ namespace OpenRA
 					ReadByte(dataStream);
 
 				// Load resource data
-				for (int i = 0; i < MapSize.X; i++)
-					for (int j = 0; j < MapSize.Y; j++)
+				for (var i = 0; i < MapSize.X; i++)
+					for (var j = 0; j < MapSize.Y; j++)
 				{
 					byte type = ReadByte(dataStream);
 					byte index = ReadByte(dataStream);
@@ -325,7 +305,7 @@ namespace OpenRA
 
 		public byte[] SaveBinaryData()
 		{
-			MemoryStream dataStream = new MemoryStream();
+			var dataStream = new MemoryStream();
 			using (var writer = new BinaryWriter(dataStream))
 			{
 				// File header consists of a version byte, followed by 2 ushorts for width and height
@@ -336,11 +316,11 @@ namespace OpenRA
 				if (!OpenRA.Rules.TileSets.ContainsKey(Tileset))
 					throw new InvalidOperationException(
 						"Tileset used by the map ({0}) does not exist in this mod. Valid tilesets are: {1}"
-						.F(Tileset, string.Join(",", OpenRA.Rules.TileSets.Keys.ToArray())));
+						.F(Tileset, OpenRA.Rules.TileSets.Keys.JoinWith(",")));
 
 				// Tile data
-				for (int i = 0; i < MapSize.X; i++)
-					for (int j = 0; j < MapSize.Y; j++)
+				for (var i = 0; i < MapSize.X; i++)
+					for (var j = 0; j < MapSize.Y; j++)
 					{
 						writer.Write(MapTiles.Value[i, j].type);
 						var PickAny = OpenRA.Rules.TileSets[Tileset].Templates[MapTiles.Value[i, j].type].PickAny;
@@ -348,8 +328,8 @@ namespace OpenRA
 					}
 
 				// Resource data
-				for (int i = 0; i < MapSize.X; i++)
-					for (int j = 0; j < MapSize.Y; j++)
+				for (var i = 0; i < MapSize.X; i++)
+					for (var j = 0; j < MapSize.Y; j++)
 					{
 						writer.Write(MapResources.Value[i, j].type);
 						writer.Write(MapResources.Value[i, j].index);
@@ -358,15 +338,8 @@ namespace OpenRA
 			return dataStream.ToArray();
 		}
 
-		public bool IsInMap(int2 xy)
-		{
-			return IsInMap(xy.X, xy.Y);
-		}
-
-		public bool IsInMap(int x, int y)
-		{
-			return Bounds.Contains(x,y);
-		}
+		public bool IsInMap(int2 xy) { return IsInMap(xy.X, xy.Y); }
+		public bool IsInMap(int x, int y) { return Bounds.Contains(x,y); }
 
 		static T[,] ResizeArray<T>(T[,] ts, T t, int width, int height)
 		{
@@ -394,23 +367,23 @@ namespace OpenRA
 		}
 
 		string ComputeHash()
-        {
-            // UID is calculated by taking an SHA1 of the yaml and binary data
-            // Read the relevant data into a buffer
-            var data = Container.GetContent("map.yaml").ReadAllBytes()
-                .Concat(Container.GetContent("map.bin").ReadAllBytes()).ToArray();
+		{
+			// UID is calculated by taking an SHA1 of the yaml and binary data
+			// Read the relevant data into a buffer
+			var data = Container.GetContent("map.yaml").ReadAllBytes()
+				.Concat(Container.GetContent("map.bin").ReadAllBytes()).ToArray();
 
-            // Take the SHA1
-            using (var csp = SHA1.Create())
-                return new string(csp.ComputeHash(data).SelectMany(a => a.ToString("x2")).ToArray());
-        }
+			// Take the SHA1
+			using (var csp = SHA1.Create())
+				return new string(csp.ComputeHash(data).SelectMany(a => a.ToString("x2")).ToArray());
+		}
 
 		public void MakeDefaultPlayers()
 		{
 			Players.Clear();
 
 			var firstRace = OpenRA.Rules.Info["world"].Traits
-				.WithInterface<CountryInfo>().First().Race;
+				.WithInterface<CountryInfo>().First(c => c.Selectable).Race;
 
 			Players.Add("Neutral", new PlayerReference
 			{
@@ -420,7 +393,8 @@ namespace OpenRA
 				NonCombatant = true
 			});
 
-			for (int index = 0; index < SpawnPoints.Count(); index++)
+			var numSpawns = GetSpawnPoints().Length;
+			for (var index = 0; index < numSpawns; index++)
 			{
 				var p = new PlayerReference
 				{

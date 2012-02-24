@@ -50,13 +50,8 @@ namespace OpenRA
 
 		public static void JoinServer(string host, int port)
 		{
-			var replayFilename = ChooseReplayFilename();
-			string path = Path.Combine( Platform.SupportDir, "Replays" );
-			if( !Directory.Exists( path ) ) Directory.CreateDirectory( path );
-			var replayFile = File.Create( Path.Combine( path, replayFilename ) );
-
 			JoinInner(new OrderManager(host, port,
-				new ReplayRecorderConnection(new NetworkConnection(host, port), replayFile)));
+				new ReplayRecorderConnection(new NetworkConnection(host, port), ChooseReplayFilename)));
 		}
 
 		static string ChooseReplayFilename()
@@ -95,14 +90,14 @@ namespace OpenRA
 		// Hacky workaround for orderManager visibility
 		public static Widget OpenWindow(World world, string widget)
 		{
-			return Widget.OpenWindow(widget, new WidgetArgs() {{ "world", world }, { "orderManager", orderManager }, { "worldRenderer", worldRenderer }});
+			return Ui.OpenWindow(widget, new WidgetArgs() {{ "world", world }, { "orderManager", orderManager }, { "worldRenderer", worldRenderer }});
 		}
 
 		// Who came up with the great idea of making these things
 		// impossible for the things that want them to access them directly?
 		public static Widget OpenWindow(string widget, WidgetArgs args)
 		{
-			return Widget.OpenWindow(widget, new WidgetArgs(args)
+			return Ui.OpenWindow(widget, new WidgetArgs(args)
 			{
 				{ "world", worldRenderer.world },
 				{ "orderManager", orderManager },
@@ -160,7 +155,7 @@ namespace OpenRA
 				using( new PerfSample( "tick_time" ) )
 				{
 					orderManager.LastTickTime += Settings.Game.Timestep;
-					Widget.DoTick();
+					Ui.Tick();
 					var world = orderManager.world;
 					if (orderManager.GameStarted)
 						++Viewport.TicksSinceLastMove;
@@ -175,7 +170,6 @@ namespace OpenRA
 						{
 							++orderManager.LocalFrameNumber;
 
-							Log.Write("debug", "--Tick: {0} ({1})", LocalTick, isNetTick ? "net" : "local");
 
 							if (isNetTick) orderManager.Tick();
 
@@ -205,17 +199,17 @@ namespace OpenRA
 		}
 
 		public static event Action BeforeGameStart = () => {};
-		internal static void StartGame(string mapUID)
+		internal static void StartGame(string mapUID, bool isShellmap)
 		{
 			BeforeGameStart();
 
 			var map = modData.PrepareMap(mapUID);
 			viewport = new Viewport(new int2(Renderer.Resolution), map.Bounds, Renderer);
-			orderManager.world = new World(modData.Manifest, map, orderManager);
+			orderManager.world = new World(modData.Manifest, map, orderManager) { IsShellmap = isShellmap };
 			worldRenderer = new WorldRenderer(orderManager.world);
 
 			if (orderManager.GameStarted) return;
-			Widget.SelectedWidget = null;
+			Ui.SelectedWidget = null;
 
 			orderManager.LocalFrameNumber = 0;
 			orderManager.LastTickTime = Environment.TickCount;
@@ -225,7 +219,12 @@ namespace OpenRA
 
 		public static bool IsHost
 		{
-			get { return orderManager.Connection.LocalClientId == 0; }
+			get 
+			{
+				var client= orderManager.LobbyInfo.ClientWithIndex (
+					orderManager.Connection.LocalClientId);
+				return ((client!=null) && client.IsAdmin);
+			}
 		}
 
 		public static Dictionary<String, Mod> CurrentMods
@@ -270,7 +269,7 @@ namespace OpenRA
 			AddChatLine = (a,b,c) => {};
 			ConnectionStateChanged = om => {};
 			BeforeGameStart = () => {};
-			Widget.ResetAll();
+			Ui.ResetAll();
 
 			worldRenderer = null;
 			if (server != null)
@@ -280,7 +279,7 @@ namespace OpenRA
 
 			// Discard any invalid mods
 			var mm = mods.Where( m => Mod.AllMods.ContainsKey( m ) ).ToArray();
-			Console.WriteLine("Loading mods: {0}",string.Join(",",mm));
+			Console.WriteLine("Loading mods: {0}", mm.JoinWith(","));
 			Settings.Game.Mods = mm;
 			Settings.Save();
 
@@ -306,26 +305,39 @@ namespace OpenRA
 
 		public static void LoadShellMap()
 		{
-			StartGame(ChooseShellmap());
+			StartGame(ChooseShellmap(), true);
 		}
 
-        static string ChooseShellmap()
-        {
-            var shellmaps =  modData.AvailableMaps
-                .Where(m => m.Value.UseAsShellmap);
+		static string ChooseShellmap()
+		{
+			var shellmaps =  modData.AvailableMaps
+				.Where(m => m.Value.UseAsShellmap);
 
 			if (shellmaps.Count() == 0)
 				throw new InvalidDataException("No valid shellmaps available");
 
 			return shellmaps.Random(CosmeticRandom).Key;
-        }
+		}
 
 		static bool quit;
 		public static event Action OnQuit = () => {};
+
 		internal static void Run()
 		{
 			while (!quit)
+			{
+				var idealFrameTime = 1.0 / Settings.Graphics.MaxFramerate;
+				var sw = new Stopwatch();
+
 				Tick( orderManager, viewport );
+
+				if (Settings.Graphics.CapFramerate)
+				{
+					var waitTime = idealFrameTime - sw.ElapsedTime();
+					if (waitTime > 0)
+						System.Threading.Thread.Sleep( TimeSpan.FromSeconds(waitTime) );
+				}
+			}
 
 			OnQuit();
 		}
@@ -343,9 +355,10 @@ namespace OpenRA
 		{
 			if (orderManager.world != null)
 				orderManager.world.traitDict.PrintReport();
+
+			orderManager.Dispose();
 			CloseServer();
 			JoinLocal();
-			orderManager.Dispose();
 		}
 
 		public static void CloseServer()
@@ -386,6 +399,23 @@ namespace OpenRA
 		public static bool IsCurrentWorld(World world)
 		{
 			return orderManager != null && orderManager.world == world;
+		}
+
+		public static void JoinExternalGame()
+		{
+			var addressParts = Game.Settings.Game.ConnectTo.Split(
+				new [] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+
+			if (addressParts.Length < 1 || addressParts.Length > 2)
+				return;
+
+			var host = addressParts[0];
+			var port = Exts.WithDefault(1234, () => int.Parse(addressParts[1]));
+
+			Game.Settings.Game.ConnectTo = "";
+			Game.Settings.Save();
+
+			Game.JoinServer(host, port);
 		}
 	}
 }

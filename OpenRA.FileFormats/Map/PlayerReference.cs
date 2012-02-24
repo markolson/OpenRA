@@ -28,7 +28,7 @@ namespace OpenRA.FileFormats
 		public string Race;
 
 		public bool LockColor = false;
-        public ColorRamp ColorRamp = new ColorRamp(0,0,238,34);
+		public ColorRamp ColorRamp = new ColorRamp(0,0,238,34);
 
 		public bool LockSpawn = false;
 		public int Spawn = 0;
@@ -41,9 +41,8 @@ namespace OpenRA.FileFormats
 		public string[] Enemies = {};
 
 		public PlayerReference() {}
-		public PlayerReference(MiniYaml my)
-		{
-			FieldLoader.Load(this, my);
-		}
+		public PlayerReference(MiniYaml my) { FieldLoader.Load(this, my); }
+
+		public override string ToString() { return Name; }
 	}
 }

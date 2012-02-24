@@ -31,13 +31,13 @@ namespace OpenRA.Mods.RA
 			if (self.Owner.WinState != WinState.Undefined || self.Owner.NonCombatant) return;
 
 			var hasAnything = self.World.ActorsWithTrait<MustBeDestroyed>()
-                .Any( a => a.Actor.Owner == self.Owner );
+				.Any( a => a.Actor.Owner == self.Owner );
 
 			if (!hasAnything && !self.Owner.NonCombatant)
 				Lose(self);
 
 			var others = self.World.Players.Where( p => !p.NonCombatant
-                && p != self.Owner && p.Stances[self.Owner] != Stance.Ally );
+				&& p != self.Owner && p.Stances[self.Owner] != Stance.Ally );
 
 			if (others.Count() == 0) return;
 
@@ -58,12 +58,12 @@ namespace OpenRA.Mods.RA
 
 			Game.Debug("{0} is defeated.".F(self.Owner.PlayerName));
 
-            foreach (var a in self.World.Actors.Where(a => a.Owner == self.Owner))
-                a.Kill(a);
+			foreach (var a in self.World.Actors.Where(a => a.Owner == self.Owner))
+				a.Kill(a);
 
 			if (self.Owner == self.World.LocalPlayer)
 			{
-				self.World.LocalShroud.Disabled = true;
+				self.World.RenderedShroud.Disabled = true;
 				Game.RunAfterDelay(Info.NotificationDelay, () =>
 				{
 					if (Game.IsCurrentWorld(self.World))
@@ -80,7 +80,7 @@ namespace OpenRA.Mods.RA
 			Game.Debug("{0} is victorious.".F(self.Owner.PlayerName));
 			if (self.Owner == self.World.LocalPlayer)
 			{
-				self.World.LocalShroud.Disabled = true;
+				self.World.RenderedShroud.Disabled = true;
 				Game.RunAfterDelay(Info.NotificationDelay, () => Sound.Play(Info.WinNotification));
 			}
 		}

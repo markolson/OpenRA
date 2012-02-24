@@ -22,14 +22,14 @@ namespace OpenRA.Graphics
 			sprites = new Cache<string, Sprite[]>( LoadSprites );
 		}
 
-        readonly SheetBuilder SheetBuilder;
+		readonly SheetBuilder SheetBuilder;
 		readonly Cache<string, Sprite[]> sprites;
 		readonly string[] exts;
 
 		Sprite[] LoadSprites(string filename)
 		{
 			var shp = new ShpReader(FileSystem.OpenWithExts(filename, exts));
-			return shp.Select(a => SheetBuilder.Add(a.Image, shp.Size)).ToArray();
+			return shp.Frames.Select(a => SheetBuilder.Add(a.Image, shp.Size)).ToArray();
 		}
 
 		public Sprite[] LoadAllSprites(string filename) { return sprites[filename]; }

@@ -50,7 +50,7 @@ namespace OpenRA.Mods.RA
 			// Add map smudges
 			foreach (var s in w.Map.Smudges.Value.Where( s => Info.Types.Contains(s.Type )))
 				tiles.Add(s.Location,new TileReference<byte,byte>((byte)Array.IndexOf(Info.Types,s.Type),
-				                                                  (byte)s.Depth));
+												                  (byte)s.Depth));
 		}
 
 		public void AddSmudge(int2 loc)
@@ -87,7 +87,7 @@ namespace OpenRA.Mods.RA
 			{
 				if (!cliprect.Contains(kv.Key.X,kv.Key.Y))
 					continue;
-				if (localPlayer != null && !localPlayer.Shroud.IsExplored(kv.Key))
+				if (localPlayer != null && !world.RenderedShroud.IsExplored(kv.Key))
 					continue;
 
 				smudgeSprites[kv.Value.type- 1][kv.Value.index].DrawAt( wr,

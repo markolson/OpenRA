@@ -11,7 +11,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using OpenRA.FileFormats;
 using OpenRA.GameRules;
 using OpenRA.Traits;
@@ -30,8 +29,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 		ScrollItemWidget itemTemplate;
 
 		[ObjectCreator.UseCtor]
-		public CncMusicPlayerLogic([ObjectCreator.Param] Widget widget,
-		                           [ObjectCreator.Param] Action onExit)
+		public CncMusicPlayerLogic(Widget widget, Action onExit)
 		{
 			panel = widget.GetWidget("MUSIC_PANEL");
 
@@ -44,7 +42,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 			installed = Rules.Music.Where(m => m.Value.Exists).Any();
 			Func<bool> noMusic = () => !installed;
 
-			panel.GetWidget<ButtonWidget>("BACK_BUTTON").OnClick = () => { Widget.CloseWindow(); onExit(); };
+			panel.GetWidget<ButtonWidget>("BACK_BUTTON").OnClick = () => { Ui.CloseWindow(); onExit(); };
 
 			Action afterInstall = () =>
 			{
@@ -64,7 +62,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 
 			var installButton = panel.GetWidget<ButtonWidget>("INSTALL_BUTTON");
 			installButton.OnClick = () =>
-				Widget.OpenWindow("INSTALL_MUSIC_PANEL", new WidgetArgs() {
+				Ui.OpenWindow("INSTALL_MUSIC_PANEL", new WidgetArgs() {
 					{ "afterInstall", afterInstall },
 					{ "filesToCopy", new [] { "SCORES.MIX" } },
 					{ "filesToExtract", new [] { "transit.mix" } },
@@ -103,7 +101,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 
 			panel.GetWidget<LabelWidget>("TIME_LABEL").GetText = () => (currentSong == null) ? "" :
 					"{0:D2}:{1:D2} / {2:D2}:{3:D2}".F((int)Sound.MusicSeekPosition / 60, (int)Sound.MusicSeekPosition % 60,
-					    							  currentSong.Length / 60, currentSong.Length % 60);
+													  currentSong.Length / 60, currentSong.Length % 60);
 			panel.GetWidget<LabelWidget>("TITLE_LABEL").GetText = () => (currentSong == null) ? "" : currentSong.Title;
 
 			var musicSlider = panel.GetWidget<SliderWidget>("MUSIC_SLIDER");
@@ -129,7 +127,6 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 				list.AddChild(item);
 			}
 		}
-
 
 		void Play()
 		{

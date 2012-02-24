@@ -15,23 +15,23 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.RA
 {
-    class LintBuildablePrerequisites : ILintPass
-    {
-        public void Run(Action<string> emitError, Action<string> emitWarning)
-        {
+	class LintBuildablePrerequisites : ILintPass
+	{
+		public void Run(Action<string> emitError, Action<string> emitWarning)
+		{
 			var providedPrereqs = Rules.Info.Keys.Concat(
 				Rules.Info.SelectMany( a => a.Value.Traits
-			        .WithInterface<ProvidesCustomPrerequisiteInfo>()
-			        .Select( p => p.Prerequisite ))).ToArray();
+					.WithInterface<ProvidesCustomPrerequisiteInfo>()
+					.Select( p => p.Prerequisite ))).ToArray();
 
 			foreach( var i in Rules.Info )
 			{
 				var bi = i.Value.Traits.GetOrDefault<BuildableInfo>();
 				if (bi != null)
 					foreach( var prereq in bi.Prerequisites )
-						if ( !providedPrereqs.Contains(prereq) )
+						if ( !providedPrereqs.Contains(prereq.Replace("!","")) )
 							emitError( "Buildable actor {0} has prereq {1} not provided by anything.".F( i.Key, prereq ) );
 			}
-        }
-    }
+		}
+	}
 }

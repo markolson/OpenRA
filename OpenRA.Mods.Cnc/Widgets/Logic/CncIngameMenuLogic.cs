@@ -20,9 +20,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 		Widget menu;
 
 		[ObjectCreator.UseCtor]
-		public CncIngameMenuLogic([ObjectCreator.Param] Widget widget,
-		                          [ObjectCreator.Param] World world,
-		                          [ObjectCreator.Param] Action onExit)
+		public CncIngameMenuLogic(Widget widget, World world, Action onExit)
 		{
 			var resumeDisabled = false;
 			menu = widget.GetWidget("INGAME_MENU");
@@ -43,7 +41,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 				Game.RunAfterDelay(1200 + 40 * mpe.Info.FadeLength, () =>
 				{
 						Game.Disconnect();
-						Widget.ResetAll();
+						Ui.ResetAll();
 						Game.LoadShellMap();
 				});
 			};
@@ -62,8 +60,8 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 			menu.GetWidget<ButtonWidget>("MUSIC_BUTTON").OnClick = () =>
 			{
 				hideButtons = true;
-				Widget.OpenWindow("MUSIC_PANEL", new WidgetArgs()
-                {
+				Ui.OpenWindow("MUSIC_PANEL", new WidgetArgs()
+				{
 					{ "onExit", () => hideButtons = false },
 				});
 			};
@@ -71,8 +69,8 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 			menu.GetWidget<ButtonWidget>("SETTINGS_BUTTON").OnClick = () =>
 			{
 				hideButtons = true;
-				Widget.OpenWindow("SETTINGS_PANEL", new WidgetArgs()
-                {
+				Ui.OpenWindow("SETTINGS_PANEL", new WidgetArgs()
+				{
 					{ "world", world },
 					{ "onExit", () => hideButtons = false },
 				});
@@ -82,8 +80,8 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 			resumeButton.IsDisabled = () => resumeDisabled;
 			resumeButton.OnClick = () =>
 			{
-				Widget.CloseWindow();
-				Widget.RootWidget.RemoveChild(menu);
+				Ui.CloseWindow();
+				Ui.Root.RemoveChild(menu);
 				world.WorldActor.Trait<CncMenuPaletteEffect>().Fade(CncMenuPaletteEffect.EffectType.None);
 				onExit();
 			};

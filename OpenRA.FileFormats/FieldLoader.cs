@@ -143,63 +143,63 @@ namespace OpenRA.FileFormats
 				return InvalidValueAction(x,fieldType, field);
 			}
 
-            else if (fieldType == typeof(ColorRamp))
-            {
-                var parts = x.Split(',');
-                if (parts.Length == 4)
-                    return new ColorRamp(
-                        (byte)int.Parse(parts[0]).Clamp(0, 255),
-                        (byte)int.Parse(parts[1]).Clamp(0, 255),
-                        (byte)int.Parse(parts[2]).Clamp(0, 255),
-                        (byte)int.Parse(parts[3]).Clamp(0, 255));
+			else if (fieldType == typeof(ColorRamp))
+			{
+				var parts = x.Split(',');
+				if (parts.Length == 4)
+					return new ColorRamp(
+						(byte)int.Parse(parts[0]).Clamp(0, 255),
+						(byte)int.Parse(parts[1]).Clamp(0, 255),
+						(byte)int.Parse(parts[2]).Clamp(0, 255),
+						(byte)int.Parse(parts[3]).Clamp(0, 255));
 
-                return InvalidValueAction(x, fieldType, field);
-            }
+				return InvalidValueAction(x, fieldType, field);
+			}
 
-            else if (fieldType.IsEnum)
-            {
-                if (!Enum.GetNames(fieldType).Select(a => a.ToLower()).Contains(x.ToLower()))
-                    return InvalidValueAction(x, fieldType, field);
-                return Enum.Parse(fieldType, x, true);
-            }
+			else if (fieldType.IsEnum)
+			{
+				if (!Enum.GetNames(fieldType).Select(a => a.ToLower()).Contains(x.ToLower()))
+					return InvalidValueAction(x, fieldType, field);
+				return Enum.Parse(fieldType, x, true);
+			}
 
-            else if (fieldType == typeof(bool))
-                return ParseYesNo(x, fieldType, field);
+			else if (fieldType == typeof(bool))
+				return ParseYesNo(x, fieldType, field);
 
-            else if (fieldType.IsArray)
-            {
-                if (x == null)
-                    return Array.CreateInstance(fieldType.GetElementType(), 0);
+			else if (fieldType.IsArray)
+			{
+				if (x == null)
+					return Array.CreateInstance(fieldType.GetElementType(), 0);
 
-                var parts = x.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+				var parts = x.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
-                var ret = Array.CreateInstance(fieldType.GetElementType(), parts.Length);
-                for (int i = 0; i < parts.Length; i++)
-                    ret.SetValue(GetValue(field, fieldType.GetElementType(), parts[i].Trim()), i);
-                return ret;
-            }
-            else if (fieldType == typeof(int2))
-            {
-                var parts = x.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                return new int2(int.Parse(parts[0]), int.Parse(parts[1]));
-            }
-            else if (fieldType == typeof(float2))
-            {
-                var parts = x.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                float xx = 0;
-                float yy = 0;
-                float res;
-                if (float.TryParse(parts[0].Replace("%", ""), out res))
-                    xx = res * (parts[0].Contains('%') ? 0.01f : 1f);
-                if (float.TryParse(parts[1].Replace("%", ""), out res))
-                    yy = res * (parts[1].Contains('%') ? 0.01f : 1f);
-                return new float2(xx, yy);
-            }
+				var ret = Array.CreateInstance(fieldType.GetElementType(), parts.Length);
+				for (int i = 0; i < parts.Length; i++)
+					ret.SetValue(GetValue(field, fieldType.GetElementType(), parts[i].Trim()), i);
+				return ret;
+			}
+			else if (fieldType == typeof(int2))
+			{
+				var parts = x.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+				return new int2(int.Parse(parts[0]), int.Parse(parts[1]));
+			}
+			else if (fieldType == typeof(float2))
+			{
+				var parts = x.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+				float xx = 0;
+				float yy = 0;
+				float res;
+				if (float.TryParse(parts[0].Replace("%", ""), out res))
+					xx = res * (parts[0].Contains('%') ? 0.01f : 1f);
+				if (float.TryParse(parts[1].Replace("%", ""), out res))
+					yy = res * (parts[1].Contains('%') ? 0.01f : 1f);
+				return new float2(xx, yy);
+			}
 			else if (fieldType == typeof(Rectangle))
-            {
-                var parts = x.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                return new Rectangle(int.Parse(parts[0]), int.Parse(parts[1]), int.Parse(parts[2]), int.Parse(parts[3]));
-            }
+			{
+				var parts = x.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+				return new Rectangle(int.Parse(parts[0]), int.Parse(parts[1]), int.Parse(parts[2]), int.Parse(parts[3]));
+			}
 			else if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(Bits<>))
 			{
 				var parts = x.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
@@ -305,14 +305,13 @@ namespace OpenRA.FileFormats
 			return new MiniYamlNode(field, FieldSaver.FormatValue( o, o.GetType().GetField(field) ));
 		}
 
-		public static string FormatValue(object o, FieldInfo f)
+		public static string FormatValue(object v, Type t)
 		{
-			var v = f.GetValue(o);
 			if (v == null)
 				return "";
 
 			// Color.ToString() does the wrong thing; force it to format as an array
-			if (f.FieldType == typeof(Color))
+			if (t == typeof(Color))
 			{
 				var c = (Color)v;
 				return "{0},{1},{2},{3}".F(((int)c.A).Clamp(0, 255),
@@ -321,19 +320,24 @@ namespace OpenRA.FileFormats
 					((int)c.B).Clamp(0, 255));
 			}
 
-			if (f.FieldType == typeof(Rectangle))
+			if (t == typeof(Rectangle))
 			{
 				var r = (Rectangle)v;
 				return "{0},{1},{2},{3}".F(r.X, r.Y, r.Width, r.Height);
 			}
 
-			if (f.FieldType.IsArray)
+			if (t.IsArray)
 			{
 				var elems = ((Array)v).OfType<object>();
-				return string.Join(",", elems.Select(a => a.ToString()).ToArray());
+				return elems.JoinWith(",");
 			}
 
 			return v.ToString();
+		}
+
+		public static string FormatValue(object o, FieldInfo f)
+		{
+			return FormatValue(f.GetValue(o), f.FieldType);
 		}
 	}
 

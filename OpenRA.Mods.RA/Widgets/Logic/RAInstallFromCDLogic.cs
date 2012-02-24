@@ -28,8 +28,7 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 		Widget installingContainer, insertDiskContainer;
 
 		[ObjectCreator.UseCtor]
-		public RAInstallFromCDLogic([ObjectCreator.Param] Widget widget,
-		                            [ObjectCreator.Param] Action continueLoading)
+		public RAInstallFromCDLogic(Widget widget, Action continueLoading)
 		{
 			this.continueLoading = continueLoading;
 			panel = widget.GetWidget("INSTALL_FROMCD_PANEL");
@@ -37,7 +36,7 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 			statusLabel = panel.GetWidget<LabelWidget>("STATUS_LABEL");
 
 			backButton = panel.GetWidget<ButtonWidget>("BACK_BUTTON");
-			backButton.OnClick = Widget.CloseWindow;
+			backButton.OnClick = Ui.CloseWindow;
 
 			retryButton = panel.GetWidget<ButtonWidget>("RETRY_BUTTON");
 			retryButton.OnClick = CheckForDisk;
@@ -102,11 +101,11 @@ namespace OpenRA.Mods.RA.Widgets.Logic
 						return;
 
 					if (!InstallUtils.ExtractFromPackage(source, extractPackage, extractFiles, dest, onProgress, onError))
-				    	return;
+						return;
 
 					Game.RunAfterTick(() =>
 					{
-						Widget.CloseWindow();
+						Ui.CloseWindow();
 						continueLoading();
 					});
 				}

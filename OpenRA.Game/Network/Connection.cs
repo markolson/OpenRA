@@ -18,7 +18,7 @@ using OpenRA.Support;
 
 namespace OpenRA.Network
 {
-    public enum ConnectionState
+	public enum ConnectionState
 	{
 		PreConnecting,
 		NotConnected,
@@ -26,7 +26,7 @@ namespace OpenRA.Network
 		Connected,
 	}
 
-    public interface IConnection : IDisposable
+	public interface IConnection : IDisposable
 	{
 		int LocalClientId { get; }
 		ConnectionState ConnectionState { get; }
@@ -202,7 +202,10 @@ namespace OpenRA.Network
 			if (socket != null)
 				socket.Client.Close();
 			using( new PerfSample( "Thread.Join" ))
-				t.Join();
+			{
+				if (!t.Join(1000))
+					return;
+			}
 		}
 
 		~NetworkConnection() { Dispose(); }

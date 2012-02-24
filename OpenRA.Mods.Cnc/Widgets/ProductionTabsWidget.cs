@@ -8,6 +8,7 @@
  */
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -15,7 +16,6 @@ using OpenRA.FileFormats;
 using OpenRA.Graphics;
 using OpenRA.Mods.RA;
 using OpenRA.Widgets;
-using System;
 
 namespace OpenRA.Mods.Cnc.Widgets
 {
@@ -29,7 +29,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 	{
 		public List<ProductionTab> Tabs = new List<ProductionTab>();
 		public string Group;
-		public int CumulativeCount;
+		public int NextQueueName = 1;
 		public bool Alert { get { return Tabs.Any(t => t.Queue.CurrentDone); } }
 
 		public void Update(IEnumerable<ProductionQueue> allQueues)
@@ -51,7 +51,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 			foreach (var queue in queues)
 				tabs.Add(new ProductionTab()
 				{
-					Name = (++CumulativeCount).ToString(),
+					Name = (NextQueueName++).ToString(),
 					Queue = queue
 				});
 			Tabs = tabs;
@@ -78,7 +78,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 		string queueGroup;
 
 		[ObjectCreator.UseCtor]
-		public ProductionTabsWidget([ObjectCreator.Param] World world)
+		public ProductionTabsWidget(World world)
 		{
 			Groups = Rules.Info.Values.SelectMany(a => a.Traits.WithInterface<ProductionQueueInfo>())
 				.Select(q => q.Group).Distinct().ToDictionary(g => g, g => new ProductionTabGroup() { Group = g });
@@ -86,8 +86,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 			// Only visible if the production palette has icons to display
 			IsVisible = () => queueGroup != null && Groups[queueGroup].Tabs.Count > 0;
 
-			paletteWidget = new Lazy<ProductionPaletteWidget>(() =>
-				Widget.RootWidget.GetWidget<ProductionPaletteWidget>(PaletteWidget));
+			paletteWidget = Lazy.New(() => Ui.Root.GetWidget<ProductionPaletteWidget>(PaletteWidget));
 		}
 
 		public void SelectNextTab(bool reverse)
@@ -108,10 +107,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 
 		public string QueueGroup
 		{
-			get
-			{
-				return queueGroup;
-			}
+			get { return queueGroup; }
 			set
 			{
 				ListOffset = 0;
@@ -122,10 +118,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 
 		public ProductionQueue CurrentQueue
 		{
-			get
-			{
-				return paletteWidget.Value.CurrentQueue;
-			}
+			get { return paletteWidget.Value.CurrentQueue; }
 			set
 			{
 				paletteWidget.Value.CurrentQueue = value;
@@ -142,9 +135,9 @@ namespace OpenRA.Mods.Cnc.Widgets
 			rightButtonRect = new Rectangle(rb.Right - ArrowWidth, rb.Y, ArrowWidth, rb.Height);
 
 			var leftDisabled = ListOffset >= 0;
-			var leftHover = Widget.MouseOverWidget == this && leftButtonRect.Contains(Viewport.LastMousePos);
+			var leftHover = Ui.MouseOverWidget == this && leftButtonRect.Contains(Viewport.LastMousePos);
 			var rightDisabled = ListOffset <= Bounds.Width - rightButtonRect.Width - leftButtonRect.Width - ContentWidth;
-			var rightHover = Widget.MouseOverWidget == this && rightButtonRect.Contains(Viewport.LastMousePos);
+			var rightHover = Ui.MouseOverWidget == this && rightButtonRect.Contains(Viewport.LastMousePos);
 
 			WidgetUtils.DrawPanel("panel-black", rb);
 			ButtonWidget.DrawBackground("button", leftButtonRect, leftDisabled, leftPressed, leftHover);
@@ -164,7 +157,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 			foreach (var tab in Groups[queueGroup].Tabs)
 			{
 				var rect = new Rectangle(origin.X + ContentWidth, origin.Y, TabWidth, rb.Height);
-				var hover = !leftHover && !rightHover && Widget.MouseOverWidget == this && rect.Contains(Viewport.LastMousePos);
+				var hover = !leftHover && !rightHover && Ui.MouseOverWidget == this && rect.Contains(Viewport.LastMousePos);
 				var baseName = tab.Queue == CurrentQueue ? "button-toggled" : "button";
 				ButtonWidget.DrawBackground(baseName, rect, false, false, hover);
 				ContentWidth += TabWidth - 1;
@@ -191,6 +184,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 				var allQueues = a.World.ActorsWithTrait<ProductionQueue>()
 					.Where(p => p.Actor.Owner == p.Actor.World.LocalPlayer && p.Actor.IsInWorld)
 					.Select(p => p.Trait).ToArray();
+
 				foreach (var g in Groups.Values)
 					g.Update(allQueues);
 
@@ -268,7 +262,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 				return true;
 			}
 
-			return (leftPressed || rightPressed);
+			return leftPressed || rightPressed;
 		}
 
 		public override bool HandleKeyPress(KeyInput e)

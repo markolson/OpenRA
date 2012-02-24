@@ -17,20 +17,18 @@ using System.Net;
 using OpenRA.FileFormats;
 using OpenRA.Widgets;
 
-namespace OpenRA.Mods.Cnc.Widgets.Logic
+namespace OpenRA.Mods.RA.Widgets.Logic
 {
-	public class CncDownloadPackagesLogic
+	public class DownloadPackagesLogic
 	{
 		Widget panel;
 		Dictionary<string,string> installData;
 		ProgressBarWidget progressBar;
 		LabelWidget statusLabel;
 		Action afterInstall;
-
+		
 		[ObjectCreator.UseCtor]
-		public CncDownloadPackagesLogic([ObjectCreator.Param] Widget widget,
-		                                [ObjectCreator.Param] Dictionary<string,string> installData,
-		                                [ObjectCreator.Param] Action afterInstall)
+		public DownloadPackagesLogic(Widget widget, Dictionary<string,string> installData, Action afterInstall)
 		{
 			this.installData = installData;
 			this.afterInstall = afterInstall;
@@ -53,7 +51,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 
 			// Save the package to a temp file
 			var file = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-			var dest = new string[] { Platform.SupportDir, "Content", "cnc" }.Aggregate(Path.Combine);
+			var dest = new string[] { Platform.SupportDir, "Content", Game.modData.Manifest.Mods[0] }.Aggregate(Path.Combine);
 
 			Action<DownloadProgressChangedEventArgs> onDownloadProgress = i =>
 			{
@@ -98,7 +96,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 				{
 					Game.RunAfterTick(() =>
 					{
-						Widget.CloseWindow();
+						Ui.CloseWindow();
 						afterInstall();
 					});
 				}
@@ -106,7 +104,7 @@ namespace OpenRA.Mods.Cnc.Widgets.Logic
 
 			var dl = new Download(installData["PackageURL"], file, onDownloadProgress, onDownloadComplete);
 
-			cancelButton.OnClick = () => { dl.Cancel(); Widget.CloseWindow(); };
+			cancelButton.OnClick = () => { dl.Cancel(); Ui.CloseWindow(); };
 			retryButton.OnClick = () => { dl.Cancel(); ShowDownloadDialog(); };
 		}
 	}

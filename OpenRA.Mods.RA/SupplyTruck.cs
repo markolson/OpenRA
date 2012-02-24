@@ -17,65 +17,66 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.RA
 {
-    class SupplyTruckInfo : ITraitInfo
-    {
-        public readonly int Payload = 500;
-        public object Create(ActorInitializer init) { return new SupplyTruck(this); }
-    }
+	class SupplyTruckInfo : ITraitInfo
+	{
+		public readonly int Payload = 500;
+		public object Create(ActorInitializer init) { return new SupplyTruck(this); }
+	}
 
-    class SupplyTruck : IIssueOrder, IResolveOrder, IOrderVoice
-    {
-        SupplyTruckInfo Info;
-        public SupplyTruck(SupplyTruckInfo info)
-        {
-            Info = info;
-        }
+	class SupplyTruck : IIssueOrder, IResolveOrder, IOrderVoice
+	{
+		SupplyTruckInfo Info;
 
-        public IEnumerable<IOrderTargeter> Orders
-        {
-            get { yield return new SupplyTruckOrderTargeter(); }
-        }
+		public SupplyTruck(SupplyTruckInfo info)
+		{
+			Info = info;
+		}
 
-        public Order IssueOrder(Actor self, IOrderTargeter order, Target target, bool queued)
-        {
-            if (order.OrderID == "SupplyTruck")
-                return new Order(order.OrderID, self, queued) { TargetActor = target.Actor };
+		public IEnumerable<IOrderTargeter> Orders
+		{
+			get { yield return new SupplyTruckOrderTargeter(); }
+		}
 
-            return null;
-        }
+		public Order IssueOrder(Actor self, IOrderTargeter order, Target target, bool queued)
+		{
+			if (order.OrderID == "DeliverSupplies")
+				return new Order(order.OrderID, self, queued) { TargetActor = target.Actor };
 
-        public string VoicePhraseForOrder(Actor self, Order order)
-        {
-            return "Move";
-        }
+			return null;
+		}
 
-        public void ResolveOrder(Actor self, Order order)
-        {
-            if (order.OrderString == "SupplyTruck")
-            {
-                self.SetTargetLine(Target.FromOrder(order), Color.Yellow);
-                self.CancelActivity();
-                self.QueueActivity(new Enter(order.TargetActor));
-                self.QueueActivity(new DonateSupplies(order.TargetActor, Info.Payload));
-            }
-        }
+		public string VoicePhraseForOrder(Actor self, Order order)
+		{
+			return "Move";
+		}
 
-        class SupplyTruckOrderTargeter : UnitTraitOrderTargeter<Building>
-        {
-            public SupplyTruckOrderTargeter()
-                : base("SupplyTruck", 5, "enter", false, true)
-            {
-            }
+		public void ResolveOrder(Actor self, Order order)
+		{
+			if (order.OrderString == "DeliverSupplies")
+			{
+				self.SetTargetLine(Target.FromOrder(order), Color.Yellow);
+				self.CancelActivity();
+				self.QueueActivity(new Enter(order.TargetActor));
+				self.QueueActivity(new DonateSupplies(order.TargetActor, Info.Payload));
+			}
+		}
 
-            public override bool CanTargetActor(Actor self, Actor target, bool forceAttack, bool forceQueued, ref string cursor)
-            {
-                if (!base.CanTargetActor(self, target, forceAttack, forceQueued, ref cursor)) return false;
-                if (target.AppearsHostileTo(self)) return false;
-                if (!target.HasTrait<AcceptsSupplies>()) return false;
+		class SupplyTruckOrderTargeter : UnitTraitOrderTargeter<Building>
+		{
+			public SupplyTruckOrderTargeter()
+				: base("DeliverSupplies", 5, "enter", false, true)
+			{
+			}
 
-                IsQueued = forceQueued;
-                return true;
-            }
-        }
-    }
+			public override bool CanTargetActor(Actor self, Actor target, bool forceAttack, bool forceQueued, ref string cursor)
+			{
+				if (!base.CanTargetActor(self, target, forceAttack, forceQueued, ref cursor)) return false;
+				if (target.AppearsHostileTo(self)) return false;
+				if (!target.HasTrait<AcceptsSupplies>()) return false;
+
+				IsQueued = forceQueued;
+				return true;
+			}
+		}
+	}
 }

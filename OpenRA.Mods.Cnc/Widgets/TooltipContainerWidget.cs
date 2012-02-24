@@ -24,7 +24,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 		static readonly Action Nothing = () => {};
 		public int2 CursorOffset = new int2(0, 20);
 		public Action BeforeRender = Nothing;
-		public int TooltipDelay = 10;
+		public int TooltipDelay = 2;
 		Widget tooltip;
 
 		public TooltipContainerWidget()
@@ -35,7 +35,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 		public void SetTooltip(string id, WidgetArgs args)
 		{
 			RemoveTooltip();
-			tooltip = Widget.LoadWidget(id, this, new WidgetArgs(args) {{ "tooltipContainer", this }});
+			tooltip = Ui.LoadWidget(id, this, new WidgetArgs(args) {{ "tooltipContainer", this }});
 		}
 
 		public void RemoveTooltip()
@@ -45,7 +45,9 @@ namespace OpenRA.Mods.Cnc.Widgets
 		}
 
 		public override void Draw() { BeforeRender(); }
+
 		public override Rectangle GetEventBounds() { return Rectangle.Empty; }
+
 		public override int2 ChildOrigin
 		{
 			get
@@ -61,7 +63,6 @@ namespace OpenRA.Mods.Cnc.Widgets
 			}
 		}
 
-        public override string GetCursor(int2 pos) { return null; }
-        public override Widget Clone() { throw new NotImplementedException(); }
+		public override string GetCursor(int2 pos) { return null; }
 	}
 }

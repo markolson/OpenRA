@@ -26,6 +26,7 @@ namespace OpenRA.Utility
 				{ "--fromd2", Command.ConvertFormat2ToFormat80 },
 				{ "--extract", Command.ExtractFiles },
 				{ "--tmp-png", Command.ConvertTmpToPng },
+				{ "--remap", Command.RemapShp },
 			};
 
 			if (args.Length == 0) { PrintUsage(); return; }
@@ -40,8 +41,8 @@ namespace OpenRA.Utility
 			catch( Exception e )
 			{
 				Log.AddChannel("utility", "utility.log");
-				Log.Write("utility", "Received args: {0}", string.Join(" ", args));
-				Log.Write("utility", "{0}", e.ToString());
+				Log.Write("utility", "Received args: {0}", args.JoinWith(" "));
+				Log.Write("utility", "{0}", e);
 
 				Console.WriteLine("Error: Utility application crashed. See utility.log for details");
 				throw;
@@ -55,20 +56,21 @@ namespace OpenRA.Utility
 			Console.WriteLine("  --settings-value KEY             Get value of KEY from settings.yaml");
 			Console.WriteLine("  --shp PNGFILE FRAMEWIDTH         Convert a PNG containing one or more frames to a SHP");
 			Console.WriteLine("  --png SHPFILE PALETTE [--transparent] Convert a SHP to a PNG containing all of its frames, optionally setting up transparency");
-			Console.WriteLine("  --extract MOD[,MOD]* FILES	      Extract files from mod packages");
+			Console.WriteLine("  --extract MOD[,MOD]* FILES		  Extract files from mod packages");
 			Console.WriteLine("  --tmp-png MOD[,MOD]* THEATER FILES        Extract terrain tiles to PNG");
+			Console.WriteLine("  --remap SRCMOD:PAL DESTMOD:PAL SRCSHP DESTSHP  Remap SHPs to another palette");
 		}
 
-        static string GetNamedArg(string[] args, string arg)
-        {
-            if (args.Length < 2)
-                return null;
+		static string GetNamedArg(string[] args, string arg)
+		{
+			if (args.Length < 2)
+				return null;
 
-            var i = Array.IndexOf(args, arg);
-            if (i < 0 || i == args.Length - 1)  // doesnt exist, or doesnt have a value.
-                return null;
+			var i = Array.IndexOf(args, arg);
+			if (i < 0 || i == args.Length - 1)  // doesnt exist, or doesnt have a value.
+				return null;
 
-            return args[i + 1];
-        }
+			return args[i + 1];
+		}
 	}
 }
