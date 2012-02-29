@@ -107,6 +107,9 @@ RAMAP.init = function (){
     //console.log(id + " tileBrush! " + posX + " " + posY + "Tile " + mapX + " " + mapY);
     RAMAP.mapIO.mapData.addTemplate( mapX, mapY, RAMAP.tileset.templates[id] );
     RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
+  }, "ctrlAction": function(id){
+    RAMAP.mapIO.mapData.tileTemplate(RAMAP.tileset.templates[id]);
+    RAMAP.mapView.drawMap(RAMAP.mapIO.mapData.tiles, RAMAP.tileset);
   }, "srcImgFunc": function(id){
     return RAMAP.tileset.templates[id].source.image;
   }};

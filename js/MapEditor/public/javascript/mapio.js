@@ -188,12 +188,7 @@ RAMAP.newMapIO = function(){
       var bb = new window.WebKitBlobBuilder();
       bb.append( MapIO.getMapBuffer() );
       var bin_blob = bb.getBlob('application/octet-stream');
-/**
-      var yb = new window.WebKitBlobBuilder();
-      yb.append( MapIO.getMapYaml() );
-      var yaml_blob = bb.getBlob('text/plain');
-      yaml_blob.name = "map.yaml";
-*/
+
       onprogress = function(progress, max){ 
           console.log("zipping progress: " + progress);
           console.log("zipping max: " + max);
@@ -212,47 +207,6 @@ RAMAP.newMapIO = function(){
           }, onprogress);
         }, onprogress);
 	  }, function(e){ console.log( "ERROR: " + e); });
-
-
-/**
-      var map_text = "poop" //MapIO.getMapYaml();
-      console.log(map_text);
-      zip.createWriter(new zip.BlobWriter(), function(writer) {
-
-        // use a TextReader to read the String to add
-        writer.add("map.bin", new zip.BlobReader(bin_blob), function() {
-          // onsuccess callback
-
-          // close the zip writer
-          writer.close(function(blob) {
-            // blob contains the zip file as a Blob object
-            MapIO.onWriteEndCallback(window.webkitURL.createObjectURL(blob));
-          });
-        }, function(progress, max) {
-          // onprogress callback
-          console.log("zipping progress: " + progress);
-          console.log("zipping max: " + max);
-        });
-      }, function(error) {
-        // onerror callback
-        console.log( "ERROR: " + e);
-      });
-*/
-
-/**
-      var zipper = RAMAP.newZipper();
-      zipper.addFiles( [bin_blob, yaml_blob], function(progress, max){ 
-        console.log("zipping progress: " + progress);
-        console.log("zipping max: " + max);
-        },
-        function(blobURL){
-          MapIO.onWriteEndCallback(MapIO.mapInfo.title, blobURL);
-          console.log("Finished Zipping: " + blobURL);
-        }
-      );
-*/
-      //window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
-      //window.requestFileSystem( /**window.PERSISTENT*/ window.TEMPORARY, 1, MapIO.onInitFS , MapIO.errorHandler);
       
     },
     readMapYaml: function( text ){
@@ -703,6 +657,15 @@ RAMAP.newMapData = function(){
         return true;
       }else{
         return false;
+      }
+    },
+    tileTemplate: function (template){
+      for( var i = 0; i < MapData.sizeX; i++ ){
+        for( var j = 0; j < MapData.sizeY; j++ ){
+          if( i % template.width === 0 && j % template.height === 0){
+            MapData.addTemplate(i,j, template);
+          }
+        }
       }
     }
   };
