@@ -255,6 +255,9 @@ RAMAP.newTile = function(){
           //console.log( template.chunks );
           //console.log( Tile.templateID + " " + template.source.image.src + " " + Tile.index + " chunk:" + chunk.x + " " + chunk.y + "scale " + RAMAP.CHUNK_SIZE );
           ctx.drawImage(template.source.image, chunk.x, chunk.y, RAMAP.CHUNK_SIZE, RAMAP.CHUNK_SIZE, posX*scale, posY*scale, scale, scale);
+        }else if( (Tile.templateID === RAMAP.TERRAIN_ID || Tile.templateID === RAMAP.OLD_TERRAIN_ID) && chunk === undefined ){
+          chunk = template.chunks[0];
+          ctx.drawImage(template.source.image, chunk.x, chunk.y, RAMAP.CHUNK_SIZE, RAMAP.CHUNK_SIZE, posX*scale, posY*scale, scale, scale);
         }else{
           console.log( "XXXXX Missing Template: " + Tile.templateID + " index: " + Tile.index);
         }

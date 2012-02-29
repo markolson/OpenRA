@@ -174,9 +174,10 @@ RAMAP.newMapIO = function(){
       MapIO.mapData.init(width, height);
 
       for( var i = 0; i < width; i++ ){
-        for( var j = 0; j < width; j++ ){
-          if( i % 4 === 0 && j % 4 === 0){
-            MapIO.mapData.addTemplate(i,j, tileset.templates[RAMAP.TERRAIN_ID]);
+        for( var j = 0; j < height; j++ ){
+          var template = tileset.templates[RAMAP.TERRAIN_ID];
+          if( i % template.width === 0 && j % template.height === 0){
+            MapIO.mapData.addTemplate(i,j, template);
           }
           MapIO.mapData.addResource(i,j, 0, 0);
         }

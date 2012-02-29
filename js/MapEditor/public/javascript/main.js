@@ -20,6 +20,8 @@ RAMAP.tileset;
 
 RAMAP.DEBUG = 0;
 RAMAP.TERRAIN_ID = 65535;
+RAMAP.OLD_TERRAIN_ID = 255;
+RAMAP.WATER_ID = 2;
 
 $(document).ready( function(){
     $("#wrapper").hide();
