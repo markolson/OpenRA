@@ -16,6 +16,7 @@ using OpenRA.Mods.RA.Render;
 using OpenRA.Traits;
 using OpenRA.Mods.RA.Effects;
 
+
 namespace OpenRA.Mods.RA
 {
 	class ChronoshiftPowerInfo : SupportPowerInfo
@@ -53,9 +54,8 @@ namespace OpenRA.Mods.RA
 				var targetCell = target.Location + order.TargetLocation - order.ExtraLocation;
 				var cpi = Info as ChronoshiftPowerInfo;
 
-				if (cs.CanChronoshiftTo(target, targetCell, true))
-					cs.Teleport(target, targetCell,
-						cpi.Duration * 25, cpi.KillCargo, self);
+				if (self.Owner.Shroud.IsExplored(targetCell) && cs.CanChronoshiftTo(target, targetCell))
+					cs.Teleport(target, targetCell, cpi.Duration * 25, cpi.KillCargo, self);
 			}
 		}
 
@@ -69,6 +69,30 @@ namespace OpenRA.Mods.RA
 
 			return units.Distinct().Where(a => a.HasTrait<Chronoshiftable>());
 		}
+		
+		
+		public bool SimilarTerrain(int2 xy, int2 sourceLocation) {
+			int range = (Info as ChronoshiftPowerInfo).Range;
+			var sourceTiles = self.World.FindTilesInCircle(xy, range);
+			var destTiles = self.World.FindTilesInCircle(sourceLocation, range);
+			List<string> sourceTerrain = new List<string>();
+			List<string> destTerrain = new List<string>();
+			
+			foreach (var t in sourceTiles) {
+				sourceTerrain.Add(self.World.GetTerrainType( t ));
+			}
+			foreach (var t in destTiles) {
+				destTerrain.Add(self.World.GetTerrainType( t ));
+			}
+		
+			// HACK but I don't want to write a comparison function
+			for (int i = 0; i < sourceTerrain.Count; i++) 
+			        if (!sourceTerrain[i].Equals(destTerrain[i]))
+			            return false;
+			
+			return true;
+		}
+		
 
 		class SelectTarget : IOrderGenerator
 		{
@@ -107,8 +131,11 @@ namespace OpenRA.Mods.RA
 			{
 				var xy = Game.viewport.ViewToWorld(Viewport.LastMousePos).ToInt2();
 				var targetUnits = power.UnitsInRange(xy);
-				foreach (var unit in targetUnits)
-					wr.DrawSelectionBox(unit, Color.Red);
+				foreach (var unit in targetUnits) {
+					if (manager.self.Owner.Shroud.IsTargetable(unit) || manager.self.Owner.HasFogVisibility()) {
+						wr.DrawSelectionBox(unit, Color.Red);
+					}
+				}
 			}
 
 			public void RenderBeforeWorld(WorldRenderer wr, World world)
@@ -183,8 +210,11 @@ namespace OpenRA.Mods.RA
 
 			public void RenderAfterWorld(WorldRenderer wr, World world)
 			{
-				foreach (var unit in power.UnitsInRange(sourceLocation))
-					wr.DrawSelectionBox(unit, Color.Red);
+				foreach (var unit in power.UnitsInRange(sourceLocation)) {
+					if (manager.self.Owner.Shroud.IsTargetable(unit) || manager.self.Owner.HasFogVisibility()) {
+						wr.DrawSelectionBox(unit, Color.Red);
+					}
+				}
 			}
 
 			public void RenderBeforeWorld(WorldRenderer wr, World world)
@@ -202,20 +232,24 @@ namespace OpenRA.Mods.RA
 				// Unit previews
 				foreach (var unit in power.UnitsInRange(sourceLocation))
 				{
-					var targetCell = unit.Location + xy - sourceLocation;
-					foreach (var r in unit.Render())
-						r.Sprite.DrawAt(r.Pos - Traits.Util.CenterOfCell(unit.Location) + Traits.Util.CenterOfCell(targetCell),
-							wr.GetPaletteIndex(r.Palette),
-							r.Scale*r.Sprite.size);
+					if (manager.self.Owner.Shroud.IsTargetable(unit)) {
+						var targetCell = unit.Location + xy - sourceLocation;
+						foreach (var r in unit.Render())
+							r.Sprite.DrawAt(r.Pos - Traits.Util.CenterOfCell(unit.Location) + Traits.Util.CenterOfCell(targetCell),
+								wr.GetPaletteIndex(r.Palette),
+								r.Scale*r.Sprite.size);
+					}
 				}
 
 				// Unit tiles
 				foreach (var unit in power.UnitsInRange(sourceLocation))
 				{
-					var targetCell = unit.Location + xy - sourceLocation;
-					var canEnter = unit.Trait<Chronoshiftable>().CanChronoshiftTo(unit,targetCell, false);
-					var tile = canEnter ? validTile : invalidTile;
-					tile.DrawAt( wr, Game.CellSize * targetCell, "terrain" );
+					if (manager.self.Owner.Shroud.IsTargetable(unit)) {
+						var targetCell = unit.Location + xy - sourceLocation;
+						var canEnter = ((manager.self.Owner.Shroud.IsExplored(targetCell) || manager.self.Owner.HasFogVisibility())&& unit.Trait<Chronoshiftable>().CanChronoshiftTo(unit,targetCell));
+						var tile = canEnter ? validTile : invalidTile;
+						tile.DrawAt( wr, Game.CellSize * targetCell, "terrain" );
+					}
 				}
 			}
 
@@ -225,11 +259,17 @@ namespace OpenRA.Mods.RA
 				foreach (var unit in power.UnitsInRange(sourceLocation))
 				{
 					var targetCell = unit.Location + xy - sourceLocation;
-					if (unit.Trait<Chronoshiftable>().CanChronoshiftTo(unit,targetCell, false))
+					if (manager.self.Owner.Shroud.IsExplored(targetCell) && unit.Trait<Chronoshiftable>().CanChronoshiftTo(unit,targetCell))
 					{
 						canTeleport = true;
 						break;
 					}
+				}
+				if (!canTeleport) {
+					// Check the terrain types. This will allow chronoshifts to occur on empty terrain to terrain of
+					// a similar type. This also keeps the cursor from changing in non-visible property, alerting the
+					// chronoshifter of enemy unit presence
+					canTeleport = power.SimilarTerrain(sourceLocation,xy);
 				}
 				return canTeleport;
 			}
