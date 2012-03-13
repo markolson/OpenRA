@@ -105,16 +105,16 @@ Vulcan:
 		Damage: 7
 		Delay: 10
 		
-Maverick:
+MaverickAG:
 	ROF: 30
 	Range: 9
 	MinRange: 3
 	Report: MISSILE7
-	Burst: 2
+	Burst: 4
 	BurstDelay: 7
 	ValidTargets: Ground
 	Projectile: Missile
-		Speed: 30
+		Speed: 45
 		Arm: 2
 		High: true
 		Shadow: false
@@ -122,6 +122,39 @@ Maverick:
 #		Trail: smokey
 		ContrailLength: 10
 		Inaccuracy: 12
+		Image: DRAGON
+		ROT: 5
+		RangeLimit: 60
+	Warhead:
+		Spread: 3
+		Versus: 
+			None: 30%
+			Wood: 75%
+			Light: 75%
+			Concrete: 50%
+		Explosion: med_explosion
+		WaterExplosion: med_splash
+		InfDeath: 3
+		SmudgeType: Crater
+		Damage: 70
+		
+MaverickAA:
+	ROF: 30
+	Range: 9
+	MinRange: 3
+	Report: MISSILE7
+	Burst: 2
+	BurstDelay: 1
+	ValidTargets: Air
+	Projectile: Missile
+		Speed: 60
+		Arm: 2
+		High: true
+		Shadow: false
+		Proximity: true
+#		Trail: smokey
+		ContrailLength: 10
+		Inaccuracy: 3
 		Image: DRAGON
 		ROT: 5
 		RangeLimit: 60
@@ -163,7 +196,7 @@ FireballLauncher:
 		
 Flamer:
 	ROF: 50
-	Range: 5
+	Range: 5.9
 	Projectile: Bullet
 		Speed: 12
 		Trail: fb2
@@ -225,7 +258,7 @@ ChainGun.Yak:
 		
 Pistol:
 	ROF: 7
-	Range: 3
+	Range: 3.9
 	Report: GUN27
 	Projectile: Bullet
 		Speed: 100
@@ -242,7 +275,7 @@ Pistol:
 		
 M1Carbine:
 	ROF: 20
-	Range: 5
+	Range: 5.9
 	Report: GUN11
 	Projectile: Bullet
 		Speed: 100
@@ -259,7 +292,7 @@ M1Carbine:
 
 Dragon:
 	ROF: 50
-	Range: 5.5
+	Range: 5.9
 	Report: MISSILE6
 	ValidTargets: Ground
 	Projectile: Missile
@@ -292,11 +325,11 @@ HellfireAG:
 	ROF: 60
 	Range: 4
 	Report: MISSILE6
-	Burst: 2
+	Burst: 4
 	BurstDelay: 1
 	ValidTargets: Ground
 	Projectile: Missile
-		Speed: 30
+		Speed: 45
 		Arm: 2
 		High: true
 		Shadow: false
@@ -318,7 +351,7 @@ HellfireAG:
 		WaterExplosion: med_splash
 		InfDeath: 3
 		SmudgeType: Crater
-		Damage: 40
+		Damage: 70
 
 HellfireAA:
 	ROF: 60
@@ -328,7 +361,7 @@ HellfireAA:
 	BurstDelay: 1	
 	ValidTargets: Air
 	Projectile: Missile
-		Speed: 45
+		Speed: 60
 		Arm: 2
 		High: true
 		Shadow: false
@@ -409,7 +442,7 @@ Grenade:
 			None: 20%
 			Wood: 75%
 			Light: 75%
-			Concrete: 50%
+			Concrete: 65%
 		Explosion: small_explosion
 		WaterExplosion: small_splash
 		InfDeath: 3
@@ -431,7 +464,7 @@ Grenade:
 			None: 20%
 			Wood: 75%
 			Light: 75%
-			Concrete: 50%
+			Concrete: 65%
 		Explosion: small_explosion
 		WaterExplosion: small_splash
 		InfDeath: 3
@@ -452,7 +485,7 @@ Grenade:
 			None: 20%
 			Wood: 75%
 			Light: 75%
-			Concrete: 50%
+			Concrete: 65%
 		Explosion: small_explosion
 		WaterExplosion: small_splash
 		InfDeath: 3
@@ -512,7 +545,7 @@ MammothTusk:
 
 155mm:
 	ROF: 85
-	Range: 10
+	Range: 11
 	MinRange: 3
 	Report: TANK5
 	Projectile: Bullet
@@ -914,7 +947,7 @@ Heal:
 		
 SCUD:
 	ROF: 280
-	Range: 9
+	Range: 10
 	MinRange: 3
 	Report: MISSILE1
 	Projectile: Bullet
