@@ -72,23 +72,41 @@ namespace OpenRA.Mods.RA
 		
 		
 		public bool SimilarTerrain(int2 xy, int2 sourceLocation) {
+			
+			if (!self.Owner.Shroud.IsExplored(xy))
+				return false;
+			
 			int range = (Info as ChronoshiftPowerInfo).Range;
 			var sourceTiles = self.World.FindTilesInCircle(xy, range);
 			var destTiles = self.World.FindTilesInCircle(sourceLocation, range);
 			List<string> sourceTerrain = new List<string>();
 			List<string> destTerrain = new List<string>();
 			
+			int j = 0;
 			foreach (var t in sourceTiles) {
+				j = j + 1;
+				if (!self.Owner.Shroud.IsExplored(t))
+					return false;
 				sourceTerrain.Add(self.World.GetTerrainType( t ));
 			}
+			j = 0;
 			foreach (var t in destTiles) {
+				j = j + 1;
+				if (!self.Owner.Shroud.IsExplored(t)) {
+					return false;
+				}
+				self.World.GetTerrainType( t );
 				destTerrain.Add(self.World.GetTerrainType( t ));
 			}
-		
+			
 			// HACK but I don't want to write a comparison function
-			for (int i = 0; i < sourceTerrain.Count; i++) 
+			if (sourceTerrain.Count != destTerrain.Count)
+				return false;
+			
+			for (int i = 0; i < sourceTerrain.Count; i++) {
 			        if (!sourceTerrain[i].Equals(destTerrain[i]))
 			            return false;
+			}
 			
 			return true;
 		}
