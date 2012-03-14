@@ -152,8 +152,6 @@ namespace OpenRA.FileFormats
 		{
 			var tt = Templates[r.type].Tiles;
 			string ret;
-			if (!tt.ContainsKey(r.index))
-				return "---";
 			if (!tt.TryGetValue(r.index, out ret))
 				return "Clear"; // Default walkable
 			return ret;
