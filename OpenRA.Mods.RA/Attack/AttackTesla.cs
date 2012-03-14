@@ -60,6 +60,14 @@ namespace OpenRA.Mods.RA
 			}
 		}
 
+		public override void ResolveOrder(Actor self, Order order)
+		{
+			base.ResolveOrder(self, order);
+
+			if (order.OrderString == "Stop")
+				self.CancelActivity();
+		}
+
 		class TeslaAttack : Activity
 		{
 			readonly Target target;
