@@ -438,7 +438,7 @@ GUN:
 		Owner: allies
 		Hotkey: t
 	Valued:
-		Cost: 600
+		Cost: 800
 	Tooltip:
 		Name: Turret
 		Description: Anti-Armor base defense.\n  Strong vs Tanks\n  Weak vs Infantry, Aircraft

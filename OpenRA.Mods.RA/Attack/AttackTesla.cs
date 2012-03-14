@@ -51,13 +51,13 @@ namespace OpenRA.Mods.RA
 			return new TeslaAttack( newTarget );
 		}
 		
+
 		public override void ResolveOrder(Actor self, Order order)
 		{
 			base.ResolveOrder(self, order);
 
-			if (order.OrderString == "Stop") {
+			if (order.OrderString == "Stop")
 				self.CancelActivity();
-			}
 		}
 
 		class TeslaAttack : Activity

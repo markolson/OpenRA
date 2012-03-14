@@ -22,15 +22,17 @@ namespace OpenRA.Mods.RA
 	class RepairableNearInfo : ITraitInfo, Requires<HealthInfo>
 	{
 		[ActorReference] public readonly string[] Buildings = { "spen", "syrd" };
+		public readonly int CloseEnough = 4;	/* cells */
 
-		public object Create( ActorInitializer init ) { return new RepairableNear( init.self ); }
+		public object Create( ActorInitializer init ) { return new RepairableNear( init.self, this ); }
 	}
 
 	class RepairableNear : IIssueOrder, IResolveOrder
 	{
 		readonly Actor self;
+		readonly RepairableNearInfo info;
 
-		public RepairableNear( Actor self ) { this.self = self; }
+		public RepairableNear( Actor self, RepairableNearInfo info ) { this.self = self; this.info = info; }
 
 		public IEnumerable<IOrderTargeter> Orders
 		{
@@ -51,7 +53,7 @@ namespace OpenRA.Mods.RA
 
 		bool CanRepairAt( Actor target )
 		{
-			return self.Info.Traits.Get<RepairableNearInfo>().Buildings.Contains( target.Info.Name );
+			return info.Buildings.Contains( target.Info.Name );
 		}
 
 		bool ShouldRepair()
@@ -67,7 +69,7 @@ namespace OpenRA.Mods.RA
 				var target = Target.FromOrder(order);
 
 				self.CancelActivity();
-				self.QueueActivity(mobile.MoveWithinRange(target, 1));
+				self.QueueActivity(mobile.MoveWithinRange(target, info.CloseEnough));
 				self.QueueActivity(new Repair(order.TargetActor));
 
 				self.SetTargetLine(target, Color.Green, false);
