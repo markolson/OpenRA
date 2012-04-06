@@ -55,14 +55,16 @@ namespace OpenRA.Mods.RA
 					   && x.Trait.Info.Produces.Contains(Info.Type))
 				.OrderByDescending(x => x.Actor.IsPrimaryBuilding() ? 1 : 0 ); // prioritize the primary.
 
-			if (!producers.Any())
+			if (producers.Count() == 0)
 			{
 				CancelProduction(name,1);
 				return true;
 			}
 
-			foreach (var p in producers.Where(p => !p.Actor.IsDisabled()))
+			foreach (var p in producers)
 			{
+				if (IsDisabledBuilding(p.Actor)) continue;
+
 				if (p.Trait.Produce(p.Actor, Rules.Info[ name ]))
 				{
 					FinishProduction();
