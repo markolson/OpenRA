@@ -28,7 +28,7 @@ namespace OpenRA.Traits
 		public Player Owner;
 		public int[,] visibleCells;
 		public bool[,] exploredCells;
-		Rectangle? exploredBounds;
+		public Rectangle? exploredBounds;
 		bool disabled = false;
 		bool observing = false;
 		public bool dirty = true;
@@ -126,6 +126,16 @@ namespace OpenRA.Traits
 
 			if (!Disabled)
 				Dirty();
+		}
+		
+		public void MergeShroud(Shroud s) {
+		    for (int i = map.Bounds.Left; i < map.Bounds.Right; i++) {
+				for (int j = map.Bounds.Top; j < map.Bounds.Bottom; j++) {
+				    if (s.exploredCells[i,j] == true)
+					    exploredCells[i, j] = true;
+				}
+			exploredBounds = Rectangle.Union(exploredBounds.Value, s.exploredBounds.Value);
+		    }
 		}
 
 		public void UpdatePlayerStance(World w, Player player, Stance oldStance, Stance newStance)
