@@ -21,7 +21,8 @@ namespace OpenRA.Mods.RA
 		public void OnInfiltrate(Actor self, Actor spy)
 		{
 			spy.Owner.Shroud.MergeShroud(self.Owner.Shroud);
-			self.Owner.Shroud.ResetExploration();
+			if (!self.Owner.HasFogVisibility())
+			    self.Owner.Shroud.ResetExploration();
 		}
 	}
 }
