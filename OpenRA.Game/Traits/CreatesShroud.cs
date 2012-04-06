@@ -1,4 +1,4 @@
-#region Copyright & License Information
+﻿#region Copyright & License Information
 /*
  * Copyright 2007-2011 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
@@ -29,7 +29,7 @@ namespace OpenRA.Traits
 
 		public void Tick(Actor self)
 		{
-			if (!self.IsDisabled()) {
+			if (!self.TraitsImplementing<IDisable>().Any(d => d.Disabled)) {
 			    var shrouds = self.World.ActorsWithTrait<Traits.Shroud>().Select(s => s.Actor.Owner.Shroud);
 			    foreach (var shroud in shrouds) {
 			        shroud.HideActor(self, Info.Range);
