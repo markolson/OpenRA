@@ -162,6 +162,7 @@ Container@INGAME_ROOT:
 					Height:25
 					Text:Resume
 					Font:Bold
+					Key:escape
 				Button@SETTINGS:
 					Id:SETTINGS
 					X:(PARENT_RIGHT - WIDTH)/2
@@ -398,6 +399,7 @@ Container@OBSERVER_ROOT:
 			Height:25
 			Text:Options
 			Font:Bold
+			Key:escape
 		WorldTooltip:
 		Background@INGAME_OPTIONS_BG:
 			Id:INGAME_OPTIONS_BG
@@ -424,6 +426,7 @@ Container@OBSERVER_ROOT:
 					Height:25
 					Text:Resume
 					Font:Bold
+					Key:escape
 				Button@SETTINGS:
 					Id:SETTINGS
 					X:(PARENT_RIGHT - WIDTH)/2
