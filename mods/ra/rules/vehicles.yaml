@@ -64,7 +64,6 @@ V2RL:
 	Buildable:
 		Queue: Vehicle
 		BuildPaletteOrder: 60
-		Prerequisites: fix
 		Owner: allies
 	Valued:
 		Cost: 850
@@ -72,7 +71,7 @@ V2RL:
 		Name: Medium Tank
 		Description: Allied Main Battle Tank.\n  Strong vs Tanks, Light Vehicles\n  Weak vs Infantry, Aircraft
 	Health:
-		HP: 450
+		HP: 550
 	Armor:
 		Type: Heavy
 	Mobile:
@@ -101,7 +100,6 @@ V2RL:
 	Buildable:
 		Queue: Vehicle
 		BuildPaletteOrder: 40
-		Prerequisites: fix
 		Owner: soviet
 	Valued:
 		Cost: 1150
@@ -109,7 +107,7 @@ V2RL:
 		Name: Heavy Tank
 		Description: Soviet Main Battle Tank, with dual cannons\n  Strong vs Tanks, Light Vehicles\n  Weak vs Infantry, Aircraft
 	Health:
-		HP: 550
+		HP: 650
 	Armor:
 		Type: Heavy
 	Mobile:
@@ -139,7 +137,7 @@ V2RL:
 	Buildable:
 		Queue: Vehicle
 		BuildPaletteOrder: 100
-		Prerequisites: fix,stek
+		Prerequisites: stek
 		Owner: soviet
 	Valued:
 		Cost: 1800
