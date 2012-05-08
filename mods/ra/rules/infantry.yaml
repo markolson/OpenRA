@@ -170,7 +170,7 @@ SPY:
 		Queue: Infantry
 		BuildPaletteOrder: 60
 		Prerequisites: dome, tent
-		Owner: allies
+		Owner: allies,soviet
 	Valued:
 		Cost: 500
 	SpyToolTip:
