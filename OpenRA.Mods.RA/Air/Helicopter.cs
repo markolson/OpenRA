@@ -19,6 +19,7 @@ namespace OpenRA.Mods.RA.Air
 	{
 		public readonly int IdealSeparation = 40;
 		public readonly bool LandWhenIdle = true;
+		public readonly int MinimalLandAltitude = 0;
 
 		public override object Create( ActorInitializer init ) { return new Helicopter( init, this); }
 	}
@@ -52,7 +53,7 @@ namespace OpenRA.Mods.RA.Air
 				if (Info.LandWhenIdle)
 				{
 					self.QueueActivity(new Turn(Info.InitialFacing));
-					self.QueueActivity(new HeliLand(true));
+					self.QueueActivity(new HeliLand(true, Info.MinimalLandAltitude));
 				}
 			}
 
@@ -70,14 +71,14 @@ namespace OpenRA.Mods.RA.Air
 						reservation = res.Reserve(order.TargetActor, self, this);
 
 					var exit = order.TargetActor.Info.Traits.WithInterface<ExitInfo>().FirstOrDefault();
-					var offset = exit != null ? exit.SpawnOffset : int2.Zero;
+					var offset = exit != null ? exit.SpawnOffsetVector : PVecInt.Zero;
 
 					self.SetTargetLine(Target.FromActor(order.TargetActor), Color.Green);
 
 					self.CancelActivity();
 					self.QueueActivity(new HeliFly(order.TargetActor.Trait<IHasLocation>().PxPosition + offset));
 					self.QueueActivity(new Turn(Info.InitialFacing));
-					self.QueueActivity(new HeliLand(false));
+					self.QueueActivity(new HeliLand(false, Info.MinimalLandAltitude));
 					self.QueueActivity(new ResupplyAircraft());
 				}
 			}
@@ -95,7 +96,7 @@ namespace OpenRA.Mods.RA.Air
 				if (Info.LandWhenIdle)
 				{
 					self.QueueActivity(new Turn(Info.InitialFacing));
-					self.QueueActivity(new HeliLand(true));
+					self.QueueActivity(new HeliLand(true, Info.MinimalLandAltitude));
 				}
 			}
 		}
@@ -116,28 +117,29 @@ namespace OpenRA.Mods.RA.Air
 
 			var f = otherHelis
 				.Select(h => GetRepulseForce(self, h))
-				.Aggregate(int2.Zero, (a, b) => a + b);
+				.Aggregate(PSubVec.Zero, (a, b) => a + b);
 
-			int RepulsionFacing = Util.GetFacing( f, -1 );
-			if( RepulsionFacing != -1 )
-				TickMove( 1024 * MovementSpeed, RepulsionFacing );
+			// FIXME(jsd): not sure which units GetFacing accepts; code is unclear to me.
+			int repulsionFacing = Util.GetFacing( f.ToInt2(), -1 );
+			if( repulsionFacing != -1 )
+				TickMove(PSubPos.PerPx * MovementSpeed, repulsionFacing);
 		}
 
-		// Returns an int2 in subPx units
-		public int2 GetRepulseForce(Actor self, Actor h)
+		// Returns a vector in subPx units
+		public PSubVec GetRepulseForce(Actor self, Actor h)
 		{
 			if (self == h)
-				return int2.Zero;
+				return PSubVec.Zero;
 			if( h.Trait<Helicopter>().Altitude < Altitude )
-				return int2.Zero;
+				return PSubVec.Zero;
 			var d = self.CenterLocation - h.CenterLocation;
 
 			if (d.Length > Info.IdealSeparation)
-				return int2.Zero;
+				return PSubVec.Zero;
 
 			if (d.LengthSquared < 1)
 				return Util.SubPxVector[self.World.SharedRandom.Next(255)];
-			return (5120 / d.LengthSquared) * d;
+			return (5 * d.ToPSubVec()) / d.LengthSquared;
 		}
 	}
 }

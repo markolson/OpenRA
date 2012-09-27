@@ -11,6 +11,8 @@ TRAN:
 		Prerequisites: hpad
 		BuiltAt: hpad
 		Owner: gdi,nod
+	Selectable:
+		Bounds: 41,41
 	Helicopter:
 		LandWhenIdle: true
 		ROT: 5
@@ -32,8 +34,8 @@ TRAN:
 	WithShadow:
 	Cargo:
 		Types: Infantry
-		MaxWeight: 5
-		PipCount: 5
+		MaxWeight: 10
+		PipCount: 10
 	FallsToEarth:
 
 HELI:
@@ -49,6 +51,8 @@ HELI:
 		Prerequisites: hpad, hq
 		BuiltAt: hpad
 		Owner: nod
+	Selectable:
+		Bounds: 30,24
 	Helicopter:
 		ROT: 4
 		Speed: 20
@@ -93,6 +97,8 @@ ORCA:
 		Prerequisites: hpad, hq
 		BuiltAt: hpad
 		Owner: gdi
+	Selectable:
+		Bounds: 30,24
 	Helicopter:
 		ROT: 4
 		Speed: 20
@@ -153,11 +159,13 @@ A10:
 		Icon: a10icnh
 	Plane:
 		ROT: 4
-		Speed: 25
+		Speed: 40
 	Health:
 		HP: 60
 	Armor:
 		Type: Heavy
+	RevealsShroud:
+		Range: 8
 	RenderUnit:
 	WithShadow:
 	LimitedAmmo:

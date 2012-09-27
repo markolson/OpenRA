@@ -79,6 +79,7 @@ namespace OpenRA.Mods.RA
 
 		protected virtual bool CanAttack(Actor self, Target target)
 		{
+			if (!self.IsInWorld) return false;
 			if (!target.IsValid) return false;
 			if (Weapons.All(w => w.IsReloading)) return false;
 			if (self.TraitsImplementing<IDisable>().Any(d => d.Disabled)) return false;
@@ -148,7 +149,7 @@ namespace OpenRA.Mods.RA
 				if( target.IsActor )
 					return new Order("Attack", self, queued) { TargetActor = target.Actor };
 				else
-					return new Order( "Attack", self, queued ) { TargetLocation = Util.CellContaining( target.CenterLocation ) };
+					return new Order( "Attack", self, queued ) { TargetLocation = target.CenterLocation.ToCPos() };
 			}
 			return null;
 		}
@@ -216,7 +217,7 @@ namespace OpenRA.Mods.RA
 				return self.Owner.Stances[ target.Owner ] == targetableRelationship;
 			}
 
-			public bool CanTargetLocation(Actor self, int2 location, List<Actor> actorsAtLocation, bool forceAttack, bool forceQueued, ref string cursor)
+			public bool CanTargetLocation(Actor self, CPos location, List<Actor> actorsAtLocation, bool forceAttack, bool forceQueued, ref string cursor)
 			{
 				if (!self.World.Map.IsInMap(location))
 					return false;

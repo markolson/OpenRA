@@ -20,36 +20,36 @@ namespace OpenRA.Mods.RA.Move
 {
 	class Move : Activity
 	{
-		int2? destination;
+		CPos? destination;
 		int nearEnough;
-		public List<int2> path;
-		Func<Actor, Mobile, List<int2>> getPath;
+		public List<CPos> path;
+		Func<Actor, Mobile, List<CPos>> getPath;
 		public Actor ignoreBuilding;
 
 		// Scriptable move order
 		// Ignores lane bias and nearby units
-		public Move( int2 destination )
+		public Move(CPos destination)
 		{
 			this.getPath = (self,mobile) =>
 				self.World.WorldActor.Trait<PathFinder>().FindPath(
-					PathSearch.FromPoint( self.World, mobile.Info, self.Owner, mobile.toCell, destination, false )
+					PathSearch.FromPoint( self.World, mobile.Info, self, mobile.toCell, destination, false )
 					.WithoutLaneBias());
 			this.destination = destination;
 			this.nearEnough = 0;
 		}
 
-		public Move( int2 destination, int nearEnough )
+		public Move(CPos destination, int nearEnough)
 		{
 			this.getPath = (self,mobile) => self.World.WorldActor.Trait<PathFinder>().FindUnitPath( mobile.toCell, destination, self );
 			this.destination = destination;
 			this.nearEnough = nearEnough;
 		}
 
-		public Move(int2 destination, Actor ignoreBuilding)
+		public Move(CPos destination, Actor ignoreBuilding)
 		{
 			this.getPath = (self,mobile) =>
 				self.World.WorldActor.Trait<PathFinder>().FindPath(
-					PathSearch.FromPoint( self.World, mobile.Info, self.Owner, mobile.toCell, destination, false )
+					PathSearch.FromPoint( self.World, mobile.Info, self, mobile.toCell, destination, false )
 					.WithIgnoredBuilding( ignoreBuilding ));
 
 			this.destination = destination;
@@ -60,13 +60,13 @@ namespace OpenRA.Mods.RA.Move
 		public Move(Target target, int range)
 		{
 			this.getPath = (self,mobile) => self.World.WorldActor.Trait<PathFinder>().FindUnitPathToRange(
-				mobile.toCell, Util.CellContaining(target.CenterLocation),
+				mobile.toCell, target.CenterLocation.ToCPos(),
 				range, self);
 			this.destination = null;
 			this.nearEnough = range;
 		}
 
-		public Move(Func<List<int2>> getPath)
+		public Move(Func<List<CPos>> getPath)
 		{
 			this.getPath = (_1,_2) => getPath();
 			this.destination = null;
@@ -83,7 +83,7 @@ namespace OpenRA.Mods.RA.Move
 			return hash;
 		}
 
-		List<int2> EvalPath( Actor self, Mobile mobile )
+		List<CPos> EvalPath(Actor self, Mobile mobile)
 		{
 			var path = getPath(self, mobile).TakeWhile(a => a != mobile.toCell).ToList();
 			mobile.PathHash = HashList(path);
@@ -93,6 +93,14 @@ namespace OpenRA.Mods.RA.Move
 		public override Activity Tick( Actor self )
 		{
 			var mobile = self.Trait<Mobile>();
+			var info = self.Info.Traits.Get<MobileInfo>();
+
+			if (mobile.Altitude != info.Altitude)
+			{
+				if (mobile.Altitude < info.Altitude)
+					++mobile.Altitude;
+				return this;
+			}
 
 			if (destination == mobile.toCell)
 				return NextActivity;
@@ -121,7 +129,7 @@ namespace OpenRA.Mods.RA.Move
 			if( nextCell == null )
 				return this;
 
-			int2 dir = nextCell.Value.First - mobile.fromCell;
+			var dir = nextCell.Value.First - mobile.fromCell;
 			var firstFacing = Util.GetFacing( dir, mobile.Facing );
 			if( firstFacing != mobile.Facing )
 			{
@@ -154,23 +162,24 @@ namespace OpenRA.Mods.RA.Move
 		}
 
 		bool hasWaited;
-		bool hasNudged;
+		bool hasNotifiedBlocker;
 		int waitTicksRemaining;
 
-		void NudgeBlocker(Actor self, int2 nextCell)
+		void NotifyBlocker(Actor self, CPos nextCell)
 		{
-			var blocker = self.World.ActorMap.GetUnitsAt(nextCell).FirstOrDefault();
-			if (blocker == null) return;
+			foreach (var blocker in self.World.ActorMap.GetUnitsAt(nextCell))
+			{
+				Log.Write("debug", "NotifyBlocker #{0} nudges #{1} at {2} from {3}",
+					self.ActorID, blocker.ActorID, nextCell, self.Location);
 
-			Log.Write("debug", "NudgeBlocker #{0} nudges #{1} at {2} from {3}",
-				self.ActorID, blocker.ActorID, nextCell, self.Location);
-
-			var nudge = blocker.TraitOrDefault<INudge>();
-			if (nudge != null)
-				nudge.OnNudge(blocker, self, false);
+				// Notify the blocker that he's blocking our move:
+				var moveBlocked = blocker.TraitOrDefault<INotifyBlockingMove>();
+				if (moveBlocked != null)
+					moveBlocked.OnNotifyBlockingMove(blocker, self);
+			}
 		}
 
-		Pair<int2, SubCell>? PopPath( Actor self, Mobile mobile )
+		Pair<CPos, SubCell>? PopPath(Actor self, Mobile mobile)
 		{
 			if( path.Count == 0 ) return null;
 			var nextCell = path[ path.Count - 1 ];
@@ -182,10 +191,10 @@ namespace OpenRA.Mods.RA.Move
 					return null;
 				}
 
-				if (!hasNudged)
+				if (!hasNotifiedBlocker)
 				{
-					NudgeBlocker(self, nextCell);
-					hasNudged = true;
+					NotifyBlocker(self, nextCell);
+					hasNotifiedBlocker = true;
 				}
 
 				if (!hasWaited)
@@ -213,7 +222,7 @@ namespace OpenRA.Mods.RA.Move
 
 				return null;
 			}
-			hasNudged = false;
+			hasNotifiedBlocker = false;
 			hasWaited = false;
 			path.RemoveAt( path.Count - 1 );
 
@@ -223,7 +232,7 @@ namespace OpenRA.Mods.RA.Move
 
 		public override void Cancel( Actor self )
 		{
-			path = new List<int2>();
+			path = new List<CPos>(0);
 			base.Cancel(self);
 		}
 
@@ -232,19 +241,19 @@ namespace OpenRA.Mods.RA.Move
 			if( path != null )
 				return Enumerable.Reverse(path).Select( c => Target.FromCell(c) );
 			if( destination != null )
-				return new Target[] { Target.FromPos(destination.Value) };
+				return new Target[] { Target.FromCell(destination.Value) };
 			return Target.NoTargets;
 		}
 
 		abstract class MovePart : Activity
 		{
 			public readonly Move move;
-			public readonly int2 from, to;
+			public readonly PPos from, to;
 			public readonly int fromFacing, toFacing;
 			public int moveFraction;
 			public readonly int moveFractionTotal;
 
-			public MovePart( Move move, int2 from, int2 to, int fromFacing, int toFacing, int startingFraction )
+			public MovePart(Move move, PPos from, PPos to, int fromFacing, int toFacing, int startingFraction)
 			{
 				this.move = move;
 				this.from = from;
@@ -294,7 +303,7 @@ namespace OpenRA.Mods.RA.Move
 
 			void UpdateCenterLocation( Actor self, Mobile mobile )
 			{
-				mobile.PxPosition = int2.Lerp( from, to, moveFraction, moveFractionTotal );
+				mobile.PxPosition = PPos.Lerp(from, to, moveFraction, moveFractionTotal);
 
 				if( moveFraction >= moveFractionTotal )
 					mobile.Facing = toFacing & 0xFF;
@@ -312,10 +321,10 @@ namespace OpenRA.Mods.RA.Move
 
 		class MoveFirstHalf : MovePart
 		{
-			public MoveFirstHalf( Move move, int2 from, int2 to, int fromFacing, int toFacing, int startingFraction )
+			public MoveFirstHalf(Move move, PPos from, PPos to, int fromFacing, int toFacing, int startingFraction)
 				: base( move, from, to, fromFacing, toFacing, startingFraction ) { }
 
-			static bool IsTurn( Mobile mobile, int2 nextCell )
+			static bool IsTurn( Mobile mobile, CPos nextCell )
 			{
 				return nextCell - mobile.toCell !=
 					mobile.toCell - mobile.fromCell;
@@ -363,7 +372,7 @@ namespace OpenRA.Mods.RA.Move
 
 		class MoveSecondHalf : MovePart
 		{
-			public MoveSecondHalf( Move move, int2 from, int2 to, int fromFacing, int toFacing, int startingFraction )
+			public MoveSecondHalf(Move move, PPos from, PPos to, int fromFacing, int toFacing, int startingFraction)
 				: base( move, from, to, fromFacing, toFacing, startingFraction )
 			{
 			}
@@ -375,6 +384,25 @@ namespace OpenRA.Mods.RA.Move
 				mobile.FinishedMoving(self);
 				return null;
 			}
+		}
+	}
+
+	public static class ActorExtensionsForMove
+	{
+		public static bool IsMoving(this Actor self)
+		{
+			if (self.IsIdle) return false;
+
+			Activity a = self.GetCurrentActivity();
+			Debug.Assert(a != null);
+
+			// Dirty, but it suffices until we do something better:
+			if (a.GetType() == typeof(Move)) return true;
+			if (a.GetType() == typeof(MoveAdjacentTo)) return true;
+			if (a.GetType() == typeof(AttackMove)) return true;
+
+			// Not a move:
+			return false;
 		}
 	}
 }

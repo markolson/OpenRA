@@ -14,17 +14,6 @@ using OpenRA.FileFormats;
 using OpenRA.Traits;
 using OpenRA.Mods.RA.Buildings;
 
-/*
- * Crates left to implement:
-HealBase=1,INVUN                ; all buildings to full strength
-ICBM=1,MISSILE2                 ; nuke missile one time shot
-Sonar=3,SONARBOX                ; one time sonar pulse
-Squad=20,NONE                   ; squad of random infantry
-Unit=20,NONE                    ; vehicle
-Invulnerability=3,INVULBOX,1.0  ; invulnerability (duration in minutes)
-TimeQuake=3,TQUAKE              ; time quake
-*/
-
 namespace OpenRA.Mods.RA
 {
 	class CrateInfo : ITraitInfo, Requires<RenderSimpleInfo>
@@ -35,22 +24,20 @@ namespace OpenRA.Mods.RA
 	}
 
 	// ITeleportable is required for paradrop
-	class Crate : ITick, IOccupySpace, ITeleportable, ICrushable, ISync
+	class Crate : ITick, IOccupySpace, ITeleportable, ICrushable, ISync, INotifyParachuteLanded
 	{
 		readonly Actor self;
-		[Sync]
-		int ticks;
-
-		[Sync]
-		public int2 Location;
-
+		[Sync] int ticks;
+		[Sync] public CPos Location;
 		CrateInfo Info;
+		bool collected;
+
 		public Crate(ActorInitializer init, CrateInfo info)
 		{
 			this.self = init.self;
 			if (init.Contains<LocationInit>())
 			{
-				this.Location = init.Get<LocationInit, int2>();
+				this.Location = init.Get<LocationInit, CPos>();
 				PxPosition = Util.CenterOfCell(Location);
 			}
 			this.Info = info;
@@ -60,12 +47,16 @@ namespace OpenRA.Mods.RA
 
 		public void OnCrush(Actor crusher)
 		{
+			if (collected) return;
+
 			var shares = self.TraitsImplementing<CrateAction>().Select(
 				a => Pair.New(a, a.GetSelectionSharesOuter(crusher)));
 			var totalShares = shares.Sum(a => a.Second);
 			var n = self.World.SharedRandom.Next(totalShares);
 
 			self.Destroy();
+			collected = true;
+
 			foreach (var s in shares)
 				if (n < s.Second)
 				{
@@ -76,25 +67,34 @@ namespace OpenRA.Mods.RA
 					n -= s.Second;
 		}
 
+		public void OnLanded()
+		{
+			var landedOn = self.World.ActorMap.GetUnitsAt(self.Location)
+				.FirstOrDefault(a => a != self);
+
+			if (landedOn != null)
+				OnCrush(landedOn);
+		}
+
 		public void Tick(Actor self)
 		{
 			if( ++ticks >= Info.Lifetime * 25 )
 				self.Destroy();
 		}
 
-		public int2 TopLeft { get { return Location; } }
-		public IEnumerable<Pair<int2, SubCell>> OccupiedCells() { yield return Pair.New( Location, SubCell.FullCell); }
+		public CPos TopLeft { get { return Location; } }
+		public IEnumerable<Pair<CPos, SubCell>> OccupiedCells() { yield return Pair.New( Location, SubCell.FullCell); }
 
-		public int2 PxPosition { get; private set; }
+		public PPos PxPosition { get; private set; }
 
-		public void SetPxPosition( Actor self, int2 px )
+		public void SetPxPosition(Actor self, PPos px)
 		{
-			SetPosition( self, Util.CellContaining( px ) );
+			SetPosition( self, px.ToCPos() );
 		}
 
-		public void AdjustPxPosition(Actor self, int2 px) { SetPxPosition(self, px); }
+		public void AdjustPxPosition(Actor self, PPos px) { SetPxPosition(self, px); }
 
-		public bool CanEnterCell(int2 cell)
+		public bool CanEnterCell(CPos cell)
 		{
 			if (!self.World.Map.IsInMap(cell.X, cell.Y)) return false;
 			var type = self.World.GetTerrainType(cell);
@@ -107,7 +107,7 @@ namespace OpenRA.Mods.RA
 			return true;
 		}
 
-		public void SetPosition(Actor self, int2 cell)
+		public void SetPosition(Actor self, CPos cell)
 		{
 			if( self.IsInWorld )
 				self.World.ActorMap.Remove(self, this);
@@ -115,7 +115,7 @@ namespace OpenRA.Mods.RA
 			Location = cell;
 			PxPosition = Util.CenterOfCell(cell);
 
-			var seq = self.World.GetTerrainInfo(cell).IsWater ? "water" : "idle";
+			var seq = self.World.GetTerrainInfo(cell).IsWater ? "water" : "land";
 			var rs = self.Trait<RenderSimple>();
 			if (seq != rs.anim.CurrentSequence.Name)
 				rs.anim.PlayRepeating(seq);

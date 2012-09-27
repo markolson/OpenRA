@@ -11,7 +11,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using OpenRA.Collections;
 using OpenRA.Effects;
 using OpenRA.FileFormats;
 using OpenRA.Network;
@@ -204,7 +203,7 @@ namespace OpenRA
 
 			while (frameEndActions.Count != 0)
 				frameEndActions.Dequeue()(this);
-			Game.viewport.Tick();
+			
 		}
 
 		public IEnumerable<Actor> Actors { get { return actors; } }

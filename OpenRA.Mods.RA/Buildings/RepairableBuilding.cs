@@ -48,7 +48,7 @@ namespace OpenRA.Mods.RA.Buildings
 					else
 					{
 						Repairer = p;
-						Sound.PlayToPlayer(Repairer, p.World.WorldActor.Info.Traits.Get<EvaAlertsInfo>().Repairing);
+						Sound.PlayNotification(Repairer, "Speech", "Repairing", self.Owner.Country.Race);
 
 						self.World.AddFrameEndTask(
 							w => w.Add(new RepairIndicator(self, p)));
@@ -74,7 +74,7 @@ namespace OpenRA.Mods.RA.Buildings
 				var buildingValue = self.GetSellValue();
 
 				var hpToRepair = Math.Min(Info.RepairStep, Health.MaxHP - Health.HP);
-				var cost = (hpToRepair * Info.RepairPercent * buildingValue) / (Health.MaxHP * 100);
+				var cost = Math.Max(1, (hpToRepair * Info.RepairPercent * buildingValue) / (Health.MaxHP * 100));
 				if (!Repairer.PlayerActor.Trait<PlayerResources>().TakeCash(cost))
 				{
 					remainingTicks = 1;

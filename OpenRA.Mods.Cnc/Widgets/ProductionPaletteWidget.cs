@@ -63,7 +63,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 			this.world = world;
 			this.worldRenderer = worldRenderer;
 			tooltipContainer = Lazy.New(() =>
-				Ui.Root.GetWidget<TooltipContainerWidget>(TooltipContainer));
+				Ui.Root.Get<TooltipContainerWidget>(TooltipContainer));
 
 			cantBuild = new Animation("clock");
 			cantBuild.PlayFetchIndex("idle", () => 0);
@@ -146,7 +146,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 				else if (CurrentQueue.BuildableItems().Any(a => a.Name == clicked.Name))
 				{
 					Sound.Play(TabClick);
-					Sound.Play(CurrentQueue.Info.QueuedAudio);
+					Sound.PlayNotification(world.LocalPlayer, "Speech", CurrentQueue.Info.QueuedAudio, world.LocalPlayer.Country.Race);
 					world.IssueOrder(Order.StartProduction(CurrentQueue.self, clicked.Name,
 						Game.GetModifierKeys().HasModifier(Modifiers.Shift) ? 5 : 1));
 				}
@@ -164,13 +164,13 @@ namespace OpenRA.Mods.Cnc.Widgets
 					// instant cancel of things we havent started yet and things that are finished
 					if (first.Paused || first.Done || first.TotalCost == first.RemainingCost)
 					{
-						Sound.Play(CurrentQueue.Info.CancelledAudio);
+						Sound.PlayNotification(world.LocalPlayer, "Speech", CurrentQueue.Info.CancelledAudio, world.LocalPlayer.Country.Race);
 						world.IssueOrder(Order.CancelProduction(CurrentQueue.self, clicked.Name,
 							Game.GetModifierKeys().HasModifier(Modifiers.Shift) ? 5 : 1));
 					}
 					else
 					{
-						Sound.Play(CurrentQueue.Info.OnHoldAudio);
+						Sound.PlayNotification(world.LocalPlayer, "Speech", CurrentQueue.Info.OnHoldAudio, world.LocalPlayer.Country.Race);
 						world.IssueOrder(Order.PauseProduction(CurrentQueue.self, clicked.Name, true));
 					}
 				}
@@ -213,7 +213,6 @@ namespace OpenRA.Mods.Cnc.Widgets
 			if (CurrentQueue == null)
 				return;
 
-			var isBuildingSomething = CurrentQueue.CurrentItem() != null;
 			var buildableItems = CurrentQueue.BuildableItems().OrderBy(a => a.Traits.Get<BuildableInfo>().BuildPaletteOrder);
 
 			// Background
@@ -235,7 +234,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 					clock.Tick();
 					WidgetUtils.DrawSHP(clock.Image, icon.Pos, worldRenderer);
 				}
-				else if (isBuildingSomething || !buildableItems.Any(a => a.Name == icon.Name))
+				else if (!buildableItems.Any(a => a.Name == icon.Name))
 					WidgetUtils.DrawSHP(cantBuild.Image, icon.Pos, worldRenderer);
 			}
 

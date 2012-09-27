@@ -9,6 +9,7 @@
 #endregion
 
 using System;
+using System.IO;
 using OpenRA.Widgets;
 
 namespace OpenRA.Scripting
@@ -18,9 +19,20 @@ namespace OpenRA.Scripting
 		public static void PlayFMVFullscreen(World w, string movie, Action onComplete)
 		{
 			var playerRoot = Game.OpenWindow(w, "FMVPLAYER");
-			var player = playerRoot.GetWidget<VqaPlayerWidget>("PLAYER");
+			var player = playerRoot.Get<VqaPlayerWidget>("PLAYER");
+
+			try
+			{
+				player.Load(movie);
+			}
+			catch (FileNotFoundException)
+			{
+				Ui.CloseWindow();
+				onComplete();
+				return;
+			}
+
 			w.EnableTick = false;
-			player.Load(movie);
 
 			// Mute world sounds
 			var oldModifier = Sound.SoundVolumeModifier;

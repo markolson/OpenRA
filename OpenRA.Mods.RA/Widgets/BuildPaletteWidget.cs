@@ -1,6 +1,6 @@
 #region Copyright & License Information
 /*
- * Copyright 2007-2011 The OpenRA Developers (see AUTHORS)
+ * Copyright 2007-2012 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation. For more information,
@@ -43,11 +43,7 @@ namespace OpenRA.Mods.RA.Widgets
 		List<Pair<Rectangle, Action<MouseInput>>> buttons = new List<Pair<Rectangle,Action<MouseInput>>>();
 		List<Pair<Rectangle, Action<MouseInput>>> tabs = new List<Pair<Rectangle, Action<MouseInput>>>();
 		Animation cantBuild;
-		Animation ready;
 		Animation clock;
-		public readonly string BuildPaletteOpen = "bleep13.aud";
-		public readonly string BuildPaletteClose = "bleep13.aud";
-		public readonly string TabClick = "ramenu1.aud";
 
 		readonly WorldRenderer worldRenderer;
 		readonly World world;
@@ -60,8 +56,6 @@ namespace OpenRA.Mods.RA.Widgets
 
 			cantBuild = new Animation("clock");
 			cantBuild.PlayFetchIndex("idle", () => 0);
-			ready = new Animation("pips");
-			ready.PlayRepeating("ready");
 			clock = new Animation("clock");
 			paletteOrigin = paletteClosedOrigin;
 			VisibleQueues = new List<ProductionQueue>();
@@ -121,11 +115,11 @@ namespace OpenRA.Mods.RA.Widgets
 
 			// Play palette-open sound at the start of the activate anim (open)
 			if (paletteAnimationFrame == 1 && paletteOpen)
-				Sound.Play(BuildPaletteOpen);
+				Sound.PlayNotification(null, "Sounds", "BuildPaletteOpen", null);
 
 			// Play palette-close sound at the start of the activate anim (close)
 			if (paletteAnimationFrame == paletteAnimationLength + -1 && !paletteOpen)
-				Sound.Play(BuildPaletteClose);
+				Sound.PlayNotification(null, "Sounds", "BuildPaletteClose", null);
 
 			// Animation is complete
 			if ((paletteAnimationFrame == 0 && !paletteOpen)
@@ -160,6 +154,17 @@ namespace OpenRA.Mods.RA.Widgets
 		{
 			if (mi.Event != MouseInputEvent.Down)
 				return false;
+
+			if (mi.Button == MouseButton.WheelDown)
+			{
+				TabChange(false);
+				return true;
+			}
+			if (mi.Button == MouseButton.WheelUp)
+			{
+				TabChange(true);
+				return true;
+			}
 
 			var action = tabs.Where(a => a.First.Contains(mi.Location))
 				.Select(a => a.Second).FirstOrDefault();
@@ -240,17 +245,7 @@ namespace OpenRA.Mods.RA.Widgets
 
 						var repeats = queue.AllQueued().Count(a => a.Item == item.Name);
 						if (repeats > 1 || queue.CurrentItem() != firstOfThis)
-						{
-							var offset = -40;
-							var digits = repeats.ToString();
-							foreach (var d in digits)
-							{
-								ready.PlayFetchIndex("groups", () => d - '0');
-								ready.Tick();
-								overlayBits.Add(Pair.New(ready.Image, overlayPos + new float2(offset, -14)));
-								offset += 6;
-							}
-						}
+							textBits.Add(Pair.New(overlayPos + new float2(-24, -14), repeats.ToString()));
 					}
 					else
 						if (!buildableItems.Any(a => a.Name == item.Name))
@@ -304,7 +299,7 @@ namespace OpenRA.Mods.RA.Widgets
 		Action<MouseInput> HandleClick(string name, World world)
 		{
 			return mi => {
-				Sound.Play(TabClick);
+				Sound.PlayNotification(null, "Sounds", "TabClick", null);
 
 				if (name != null)
 					HandleBuildPalette(world, name, (mi.Button == MouseButton.Left));
@@ -317,7 +312,7 @@ namespace OpenRA.Mods.RA.Widgets
 				if (mi.Button != MouseButton.Left)
 					return;
 
-				Sound.Play(TabClick);
+				Sound.PlayNotification(null, "Sounds", "TabClick", null);
 				var wasOpen = paletteOpen;
 				paletteOpen = (CurrentQueue == queue && wasOpen) ? false : true;
 				CurrentQueue = queue;
@@ -379,15 +374,15 @@ namespace OpenRA.Mods.RA.Widgets
 				{
 					// instant cancel of things we havent really started yet, and things that are finished
 					if (producing.Paused || producing.Done || producing.TotalCost == producing.RemainingCost)
-					{
-						Sound.Play(CurrentQueue.Info.CancelledAudio);
+					{ 
+						Sound.PlayNotification(world.LocalPlayer, "Speech", CurrentQueue.Info.CancelledAudio, world.LocalPlayer.Country.Race);
 						int numberToCancel = Game.GetModifierKeys().HasModifier(Modifiers.Shift) ? 5 : 1;
 
 						world.IssueOrder(Order.CancelProduction(CurrentQueue.self, item, numberToCancel));
 					}
 					else
 					{
-						Sound.Play(CurrentQueue.Info.OnHoldAudio);
+						Sound.PlayNotification(world.LocalPlayer, "Speech", CurrentQueue.Info.OnHoldAudio, world.LocalPlayer.Country.Race);
 						world.IssueOrder(Order.PauseProduction(CurrentQueue.self, item, true));
 					}
 				}
@@ -396,7 +391,8 @@ namespace OpenRA.Mods.RA.Widgets
 
 		void StartProduction( World world, string item )
 		{
-			Sound.Play(CurrentQueue.Info.QueuedAudio);
+
+			Sound.PlayNotification(world.LocalPlayer, "Speech", CurrentQueue.Info.QueuedAudio, world.LocalPlayer.Country.Race);
 			world.IssueOrder(Order.StartProduction(CurrentQueue.self, item,
 				Game.GetModifierKeys().HasModifier(Modifiers.Shift) ? 5 : 1));
 		}
@@ -509,7 +505,7 @@ namespace OpenRA.Mods.RA.Widgets
 
 			if ( toBuild != null )
 			{
-				Sound.Play(TabClick);
+				Sound.PlayNotification(null, "Sounds", "TabClick", null);
 				HandleBuildPalette(world, toBuild.Name, true);
 				return true;
 			}
@@ -520,7 +516,7 @@ namespace OpenRA.Mods.RA.Widgets
 		void TabChange(bool shift)
 		{
 			var queues = VisibleQueues.Concat(VisibleQueues);
-			if (shift) queues.Reverse();
+			if (shift) queues = queues.Reverse();
 			var nextQueue = queues.SkipWhile( q => q != CurrentQueue )
 				.ElementAtOrDefault(1);
 			if (nextQueue != null)

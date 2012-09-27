@@ -16,6 +16,7 @@ namespace OpenRA.Mods.RA
 	class SpawnMPUnitsInfo : ITraitInfo, Requires<MPStartLocationsInfo>
 	{
 		public readonly string InitialUnit = "mcv";
+		public readonly string Faction = null;
 
 		public object Create (ActorInitializer init) { return new SpawnMPUnits(this); }
 	}
@@ -32,10 +33,14 @@ namespace OpenRA.Mods.RA
 				SpawnUnitsForPlayer(s.Key, s.Value);
 		}
 
-		void SpawnUnitsForPlayer(Player p, int2 sp)
+		void SpawnUnitsForPlayer(Player p, CPos sp)
 		{
 			if (!p.PlayerReference.DefaultStartingUnits)
 				return;	/* they don't want an mcv, the map provides something else for them */
+
+			/* support different starting units for each faction */
+			if (info.Faction != null && p.Country.Race != info.Faction)
+				return;
 
 			p.World.CreateActor(info.InitialUnit, new TypeDictionary
 			{

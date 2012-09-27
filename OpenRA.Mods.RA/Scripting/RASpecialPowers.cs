@@ -18,17 +18,8 @@ namespace OpenRA.Scripting
 {
 	public class RASpecialPowers
 	{
-		public static void Chronoshift(World world, List<Pair<Actor, int2>>units, Actor chronosphere, int duration, bool killCargo)
+		public static void Chronoshift(World world, List<Pair<Actor, CPos>> units, Actor chronosphere, int duration, bool killCargo)
 		{
-			if (chronosphere != null)
-				chronosphere.Trait<RenderBuilding>().PlayCustomAnim(chronosphere, "active");
-
-			// Trigger screen desaturate effect
-			foreach (var a in world.ActorsWithTrait<ChronoshiftPaletteEffect>())
-				a.Trait.Enable();
-
-			Sound.Play("chrono2.aud", units.First().First.CenterLocation);
-
 			foreach (var kv in units)
 			{
 				var target = kv.First;
@@ -37,8 +28,6 @@ namespace OpenRA.Scripting
 				if (chronosphere.Owner.Shroud.IsExplored(targetCell) && cs.CanChronoshiftTo(target, targetCell))
 					cs.Teleport(target, targetCell, duration, killCargo,chronosphere);
 			}
-
-
 		}
 	}
 }

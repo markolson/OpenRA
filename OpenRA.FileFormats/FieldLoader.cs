@@ -56,6 +56,11 @@ namespace OpenRA.FileFormats
 				ret = GetValue( fieldName, fieldType, n[ 0 ].Value.Value );
 				return true;
 			}
+			else if ( n.Count > 1 )
+			{
+				throw new InvalidOperationException("The field {0} has multiple definitions:\n{1}"
+					.F(fieldName, n.Select(m => "\t- " + m.Location).JoinWith("\n")));
+			}
 			throw new InvalidOperationException( "TryGetValueFromYaml: unable to load field {0} (of type {1})".F( fieldName, fieldType ) );
 		}
 
@@ -319,6 +324,10 @@ namespace OpenRA.FileFormats
 					((int)c.G).Clamp(0, 255),
 					((int)c.B).Clamp(0, 255));
 			}
+
+			// Don't save floats in settings.yaml using country-specific decimal separators which can be misunderstood as group seperators.
+			if (t == typeof(float))
+				return ((float)v).ToString(CultureInfo.InvariantCulture);
 
 			if (t == typeof(Rectangle))
 			{

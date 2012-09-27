@@ -24,16 +24,16 @@ namespace OpenRA.Mods.RA
 		public float BuildSpeed = 0.4f;
 		public readonly int LowPowerSlowdown = 3;
 
-		public readonly string ReadyAudio = "unitrdy1.aud";
-		public readonly string BlockedAudio = "nobuild1.aud";
-		public readonly string QueuedAudio = "train1.aud";
-		public readonly string OnHoldAudio = "onhold1.aud";
-		public readonly string CancelledAudio = "cancld1.aud";
+		public readonly string ReadyAudio = "UnitReady";
+		public readonly string BlockedAudio = "NoBuild";
+		public readonly string QueuedAudio = "Training";
+		public readonly string OnHoldAudio = "OnHold";
+		public readonly string CancelledAudio = "Cancelled";
 
 		public virtual object Create(ActorInitializer init) { return new ProductionQueue(init.self, init.self.Owner.PlayerActor, this); }
 	}
 
-	public class ProductionQueue : IResolveOrder, ITick, ITechTreeElement, INotifyCapture, INotifyKilled, INotifySold, ISync
+	public class ProductionQueue : IResolveOrder, ITick, ITechTreeElement, INotifyCapture, INotifyKilled, INotifySold, ISync, INotifyTransform
 	{
 		public readonly Actor self;
 		public ProductionQueueInfo Info;
@@ -44,18 +44,12 @@ namespace OpenRA.Mods.RA
 		// A list of things we are currently building
 		public List<ProductionItem> Queue = new List<ProductionItem>();
 
-		[Sync]
-		public int QueueLength { get { return Queue.Count; } }
-		[Sync]
-		public int CurrentRemainingCost { get { return QueueLength == 0 ? 0 : Queue[0].RemainingCost; } }
-		[Sync]
-		public int CurrentRemainingTime { get { return QueueLength == 0 ? 0 : Queue[0].RemainingTime; } }
-		[Sync]
-		public int CurrentSlowdown { get { return QueueLength == 0 ? 0 : Queue[0].slowdown; } }
-		[Sync]
-		public bool CurrentPaused { get { return QueueLength == 0 ? false : Queue[0].Paused; } }
-		[Sync]
-		public bool CurrentDone { get { return QueueLength == 0 ? false : Queue[0].Done; } }
+		[Sync] public int QueueLength { get { return Queue.Count; } }
+		[Sync] public int CurrentRemainingCost { get { return QueueLength == 0 ? 0 : Queue[0].RemainingCost; } }
+		[Sync] public int CurrentRemainingTime { get { return QueueLength == 0 ? 0 : Queue[0].RemainingTime; } }
+		[Sync] public int CurrentSlowdown { get { return QueueLength == 0 ? 0 : Queue[0].slowdown; } }
+		[Sync] public bool CurrentPaused { get { return QueueLength == 0 ? false : Queue[0].Paused; } }
+		[Sync] public bool CurrentDone { get { return QueueLength == 0 ? false : Queue[0].Done; } }
 
 		// A list of things we could possibly build, even if our race doesn't normally get it
 		public Dictionary<ActorInfo, ProductionState> Produceable;
@@ -100,6 +94,7 @@ namespace OpenRA.Mods.RA
 		public void Killed(Actor killed, AttackInfo e) { if (killed == self) ClearQueue(); }
 		public void Selling(Actor self) {}
 		public void Sold(Actor self) { ClearQueue(); }
+		public void OnTransform(Actor self) { ClearQueue(); }
 
 		Dictionary<ActorInfo, ProductionState> InitTech(Actor playerActor)
 		{
@@ -217,17 +212,15 @@ namespace OpenRA.Mods.RA
 
 										if (isBuilding && !hasPlayedSound)
 										{
-											Sound.PlayToPlayer(order.Player, Info.ReadyAudio);
-											hasPlayedSound = true;
+											hasPlayedSound = Sound.PlayNotification(self.Owner, "Speech", Info.ReadyAudio, self.Owner.Country.Race);
 										}
 										else if (!isBuilding)
 										{
 											if (BuildUnit(order.TargetString))
-												Sound.PlayToPlayer(order.Player, Info.ReadyAudio);
+												Sound.PlayNotification(self.Owner, "Speech", Info.ReadyAudio, self.Owner.Country.Race);
 											else if (!hasPlayedSound && time > 0)
 											{
-												Sound.PlayToPlayer(order.Player, Info.BlockedAudio);
-												hasPlayedSound = true;
+												hasPlayedSound = Sound.PlayNotification(self.Owner, "Speech", Info.BlockedAudio, self.Owner.Country.Race);
 											}
 										}
 									})));
@@ -268,6 +261,10 @@ namespace OpenRA.Mods.RA
 				* (Info.BuildSpeed * speedUp)
 				* (25 * 60) /* frames per min */
 				 / 1000;
+
+			if (unit.Traits.Contains<CustomBuildTimeValueInfo>())
+				time = unit.Traits.Get<CustomBuildTimeValueInfo>().Value * (1 / Info.BuildSpeed);
+
 			return (int) time;
 		}
 

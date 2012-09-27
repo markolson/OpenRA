@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using OpenRA.FileFormats;
 using OpenRA.GameRules;
 using OpenRA.Graphics;
@@ -46,20 +47,21 @@ namespace OpenRA.Traits
 		string OrderID { get; }
 		int OrderPriority { get; }
 		bool CanTargetActor(Actor self, Actor target, bool forceAttack, bool forceQueue, ref string cursor);
-		bool CanTargetLocation(Actor self, int2 location, List<Actor> actorsAtLocation, bool forceAttack, bool forceQueue, ref string cursor);
+		bool CanTargetLocation(Actor self, CPos location, List<Actor> actorsAtLocation, bool forceAttack, bool forceQueue, ref string cursor);
 		bool IsQueued { get; }
 	}
 
 	public interface IResolveOrder { void ResolveOrder(Actor self, Order order); }
 	public interface IValidateOrder { bool OrderValidation(OrderManager orderManager, World world, int clientId, Order order); }
 	public interface IOrderVoice { string VoicePhraseForOrder(Actor self, Order order); }
+	public interface INotify { void Play(Player p, string notification); }
 	public interface INotifySold { void Selling(Actor self); void Sold(Actor self); }
 	public interface INotifyDamage { void Damaged(Actor self, AttackInfo e); }
 	public interface INotifyDamageStateChanged { void DamageStateChanged(Actor self, AttackInfo e); }
 	public interface INotifyKilled { void Killed(Actor self, AttackInfo e); }
 	public interface INotifyAppliedDamage { void AppliedDamage(Actor self, Actor damaged, AttackInfo e); }
 	public interface INotifyBuildComplete { void BuildingComplete(Actor self); }
-	public interface INotifyProduction { void UnitProduced(Actor self, Actor other, int2 exit); }
+	public interface INotifyProduction { void UnitProduced(Actor self, Actor other, CPos exit); }
 	public interface INotifyCapture { void OnCapture(Actor self, Actor captor, Player oldOwner, Player newOwner); }
 	public interface INotifyOtherCaptured { void OnActorCaptured(Actor self, Actor captured, Actor captor, Player oldOwner, Player newOwner); }
 	public interface IAcceptSpy { void OnInfiltrate(Actor self, Actor spy); }
@@ -74,27 +76,26 @@ namespace OpenRA.Traits
 	public interface IDisable { bool Disabled { get; } }
 	public interface IExplodeModifier { bool ShouldExplode(Actor self); }
 	public interface IHuskModifier { string HuskActor(Actor self); }
-	public interface INudge { void OnNudge(Actor self, Actor nudger, bool force); }
 
 	public interface IRadarSignature
 	{
-		IEnumerable<int2> RadarSignatureCells(Actor self);
+		IEnumerable<CPos> RadarSignatureCells(Actor self);
 		Color RadarSignatureColor(Actor self);
 	}
 
 	public interface IVisibilityModifier { bool IsVisible(Shroud s, Actor self); }
 	public interface IRadarColorModifier { Color RadarColorOverride(Actor self); }
-	public interface IHasLocation { int2 PxPosition { get; } }
+	public interface IHasLocation { PPos PxPosition { get; } }
 
 	public interface IOccupySpace : IHasLocation
 	{
-		int2 TopLeft { get; }
-		IEnumerable<Pair<int2, SubCell>> OccupiedCells();
+		CPos TopLeft { get; }
+		IEnumerable<Pair<CPos, SubCell>> OccupiedCells();
 	}
 
 	public static class IOccupySpaceExts
 	{
-		public static int2 NearestCellTo(this IOccupySpace ios, int2 other)
+		public static CPos NearestCellTo(this IOccupySpace ios, CPos other)
 		{
 			var nearest = ios.TopLeft;
 			var nearestDistance = int.MaxValue;
@@ -124,13 +125,14 @@ namespace OpenRA.Traits
 
 	public interface ITeleportable : IHasLocation /* crap name! */
 	{
-		bool CanEnterCell(int2 location);
-		void SetPosition(Actor self, int2 cell);
-		void SetPxPosition(Actor self, int2 px);
-		void AdjustPxPosition(Actor self, int2 px);	/* works like SetPxPosition, but visual only */
+		bool CanEnterCell(CPos location);
+		void SetPosition(Actor self, CPos cell);
+		void SetPxPosition(Actor self, PPos px);
+		void AdjustPxPosition(Actor self, PPos px);	/* works like SetPxPosition, but visual only */
 	}
 
 	public interface IMove : ITeleportable { int Altitude { get; set; } }
+	public interface INotifyBlockingMove { void OnNotifyBlockingMove(Actor self, Actor blocking); }
 
 	public interface IFacing
 	{
@@ -211,7 +213,7 @@ namespace OpenRA.Traits
 	public interface ITargetable
 	{
 		string[] TargetTypes { get; }
-		IEnumerable<int2> TargetableCells(Actor self);
+		IEnumerable<CPos> TargetableCells(Actor self);
 		bool TargetableBy(Actor self, Actor byActor);
 	}
 
@@ -224,4 +226,12 @@ namespace OpenRA.Traits
 	public interface ILintPass { void Run(Action<string> emitError, Action<string> emitWarning); }
 
 	public interface IObjectivesPanel { string ObjectivesPanel { get; } }
+	
+	public static class DisableExts
+	{
+		public static bool IsDisabled(this Actor a)
+		{
+			return a.TraitsImplementing<IDisable>().Any(d => d.Disabled);
+		}
+	}
 }

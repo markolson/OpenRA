@@ -30,11 +30,11 @@ namespace OpenRA.Mods.RA
 		public TargetableUnit( Actor self, Info info )
 		{
 			this.info = info;
-			RecievedCloak(self);
+			ReceivedCloak(self);
 		}
 
-		// Arbitrary units can recieve cloak via a crate during gameplay
-		public void RecievedCloak(Actor self)
+		// Arbitrary units can receive cloak via a crate during gameplay
+		public void ReceivedCloak(Actor self)
 		{
 			Cloak = self.TraitOrDefault<Cloak>();
 		}
@@ -52,9 +52,9 @@ namespace OpenRA.Mods.RA
 
 		public virtual string[] TargetTypes { get { return info.TargetTypes; } }
 
-		public virtual IEnumerable<int2> TargetableCells( Actor self )
+		public virtual IEnumerable<CPos> TargetableCells( Actor self )
 		{
-			yield return Util.CellContaining( self.CenterLocation );
+			yield return self.CenterLocation.ToCPos();
 		}
 	}
 }

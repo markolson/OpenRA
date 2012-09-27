@@ -21,7 +21,7 @@ namespace OpenRA.Mods.RA.Air
 
 	public class Plane : Aircraft, IResolveOrder, ITick, ISync
 	{
-		[Sync] public int2 RTBPathHash;
+		[Sync] public PVecInt RTBPathHash;
 
 		public Plane( ActorInitializer init, PlaneInfo info )
 			: base( init, info ) { }
@@ -68,7 +68,7 @@ namespace OpenRA.Mods.RA.Air
 			}
 			else if (order.OrderString == "ReturnToBase")
 			{
-				var airfield = ReturnToBase.ChooseAirfield(self);
+				var airfield = ReturnToBase.ChooseAirfield(self, true);
 				if (airfield == null) return;
 
 				UnReserve();

@@ -11,6 +11,7 @@
 using System.Linq;
 using OpenRA.Effects;
 using OpenRA.Traits;
+using OpenRA.Mods.RA.Buildings;
 
 namespace OpenRA.Mods.RA
 {
@@ -27,9 +28,9 @@ namespace OpenRA.Mods.RA
 
 	public class Capturable : ITick
 	{
-		[Sync] Actor captor = null;
+		[Sync] public Actor Captor = null;
 		[Sync] public int CaptureProgressTime = 0;
-		public bool CaptureInProgress { get { return captor != null; } }
+		public bool CaptureInProgress { get { return Captor != null; } }
 		public CapturableInfo Info;
 
 		public Capturable(CapturableInfo info)
@@ -37,14 +38,22 @@ namespace OpenRA.Mods.RA
 			this.Info = info;
 		}
 
-		public void BeginCapture(Actor self, Actor captor)
+		public bool BeginCapture(Actor self, Actor captor)
 		{
+			if (!CaptureInProgress && !self.Trait<Building>().Lock())
+				return false;
+
+			if (CaptureInProgress && Captor.Owner.Stances[captor.Owner] == Stance.Ally)
+				return false;
+
 			CaptureProgressTime = 0;
 
-			this.captor = captor;
+			this.Captor = captor;
 
 			if (self.Owner != self.World.WorldActor.Owner)
 				self.ChangeOwner(self.World.WorldActor.Owner);
+
+			return true;
 		}
 
 		public void Tick(Actor self)
@@ -57,17 +66,29 @@ namespace OpenRA.Mods.RA
 			{
 				self.World.AddFrameEndTask(w =>
 				{
-					self.ChangeOwner(captor.Owner);
+					self.ChangeOwner(Captor.Owner);
+					ChangeCargoOwner(self, Captor.Owner);
 
 					foreach (var t in self.TraitsImplementing<INotifyCapture>())
-						t.OnCapture(self, captor, self.Owner, captor.Owner);
+						t.OnCapture(self, Captor, self.Owner, Captor.Owner);
 
-					foreach (var t in captor.World.ActorsWithTrait<INotifyOtherCaptured>())
-						t.Trait.OnActorCaptured(t.Actor, self, captor, self.Owner, captor.Owner);
+					foreach (var t in Captor.World.ActorsWithTrait<INotifyOtherCaptured>())
+						t.Trait.OnActorCaptured(t.Actor, self, Captor, self.Owner, Captor.Owner);
 
-					captor = null;
+					Captor = null;
+					self.Trait<Building>().Unlock();
 				});
 			}
+		}
+
+		void ChangeCargoOwner(Actor self, Player captor)
+		{
+			var cargo = self.TraitOrDefault<Cargo>();
+			if (cargo == null)
+				return;
+
+			foreach (var c in cargo.Passengers)
+				c.Owner = captor;
 		}
 	}
 }

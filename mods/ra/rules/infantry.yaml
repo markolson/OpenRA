@@ -231,6 +231,40 @@ E7:
 	RenderInfantryProne:
 		IdleAnimations: idle1,idle2
 
+E8:
+	Inherits: ^Infantry
+	Buildable:
+		Queue: Infantry
+		BuildPaletteOrder: 110
+		Prerequisites: stek
+		Owner: soviet
+	Valued:
+		Cost: 1800
+	Tooltip:
+		Name: Volkov
+		Description: Elite commando infantry, armed with \nmodular cannons and grenade launcher.\n  Strong vs Vehicles, Infantry\n  Weak vs Air Units\n
+	Selectable:
+		Voice: VolkovVoice
+		Bounds: 12,17,0,-9
+	Health:
+		HP: 150
+	Armor:
+		Type: Heavy
+	Mobile:
+		Speed: 5
+	RevealsShroud:
+		Range: 4
+	Passenger:
+		PipType: Red
+	AttackFrontal:
+		PrimaryWeapon: VolkAT
+		SecondaryWeapon: VolkNapalm
+	TakeCover:
+	-RenderInfantry:
+	RenderInfantryProne:
+		IdleAnimations: idle1	
+	-CrushableInfantry:
+
 MEDI:
 	Inherits: ^Infantry
 	Buildable:
@@ -305,6 +339,27 @@ C2:
 	ProximityCaptor:
 		Types:CivilianInfantry
 
+EINSTEIN:
+	Inherits: ^Infantry
+	Selectable:
+		Voice: EinsteinVoice
+		Bounds: 12,17,0,-9
+	Valued:
+		Cost: 10
+	Tooltip:
+		Name: Prof. Einstein
+	Health:
+		HP: 25
+	Mobile:
+		Speed: 5
+	RevealsShroud:
+		Range: 2
+	-AutoTarget:
+	AttackMove:
+		JustMove: true
+	ProximityCaptor:
+		Types:CivilianInfantry
+
 SHOK:
 	Inherits: ^Infantry
 	Buildable:
@@ -333,3 +388,44 @@ SHOK:
 	RenderInfantryProne:
 		IdleAnimations: idle1,idle2
 	-CrushableInfantry:
+
+SNIPER:
+	Inherits: ^Infantry
+	Valued:
+		Cost: 700
+	Tooltip:
+		Icon: snipericon
+		Name: Sniper
+		Description: Elite sniper infantry unit.\n  Strong vs Infantry\n  Weak vs Vehicles
+	Buildable:
+		Queue: Infantry
+		BuildPaletteOrder: 50
+		Owner: soviet
+		Prerequisites: dome
+	Selectable:
+		Bounds: 12,17,0,-6
+	Mobile:
+		Speed: 4
+	Health:
+		HP: 200
+	Passenger:
+		PipType: Red
+	RevealsShroud:
+		Range: 6
+	AutoTarget:
+		InitialStance: HoldFire
+	AttackFrontal:
+		PrimaryWeapon: Sniper
+	TakeCover:
+	-RenderInfantry:
+	RenderInfantryProne:
+		IdleAnimations: idle1,idle2
+	Cloak:
+		InitialDelay: 250
+		CloakDelay: 120
+		CloakSound:
+		UncloakSound:
+		UncloakOnMove: yes
+	Captures:
+		CaptureTypes: civilianbuilding
+		AllowAllies: true

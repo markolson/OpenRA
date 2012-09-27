@@ -19,6 +19,9 @@ using OpenRA.Server;
 
 namespace OpenRA.GameRules
 {
+	public enum MouseScrollType { Disabled, Standard, Inverted }
+	public enum SoundCashTicks { Disabled, Normal, Extreme }
+
 	public class ServerSettings
 	{
 		public string Name = "OpenRA Game";
@@ -26,8 +29,14 @@ namespace OpenRA.GameRules
 		public int ExternalPort = 1234;
 		public bool AdvertiseOnline = true;
 		public string MasterServer = "http://master.open-ra.org/";
+		public bool AllowUPnP = false;
 		public bool AllowCheats = false;
 		public string Map = null;
+		public string[] Ban = null;
+		public int TimeOut = 0;
+		public bool Dedicated = false;
+		public bool DedicatedLoop = true;
+		public string DedicatedMOTD = null;
 
 		public ServerSettings() { }
 
@@ -38,8 +47,14 @@ namespace OpenRA.GameRules
 			ExternalPort = other.ExternalPort;
 			AdvertiseOnline = other.AdvertiseOnline;
 			MasterServer = other.MasterServer;
+			AllowUPnP = other.AllowUPnP;
 			AllowCheats = other.AllowCheats;
 			Map = other.Map;
+			Ban = other.Ban;
+			TimeOut = other.TimeOut;
+			Dedicated = other.Dedicated;
+			DedicatedLoop = other.DedicatedLoop;
+			DedicatedMOTD = other.DedicatedMOTD;
 		}
 	}
 
@@ -76,6 +91,9 @@ namespace OpenRA.GameRules
 		public bool Shuffle = false;
 		public bool Repeat = false;
 		public bool ShellmapMusic = true;
+		public string Engine = "AL";
+		
+		public SoundCashTicks SoundCashTickType = SoundCashTicks.Extreme;
 	}
 
 	public class PlayerSettings
@@ -84,8 +102,6 @@ namespace OpenRA.GameRules
 		public ColorRamp ColorRamp = new ColorRamp(75, 255, 180, 25);
 		public string LastServer = "localhost:1234";
 	}
-
-	public enum MouseScrollType { Disabled, Standard, Inverted }
 
 	public class GameSettings
 	{

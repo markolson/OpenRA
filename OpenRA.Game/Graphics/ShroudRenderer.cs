@@ -25,7 +25,6 @@ namespace OpenRA.Graphics
 		Sprite[] shadowBits = Game.modData.SpriteLoader.LoadAllSprites("shadow");
 		Sprite[,] sprites, fogSprites;
 
-		bool dirty = true;
 		Map map;
 
 		public ShroudRenderer(World world)

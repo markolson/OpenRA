@@ -37,7 +37,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 			: base(world, worldRenderer)
 		{
 			tooltipContainer = Lazy.New(() =>
-				Ui.Root.GetWidget<TooltipContainerWidget>(TooltipContainer));
+				Ui.Root.Get<TooltipContainerWidget>(TooltipContainer));
 		}
 
 		public override void MouseEntered()
@@ -62,7 +62,7 @@ namespace OpenRA.Mods.Cnc.Widgets
 		public void UpdateMouseover()
 		{
 			TooltipType = WorldTooltipType.None;
-			var cell = Game.viewport.ViewToWorld(Viewport.LastMousePos).ToInt2();
+			var cell = Game.viewport.ViewToWorld(Viewport.LastMousePos);
 			if (!world.Map.IsInMap(cell))
 				return;
 

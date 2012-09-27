@@ -4,14 +4,14 @@ Player:
 		Type: Building
 		BuildSpeed: .4
 		LowPowerSlowdown: 3
-		QueuedAudio: abldgin1.aud
-		ReadyAudio: conscmp1.aud
+		QueuedAudio: Building
+		ReadyAudio: ConstructionComplete
 	ClassicProductionQueue@Defense:
 		Type: Defense
 		BuildSpeed: .4
 		LowPowerSlowdown: 3
-		QueuedAudio: abldgin1.aud
-		ReadyAudio: conscmp1.aud
+		QueuedAudio: Building
+		ReadyAudio: ConstructionComplete
 	ClassicProductionQueue@Vehicle:
 		Type: Vehicle
 		BuildSpeed: .4
@@ -31,8 +31,6 @@ Player:
 	PlaceBuilding:
 	SupportPowerManager:
 	ConquestVictoryConditions:
-		WinNotification:misnwon1.aud
-		LoseNotification:misnlst1.aud
 	PowerManager:
 	AllyRepair:
 	PlayerResources:
@@ -47,7 +45,7 @@ Player:
 			barr: 1%
 			tent: 1%
 			weap: 1%
-			pbox: 7%
+			pbox.e1: 7%
 			gun: 7%
 			tsla: 5%
 			ftur: 10%
@@ -69,36 +67,6 @@ Player:
 			2tnk: 25%
 			3tnk: 50%
 		SquadSize: 20
-	HackyAI@NormalAI:
-		Name:Normal AI
-		BuildingFractions:
-			proc: 30%
-			powr: 35%
-			tent: 1%
-			barr: 1%
-			weap: 1%
-			pbox: 7%
-			gun: 7%
-			ftur: 10%
-			tsla: 5%
-			fix: 0.1%
-			dome: 10%
-			agun: 5%
-			sam: 1%
-			atek: 1%
-			stek: 1%
-		UnitsToBuild:
-			e1: 50%
-			e3: 10%
-			apc: 30%
-			jeep: 40%
-			arty: 15%
-			v2rl: 40%
-			ftrk: 50%
-			1tnk: 70%
-			2tnk: 25%
-			3tnk: 50%
-		SquadSize: 15
 	HackyAI@HardAI:
 		Name:Hard AI
 		BuildingFractions:
@@ -107,7 +75,7 @@ Player:
 			tent: 1%
 			barr: 1%
 			weap: 1%
-			pbox: 7%
+			pbox.e1: 7%
 			gun: 7%
 			ftur: 10%
 			tsla: 5%
@@ -128,8 +96,94 @@ Player:
 			2tnk: 25%
 			3tnk: 50%
 		SquadSize: 10
+	HackyAI@OptiAI:
+		Name:Eisenhower AI
+		BuildingFractions:
+			proc: 25.1%
+			powr: 35%
+			tent: 0.1%
+			barr: 0.1%
+			weap: 0.1%
+			fix: 0.1%
+			dome: 0.1%
+			atek: 0.1%
+			stek: 0.1%
+		UnitsToBuild:
+			e1: 50%
+			e2: 1%
+			e3: 10%
+			medi: 0.01%
+			e7: 0.01%
+			apc: 10%
+			jeep: 10%
+			ftrk: 25%
+			1tnk: 25%
+			2tnk: 50%
+			3tnk: 75%
+			4tnk: 100%
+			arty: 30%
+			v2rl: 30%
+		SquadSize: 10
+	HackyAI@ZhukovAI:
+		Name:Zhukov AI
+		BuildingFractions:
+			proc: 20%
+			powr: 35%
+			tent: 1%
+			barr: 1%
+			weap: 1%
+			pbox.e1: 4%
+			hbox.e1: 3%
+			gun: 10%
+			ftur: 10%
+			tsla: 5%
+			dome: 10%
+			fix: 0.1%
+			agun: 7%
+			sam: 7%
+			atek: 1%
+			stek: 1%
+		UnitsToBuild:
+			e1: 4%
+			e3: 1%
+			harv: 10%
+			ftrk: 5%
+			v2rl: 40%
+			arty: 40%
+			1tnk: 15%
+			2tnk: 15%
+			3tnk: 15%
+		SquadSize: 25
+	HackyAI@RommelAI:
+		Name:Rommel AI
+		BuildingFractions:
+			proc: 30%
+			powr: 35%
+			tent: 1%
+			barr: 1%
+			weap: 1%
+			pbox.e1: 7%
+			gun: 7%
+			ftur: 10%
+			tsla: 5%
+			fix: 0.1%
+			dome: 10%
+			agun: 5%
+			sam: 1%
+			atek: 1%
+			stek: 1%
+		UnitsToBuild:
+			e1: 5%
+			e3: 10%
+			3tnk: 75%
+			2tnk: 75%
+			v2rl: 15%
+			arty: 15%
+			harv: 10%
+		SquadSize: 7
 	PlayerColorPalette:
 		BasePalette: terrain
+		RemapIndex: 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95
 	DebugResourceCash:
 	DebugResourceOre:
 	DebugResourceOreCapacity:
@@ -149,7 +203,7 @@ World:
 	BuildingInfluence:
 	ChooseBuildTabOnSelect:
 	BridgeLayer:
-		Bridges: bridge1, bridge2, br1, br2, br3
+		Bridges: bridge1, bridge2, br1, br2, br3, sbridge1, sbridge2, sbridge3, sbridge4
 	CrateDrop:
 		Minimum: 1
 		Maximum: 3
@@ -157,14 +211,23 @@ World:
 		WaterChance: .2
 	PaletteFromCurrentTileset:
 		Name: terrain
+		ShadowIndex: 4
 	PaletteFromFile@chrome:
 		Name: chrome
 		Filename: temperat.pal
+		ShadowIndex: 3
 	PaletteFromFile@effect:
 		Name: effect
 		Filename: temperat.pal
+		ShadowIndex: 4
 	PaletteFromRGBA@shadow:
 		Name: shadow
+		R: 0
+		G: 0
+		B: 0
+		A: 140
+	PaletteFromRGBA@cloak:
+		Name: cloak
 		R: 0
 		G: 0
 		B: 0
@@ -200,6 +263,7 @@ World:
 		Race: soviet
 	BibLayer:
 	ResourceLayer:
+	ResourceClaimLayer:
 	ResourceType@ore:
 		ResourceType: 1
 		Palette: terrain
@@ -231,7 +295,6 @@ World:
 	CreateMPPlayers:
 	MPStartLocations:
 	SpawnMPUnits:
-	EvaAlerts:
 	SpatialBins:
 		BinSize: 4
 	Shroud:
@@ -251,6 +314,7 @@ MINP:
 	InvisibleToEnemy:
 	Tooltip:
 		Name: Anti-Personnel Mine
+		Icon: jmin
 	ProximityCaptor:
 		Types:Mine
 
@@ -267,6 +331,7 @@ MINV:
 	InvisibleToEnemy:
 	Tooltip:
 		Name: Anti-Tank Mine
+		Icon: jmin
 	ProximityCaptor:
 		Types:Mine
 
@@ -287,9 +352,6 @@ CRATE:
 		SelectionShares: 5
 	ExplodeCrateAction@boom:
 		Weapon: CrateExplosion
-		SelectionShares: 5
-	ExplodeCrateAction@nuke:
-		Weapon: CrateNuke
 		SelectionShares: 5
 	HideMapCrateAction:
 		SelectionShares: 5

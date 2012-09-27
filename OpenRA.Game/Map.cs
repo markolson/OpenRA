@@ -60,6 +60,7 @@ namespace OpenRA
 		[FieldLoader.Ignore] public List<MiniYamlNode> Sequences = new List<MiniYamlNode>();
 		[FieldLoader.Ignore] public List<MiniYamlNode> Weapons = new List<MiniYamlNode>();
 		[FieldLoader.Ignore] public List<MiniYamlNode> Voices = new List<MiniYamlNode>();
+		[FieldLoader.Ignore] public List<MiniYamlNode> Notifications = new List<MiniYamlNode>();
 
 		// Binary map data
 		[FieldLoader.Ignore] public byte TileFormat = 1;
@@ -150,6 +151,7 @@ namespace OpenRA
 			Sequences = NodesOrEmpty(yaml, "Sequences");
 			Weapons = NodesOrEmpty(yaml, "Weapons");
 			Voices = NodesOrEmpty(yaml, "Voices");
+			Notifications = NodesOrEmpty(yaml, "Notifications");
 
 			CustomTerrain = new string[MapSize.X, MapSize.Y];
 
@@ -204,6 +206,7 @@ namespace OpenRA
 			root.Add(new MiniYamlNode("Sequences", null, Sequences));
 			root.Add(new MiniYamlNode("Weapons", null, Weapons));
 			root.Add(new MiniYamlNode("Voices", null, Voices));
+			root.Add(new MiniYamlNode("Notifications", null, Notifications));
 
 			var entries = new Dictionary<string, byte[]>();
 			entries.Add("map.bin", SaveBinaryData());
@@ -338,7 +341,7 @@ namespace OpenRA
 			return dataStream.ToArray();
 		}
 
-		public bool IsInMap(int2 xy) { return IsInMap(xy.X, xy.Y); }
+		public bool IsInMap(CPos xy) { return IsInMap(xy.X, xy.Y); }
 		public bool IsInMap(int x, int y) { return Bounds.Contains(x,y); }
 
 		static T[,] ResizeArray<T>(T[,] ts, T t, int width, int height)

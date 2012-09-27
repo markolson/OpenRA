@@ -15,9 +15,8 @@ namespace OpenRA.Mods.RA
 {
 	public class ConquestVictoryConditionsInfo : ITraitInfo
 	{
-		public string WinNotification = null;
-		public string LoseNotification = null;
 		public int NotificationDelay = 1500; // Milliseconds
+
 		public object Create(ActorInitializer init) { return new ConquestVictoryConditions(this); }
 	}
 
@@ -67,7 +66,7 @@ namespace OpenRA.Mods.RA
 				Game.RunAfterDelay(Info.NotificationDelay, () =>
 				{
 					if (Game.IsCurrentWorld(self.World))
-						Sound.Play(Info.LoseNotification);
+						Sound.PlayNotification(self.Owner, "Speech", "Lose", self.Owner.Country.Race);
 				});
 			}
 		}
@@ -81,7 +80,7 @@ namespace OpenRA.Mods.RA
 			if (self.Owner == self.World.LocalPlayer)
 			{
 				self.World.RenderedShroud.Disabled = true;
-				Game.RunAfterDelay(Info.NotificationDelay, () => Sound.Play(Info.WinNotification));
+				Game.RunAfterDelay(Info.NotificationDelay, () => Sound.PlayNotification(self.Owner, "Speech", "Win", self.Owner.Country.Race));
 			}
 		}
 	}

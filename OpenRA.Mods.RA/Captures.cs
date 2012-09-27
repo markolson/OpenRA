@@ -1,6 +1,6 @@
 #region Copyright & License Information
 /*
- * Copyright 2007-2011 The OpenRA Developers (see AUTHORS)
+ * Copyright 2007-2012 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation. For more information,
@@ -8,6 +8,7 @@
  */
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -21,14 +22,18 @@ namespace OpenRA.Mods.RA
 	class CapturesInfo : ITraitInfo
 	{
 		public string[] CaptureTypes = {"building"};
-		public object Create(ActorInitializer init) { return new Captures(this); }
+		public bool WastedAfterwards = true;
+		public object Create(ActorInitializer init) { return new Captures(init.self, this); }
 	}
 
 	class Captures : IIssueOrder, IResolveOrder, IOrderVoice
 	{
 		public readonly CapturesInfo Info;
-		public Captures(CapturesInfo info)
+		readonly Actor self;
+
+		public Captures(Actor self, CapturesInfo info)
 		{
+			this.self = self;
 			Info = info;
 		}
 
@@ -36,7 +41,7 @@ namespace OpenRA.Mods.RA
 		{
 			get
 			{
-				yield return new CaptureOrderTargeter(Info.CaptureTypes);
+				yield return new CaptureOrderTargeter(Info.CaptureTypes, target => CanCapture(target));
 			}
 		}
 
@@ -50,29 +55,40 @@ namespace OpenRA.Mods.RA
 
 		public string VoicePhraseForOrder(Actor self, Order order)
 		{
-			return (order.OrderString == "CaptureActor") ? "Attack" : null;
+			return (order.OrderString == "CaptureActor"
+					&& CanCapture(order.TargetActor)) ? "Attack" : null;
 		}
 
 		public void ResolveOrder(Actor self, Order order)
 		{
 			if (order.OrderString == "CaptureActor")
 			{
+				if (!CanCapture(order.TargetActor)) return;
+
 				self.SetTargetLine(Target.FromOrder(order), Color.Red);
 
 				self.CancelActivity();
-				self.QueueActivity(new Enter(order.TargetActor));
 				self.QueueActivity(new CaptureActor(order.TargetActor));
 			}
+		}
+
+		bool CanCapture(Actor target)
+		{
+			var c = target.TraitOrDefault<Capturable>();
+			return c != null && ( !c.CaptureInProgress || c.Captor.Owner.Stances[self.Owner] != Stance.Ally );
 		}
 	}
 
 	class CaptureOrderTargeter : UnitTraitOrderTargeter<Capturable>
 	{
 		readonly string[] captureTypes;
-		public CaptureOrderTargeter(string[] captureTypes)
-			: base( "CaptureActor", 6, "enter", true, true )
+		readonly Func<Actor, bool> useEnterCursor;
+
+		public CaptureOrderTargeter(string[] captureTypes, Func<Actor, bool> useEnterCursor)
+			: base( "CaptureActor", 6, "enter", true, true)
 		{
 			this.captureTypes = captureTypes;
+			this.useEnterCursor = useEnterCursor;
 		}
 
 		public override bool CanTargetActor(Actor self, Actor target, bool forceAttack, bool forceQueued, ref string cursor)
@@ -87,9 +103,12 @@ namespace OpenRA.Mods.RA
 			if( playerRelationship == Stance.Neutral && !ci.AllowNeutral ) return false;
 
 			IsQueued = forceQueued;
+
+			var Info = self.Info.Traits.Get<CapturesInfo>();
+
 			if (captureTypes.Contains(ci.Type))
 			{
-				cursor = "enter";
+				cursor = (Info.WastedAfterwards) ? (useEnterCursor(target) ? "enter" : "enter-blocked") : "attack";
 				return true;
 			}
 

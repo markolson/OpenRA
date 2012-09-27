@@ -20,9 +20,10 @@ namespace OpenRA.FileFormats
 	public class TerrainTypeInfo
 	{
 		public string Type;
-		public bool AcceptSmudge = true;
+		public string[] AcceptsSmudgeType = { };
 		public bool IsWater = false;
 		public Color Color;
+		public string CustomCursor;
 
 		public TerrainTypeInfo() {}
 		public TerrainTypeInfo(MiniYaml my) { FieldLoader.Load(this, my); }
@@ -36,6 +37,7 @@ namespace OpenRA.FileFormats
 		public string Image;
 		public int2 Size;
 		public bool PickAny;
+		public string Category;
 
 		[FieldLoader.LoadUsing( "LoadTiles" )]
 		public Dictionary<byte, string> Tiles = new Dictionary<byte, string>();

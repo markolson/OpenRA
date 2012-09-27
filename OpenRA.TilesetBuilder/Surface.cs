@@ -1,13 +1,4 @@
-﻿#region Copyright & License Information
-/*
- * Copyright 2007-2011 The OpenRA Developers (see AUTHORS)
- * This file is part of OpenRA, which is free software. It is made
- * available to you under the terms of the GNU General Public License
- * as published by the Free Software Foundation. For more information,
- * see COPYING.
- */
-#endregion
-
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -18,13 +9,32 @@ namespace OpenRA.TilesetBuilder
 	class Surface : Control
 	{
 		public Bitmap Image;
+		private ImageList ImagesListControl;
 		public int[,] TerrainTypes;
 		public List<Template> Templates = new List<Template>();
-		public bool ShowTerrainTypes = true;
+		private bool bShowTerrainTypes;
 		public string InputMode;
+		public Bitmap[] icon;
 		public int TileSize;
+		public int TilesPerRow;
+		//private System.ComponentModel.IContainer components;
+
+		
+		public event Action<int, int, int> UpdateMouseTilePosition = (x, y, t) => { };
 
 		Template CurrentTemplate;
+
+		public bool ShowTerrainTypes
+		{
+			get { return bShowTerrainTypes; }
+			set { bShowTerrainTypes = value; }
+		}
+
+		public ImageList ImagesList
+		{
+			get { return ImagesListControl; }
+			set { ImagesListControl = value; }
+		}
 
 		public Surface()
 		{
@@ -43,34 +53,40 @@ namespace OpenRA.TilesetBuilder
 
 			/* draw the background */
 			e.Graphics.DrawImageUnscaled(Image, 0, 0);
-
 			/* draw terrain type overlays */
 			if (ShowTerrainTypes)
+			{
 				for (var i = 0; i <= TerrainTypes.GetUpperBound(0); i++)
 					for (var j = 0; j <= TerrainTypes.GetUpperBound(1); j++)
 						if (TerrainTypes[i, j] != 0)
 						{
-							e.Graphics.FillRectangle(Brushes.Black, TileSize * i + 10, TileSize * j + 10, 10, 10);
-							e.Graphics.DrawString(TerrainTypes[i, j].ToString(),
-								Font, Brushes.LimeGreen, TileSize * i + 10, TileSize * j + 10);
+							//e.Graphics.FillRectangle(Brushes.Black, TileSize * i + 8, TileSize * j + 8, 16, 16);
+
+							e.Graphics.DrawImage(icon[TerrainTypes[i, j]], TileSize * i + 8, TileSize * j + 8, 16, 16);
+
+							//e.Graphics.DrawString(TerrainTypes[i, j].ToString(),
+							//Font, Brushes.LimeGreen, TileSize * i + 10, TileSize * j + 10);
 						}
+			}
 
 			/* draw template outlines */
 			foreach (var t in Templates)
 			{
+				System.Drawing.Pen pen = Pens.White;
+
 				foreach (var c in t.Cells.Keys)
 				{
 					if (CurrentTemplate == t)
 						e.Graphics.FillRectangle(currentBrush, TileSize * c.X, TileSize * c.Y, TileSize, TileSize);
 
 					if (!t.Cells.ContainsKey(c + new int2(-1, 0)))
-						e.Graphics.DrawLine(Pens.Red, (TileSize * c).ToPoint(), (TileSize * (c + new int2(0, 1))).ToPoint());
+						e.Graphics.DrawLine(pen, (TileSize * c).ToPoint(), (TileSize * (c + new int2(0, 1))).ToPoint());
 					if (!t.Cells.ContainsKey(c + new int2(+1, 0)))
-						e.Graphics.DrawLine(Pens.Red, (TileSize * (c + new int2(1, 0))).ToPoint(), (TileSize * (c + new int2(1, 1))).ToPoint());
+						e.Graphics.DrawLine(pen, (TileSize * (c + new int2(1, 0))).ToPoint(), (TileSize * (c + new int2(1, 1))).ToPoint());
 					if (!t.Cells.ContainsKey(c + new int2(0, +1)))
-						e.Graphics.DrawLine(Pens.Red, (TileSize * (c + new int2(0, 1))).ToPoint(), (TileSize * (c + new int2(1, 1))).ToPoint());
+						e.Graphics.DrawLine(pen, (TileSize * (c + new int2(0, 1))).ToPoint(), (TileSize * (c + new int2(1, 1))).ToPoint());
 					if (!t.Cells.ContainsKey(c + new int2(0, -1)))
-						e.Graphics.DrawLine(Pens.Red, (TileSize * c).ToPoint(), (TileSize * (c + new int2(1, 0))).ToPoint());
+						e.Graphics.DrawLine(pen, (TileSize * c).ToPoint(), (TileSize * (c + new int2(1, 0))).ToPoint());
 				}
 			}
 		}
@@ -119,6 +135,14 @@ namespace OpenRA.TilesetBuilder
 					}
 				}
 			}
+
+			UpdateMouseTilePosition(pos.X, pos.Y, (pos.Y * TilesPerRow) + pos.X);
+		}
+
+		private void InitializeComponent()
+		{
+			this.SuspendLayout();
+			this.ResumeLayout(false);
 		}
 	}
 }

@@ -18,7 +18,11 @@ namespace OpenRA.Mods.RA.Activities
 {
 	public class UnloadCargo : Activity
 	{
-		int2? ChooseExitTile(Actor self, Actor cargo)
+		bool unloadAll;
+
+		public UnloadCargo(bool unloadAll) { this.unloadAll = unloadAll; }
+		
+		CPos? ChooseExitTile(Actor self, Actor cargo)
 		{
 			// is anyone still hogging this tile?
 			if (self.World.ActorMap.GetUnitsAt(self.Location).Count() > 1)
@@ -29,10 +33,23 @@ namespace OpenRA.Mods.RA.Activities
 			for (var i = -1; i < 2; i++)
 				for (var j = -1; j < 2; j++)
 					if ((i != 0 || j != 0) &&
-						mobile.CanEnterCell(self.Location + new int2(i, j)))
-						return self.Location + new int2(i, j);
+						mobile.CanEnterCell(self.Location + new CVec(i, j)))
+						return self.Location + new CVec(i, j);
 
 			return null;
+		}
+
+		CPos? ChooseRallyPoint(Actor self)
+		{
+			var mobile = self.Trait<Mobile>();
+
+			for (var i = -1; i < 2; i++)
+				for (var j = -1; j < 2; j++)
+					if ((i != 0 || j != 0) &&
+						mobile.CanEnterCell(self.Location + new CVec(i, j)))
+						return self.Location + new CVec(i, j);
+
+			return self.Location;
 		}
 
 		public override Activity Tick(Actor self)
@@ -70,7 +87,7 @@ namespace OpenRA.Mods.RA.Activities
 				if (actor.Destroyed) return;
 
 				var mobile = actor.Trait<Mobile>();
-				mobile.Facing = Util.GetFacing( exitPx - currentPx, mobile.Facing );
+				mobile.Facing = Util.GetFacing( (exitPx - currentPx).ToInt2(), mobile.Facing );
 				mobile.SetPosition(actor, exitTile.Value);
 				mobile.AdjustPxPosition(actor, currentPx);
 				var speed = mobile.MovementSpeedForCell(actor, exitTile.Value);
@@ -80,10 +97,13 @@ namespace OpenRA.Mods.RA.Activities
 				actor.CancelActivity();
 				actor.QueueActivity(new Drag(currentPx, exitPx, length));
 				actor.QueueActivity(mobile.MoveTo(exitTile.Value, 0));
-				actor.SetTargetLine(Target.FromCell(exitTile.Value), Color.Green, false);
+
+				var rallyPoint = ChooseRallyPoint(actor).Value;
+				actor.QueueActivity(mobile.MoveTo(rallyPoint, 0));
+				actor.SetTargetLine(Target.FromCell(rallyPoint), Color.Green, false);
 			});
 
-			return this;
+			return unloadAll ? this : NextActivity;
 		}
 	}
 }

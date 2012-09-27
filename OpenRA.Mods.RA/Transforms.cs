@@ -48,7 +48,11 @@ namespace OpenRA.Mods.RA
 
 		bool CanDeploy()
 		{
-			return (bi == null || self.World.CanPlaceBuilding(Info.IntoActor, bi, self.Location + Info.Offset, self));
+			var b = self.TraitOrDefault<Building>();
+			if (b != null && b.Locked)
+				return false;
+
+			return (bi == null || self.World.CanPlaceBuilding(Info.IntoActor, bi, self.Location + (CVec)Info.Offset, self));
 		}
 
 		public IEnumerable<IOrderTargeter> Orders
@@ -68,7 +72,9 @@ namespace OpenRA.Mods.RA
 		{
 			if (order.OrderString == "DeployTransform")
 			{
-				if (!CanDeploy())
+				var b = self.TraitOrDefault<Building>();
+
+				if (!CanDeploy() || (b != null && !b.Lock()))
 				{
 					foreach (var s in Info.NoTransformSounds)
 						Sound.PlayToPlayer(self.Owner, s);
@@ -83,7 +89,7 @@ namespace OpenRA.Mods.RA
 				if (rb != null && self.Info.Traits.Get<RenderBuildingInfo>().HasMakeAnimation)
 					self.QueueActivity(new MakeAnimation(self, true, () => rb.PlayCustomAnim(self, "make")));
 
-				self.QueueActivity(new Transform(self, Info.IntoActor) {Offset = Info.Offset, Facing = Info.Facing, Sounds = Info.TransformSounds});
+				self.QueueActivity(new Transform(self, Info.IntoActor) { Offset = (CVec)Info.Offset, Facing = Info.Facing, Sounds = Info.TransformSounds });
 			}
 		}
 	}

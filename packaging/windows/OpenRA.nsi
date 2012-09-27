@@ -116,8 +116,6 @@ SectionEnd
 
 SectionGroup /e "Mods"
 	Section "Red Alert" RA
-		CreateDirectory "$TEMP\ra-packages"
-		CopyFiles /SILENT "$INSTDIR\mods\ra\packages\*.mix" "$TEMP\ra-packages"
 		RMDir /r "$INSTDIR\mods\ra"
 		SetOutPath "$INSTDIR\mods\ra"
 		File "${SRCDIR}\mods\ra\*.*"
@@ -127,13 +125,8 @@ SectionGroup /e "Mods"
 		File /r "${SRCDIR}\mods\ra\rules"
 		File /r "${SRCDIR}\mods\ra\tilesets"
 		File /r "${SRCDIR}\mods\ra\uibits"
-		CreateDirectory "$INSTDIR\mods\ra\packages"
-		CopyFiles /SILENT "$TEMP\ra-packages\*.mix" "$INSTDIR\mods\ra\packages"
-		RMDir /r "$TEMP\ra-packages"
 	SectionEnd
 	Section "Command & Conquer" CNC
-		CreateDirectory "$TEMP\cnc-packages"
-		CopyFiles /SILENT "$INSTDIR\mods\cnc\packages\*.mix" "$TEMP\cnc-packages"
 		RMDir /r "$INSTDIR\mods\cnc"
 		SetOutPath "$INSTDIR\mods\cnc"
 		File "${SRCDIR}\mods\cnc\*.*"
@@ -144,9 +137,17 @@ SectionGroup /e "Mods"
 		File /r "${SRCDIR}\mods\cnc\sequences"
 		File /r "${SRCDIR}\mods\cnc\tilesets"
 		File /r "${SRCDIR}\mods\cnc\uibits"
-		CreateDirectory "$INSTDIR\mods\cnc\packages"
-		CopyFiles /SILENT "$TEMP\cnc-packages\*.mix" "$INSTDIR\mods\cnc\packages"
-		RMDir /r "$TEMP\cnc-packages"
+	SectionEnd
+	Section "Dune 2000" D2K
+		RMDir /r "$INSTDIR\mods\d2k"
+		SetOutPath "$INSTDIR\mods\d2k"
+		File "${SRCDIR}\mods\d2k\*.*"
+		File /r "${SRCDIR}\mods\d2k\maps"
+		File /r "${SRCDIR}\mods\d2k\chrome"
+		File /r "${SRCDIR}\mods\d2k\bits"
+		File /r "${SRCDIR}\mods\d2k\rules"
+		File /r "${SRCDIR}\mods\d2k\tilesets"
+		File /r "${SRCDIR}\mods\d2k\uibits"
 	SectionEnd
 SectionGroupEnd
 
@@ -293,11 +294,13 @@ SectionEnd
 LangString DESC_Client ${LANG_ENGLISH} "OpenRA client and dependencies"
 LangString DESC_RA ${LANG_ENGLISH} "Base Red Alert mod"
 LangString DESC_CNC ${LANG_ENGLISH} "Base Command and Conquer mod"
+LangString DESC_D2K ${LANG_ENGLISH} "Base Dune 2000 mod"
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 	!insertmacro MUI_DESCRIPTION_TEXT ${Client} $(DESC_Client)
 	!insertmacro MUI_DESCRIPTION_TEXT ${RA} $(DESC_RA)
 	!insertmacro MUI_DESCRIPTION_TEXT ${CNC} $(DESC_CNC)
+	!insertmacro MUI_DESCRIPTION_TEXT ${D2K} $(DESC_D2K)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ;***************************

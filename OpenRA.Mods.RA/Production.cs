@@ -11,6 +11,7 @@
 using System.Drawing;
 using System.Linq;
 using OpenRA.FileFormats;
+using OpenRA.Mods.RA;
 using OpenRA.Mods.RA.Air;
 using OpenRA.Mods.RA.Move;
 using OpenRA.Traits;
@@ -28,9 +29,12 @@ namespace OpenRA.Mods.RA
 
 	public class ExitInfo : TraitInfo<Exit>
 	{
-		public readonly int2 SpawnOffset = int2.Zero; // in px relative to CenterLocation
-		public readonly int2 ExitCell = int2.Zero; // in cells relative to TopLeft
+		public readonly int2 SpawnOffset = int2.Zero;	// in px relative to CenterLocation
+		public readonly int2 ExitCell = int2.Zero;			// in cells relative to TopLeft
 		public readonly int Facing = -1;
+
+		public PVecInt SpawnOffsetVector { get { return (PVecInt)SpawnOffset; } }
+		public CVec ExitCellVector { get { return (CVec)ExitCell; } }
 	}
 	public class Exit {}
 
@@ -49,8 +53,8 @@ namespace OpenRA.Mods.RA
 				new OwnerInit( self.Owner ),
 			});
 
-			var exit = self.Location + exitinfo.ExitCell;
-			var spawn = self.Trait<IHasLocation>().PxPosition + exitinfo.SpawnOffset;
+			var exit = self.Location + exitinfo.ExitCellVector;
+			var spawn = self.Trait<IHasLocation>().PxPosition + exitinfo.SpawnOffsetVector;
 
 			var teleportable = newUnit.Trait<ITeleportable>();
 			var facing = newUnit.TraitOrDefault<IFacing>();
@@ -79,7 +83,7 @@ namespace OpenRA.Mods.RA
 				t.UnitProduced(self, newUnit, exit);
 		}
 
-		static int2 MoveToRallyPoint(Actor self, Actor newUnit, int2 exitLocation)
+		static CPos MoveToRallyPoint(Actor self, Actor newUnit, CPos exitLocation)
 		{
 			var rp = self.TraitOrDefault<RallyPoint>();
 			if (rp == null)
@@ -88,7 +92,8 @@ namespace OpenRA.Mods.RA
 			var mobile = newUnit.TraitOrDefault<Mobile>();
 			if (mobile != null)
 			{
-				newUnit.QueueActivity(mobile.MoveTo(rp.rallyPoint, 1));
+				newUnit.QueueActivity(new AttackMove.AttackMoveActivity(
+					newUnit, mobile.MoveTo(rp.rallyPoint, 1)));
 				return rp.rallyPoint;
 			}
 
@@ -126,7 +131,7 @@ namespace OpenRA.Mods.RA
 			var mobileInfo = producee.Traits.GetOrDefault<MobileInfo>();
 
 			return mobileInfo == null ||
-				mobileInfo.CanEnterCell(self.World, self.Owner, self.Location + s.ExitCell, self, true);
+				mobileInfo.CanEnterCell(self.World, self, self.Location + s.ExitCellVector, self, true, true);
 		}
 	}
 }

@@ -12,6 +12,15 @@ FCOM:
 		Range: 10
 	Bib:
 
+HOSP:
+	Inherits: ^CivBuilding
+	Building:
+		Footprint: xx xx
+		Dimensions: 2,2
+	Tooltip:
+		Name: Hospital
+	RepairsUnits:
+
 V01:
 	Inherits: ^CivBuilding
 	Building:
@@ -19,6 +28,38 @@ V01:
 		Dimensions: 2,2
 	Tooltip:
 		Name: Church
+	RevealsShroud:
+		Range: 10
+	TransformOnCapture:
+		IntoActor: v01.sniper
+		SkipMakeAnims: true
+	Capturable:
+		Type: civilianbuilding
+		CaptureCompleteTime: 0
+
+V01.SNIPER:
+	Inherits: V01
+	RenderBuilding:
+		Image: V01
+	RenderRangeCircle:
+	AutoTarget:
+	Turreted:
+		ROT: 255
+	AttackTurreted:
+		PrimaryWeapon: Sniper
+		PrimaryLocalOffset: 0,-11,0,0,0
+	Cargo:
+		InitialUnits: sniper
+		Types: Infantry
+		MaxWeight: 1
+		PipCount: 1
+	TransformOnPassenger@Sniper:
+		PassengerTypes: sniper
+		OnExit: v01
+		SkipMakeAnims: true
+		BecomeNeutral: true
+	-Capturable:
+
 V02:
 	Inherits: ^CivBuilding
 	Building:
@@ -89,11 +130,9 @@ V18:
 	Inherits: ^CivField
 
 BARL:
-	Inherits: ^Building
+	Inherits: ^CivBuilding
 	Selectable:
 		Priority: 0
-	-RepairableBuilding:
-	-GivesBuildableArea:
 	Health:
 		HP: 10
 	Explodes:
@@ -101,11 +140,9 @@ BARL:
 		Name: Explosive Barrel
 
 BRL3:
-	Inherits: ^Building
+	Inherits: ^CivBuilding
 	Selectable:
 		Priority: 0
-	-RepairableBuilding:
-	-GivesBuildableArea:
 	Health:
 		HP: 10
 	Explodes:
@@ -124,6 +161,15 @@ MISS:
 	Armor:
 		Type: Wood
 	Bib:
+
+BIO:
+	Inherits: ^CivBuilding
+	Building:
+		Footprint: xx xx
+		Dimensions: 2,2
+	Tooltip:
+		Name: Biological Lab
+
 
 OILB:
 	Inherits: ^CivBuilding
@@ -197,3 +243,40 @@ BRIDGE2:
 	Building:
 		Footprint: _____ _____
 		Dimensions: 5,2
+
+SBRIDGE1:
+	Inherits: ^SVBridge
+	Bridge:
+		Template: 520
+		DamagedTemplate: 521
+		DestroyedTemplate: 522
+	Building:
+		Footprint: ___ ___
+		Dimensions: 3,2
+SBRIDGE2:
+	Inherits: ^SHBridge
+	Bridge:
+		Template: 531
+		DamagedTemplate: 532
+		DestroyedTemplate: 533
+	Building:
+		Footprint: __ __ __
+		Dimensions: 2,3
+SBRIDGE3:
+	Inherits: ^STDBridge
+	Bridge:
+		Template: 523
+		DamagedTemplate: 524
+		DestroyedTemplate: 525
+	Building:
+		Footprint: ____ ____
+		Dimensions: 4,2
+SBRIDGE4:
+	Inherits: ^STDBridge
+	Bridge:
+		Template: 527
+		DamagedTemplate: 528
+		DestroyedTemplate: 529
+	Building:
+		Footprint: ____ ____
+		Dimensions: 4,2

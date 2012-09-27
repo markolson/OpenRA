@@ -74,7 +74,7 @@ namespace OpenRA.Mods.RA.Widgets
 
 			var mi = new MouseInput
 			{
-				Location = loc,
+				Location = loc.ToInt2(),
 				Button = MouseButton.Right,
 				Modifiers = Game.GetModifierKeys()
 			};
@@ -95,7 +95,7 @@ namespace OpenRA.Mods.RA.Widgets
 
 			var loc = MinimapPixelToCell(mi.Location);
 			if ((mi.Event == MouseInputEvent.Down || mi.Event == MouseInputEvent.Move) && mi.Button == MouseButton.Left)
-				Game.viewport.Center(loc);
+				Game.viewport.Center(loc.ToFloat2());
 
 			if (mi.Event == MouseInputEvent.Down && mi.Button == MouseButton.Right)
 			{
@@ -105,12 +105,12 @@ namespace OpenRA.Mods.RA.Widgets
 					Event = MouseInputEvent.Down,
 					Button = MouseButton.Right,
 					Modifiers = mi.Modifiers,
-					Location = (loc * Game.CellSize - Game.viewport.Location).ToInt2()
+					Location = (loc.ToPPos().ToFloat2() - Game.viewport.Location).ToInt2()
 				};
 
 				if (WorldInteractionController != null)
 				{
-					var controller = Ui.Root.GetWidget<WorldInteractionControllerWidget>(WorldInteractionController);
+					var controller = Ui.Root.Get<WorldInteractionControllerWidget>(WorldInteractionController);
 					controller.HandleMouseInput(fakemi);
 					fakemi.Event = MouseInputEvent.Up;
 					controller.HandleMouseInput(fakemi);
@@ -128,7 +128,6 @@ namespace OpenRA.Mods.RA.Widgets
 		public override void Draw()
 		{
 			if (world == null) return;
-			if (world.LocalPlayer != null && world.LocalPlayer.WinState != WinState.Undefined) return;
 
 			var o = new float2(mapRect.Location.X, mapRect.Location.Y + world.Map.Bounds.Height * previewScale * (1 - radarMinimapHeight)/2);
 			var s = new float2(mapRect.Size.Width, mapRect.Size.Height*radarMinimapHeight);
@@ -142,9 +141,9 @@ namespace OpenRA.Mods.RA.Widgets
 			if (hasRadar && !animating)
 			{
 				var wr = Game.viewport.WorldRect;
-				var wro = new int2(wr.X, wr.Y);
+				var wro = new CPos(wr.X, wr.Y);
 				var tl = CellToMinimapPixel(wro);
-				var br = CellToMinimapPixel(wro + new int2(wr.Width, wr.Height));
+				var br = CellToMinimapPixel(wro + new CVec(wr.Width, wr.Height));
 
 				Game.Renderer.EnableScissor((int)mapRect.Left, (int)mapRect.Top, (int)mapRect.Width, (int)mapRect.Height);
 				Game.Renderer.LineRenderer.DrawRect(tl, br, Color.White);
@@ -198,20 +197,20 @@ namespace OpenRA.Mods.RA.Widgets
 				animating = false;
 		}
 
-		int2 CellToMinimapPixel(int2 p)
+		int2 CellToMinimapPixel(CPos p)
 		{
 			var viewOrigin = new float2(mapRect.X, mapRect.Y);
-			var mapOrigin = new float2(world.Map.Bounds.Left, world.Map.Bounds.Top);
+			var mapOrigin = new CPos(world.Map.Bounds.Left, world.Map.Bounds.Top);
 
-			return (viewOrigin + previewScale * (p - mapOrigin)).ToInt2();
+			return (viewOrigin + previewScale * (p - mapOrigin).ToFloat2()).ToInt2();
 		}
 
-		int2 MinimapPixelToCell(int2 p)
+		CPos MinimapPixelToCell(int2 p)
 		{
 			var viewOrigin = new float2(mapRect.X, mapRect.Y);
-			var mapOrigin = new float2(world.Map.Bounds.Left, world.Map.Bounds.Top);
+			var mapOrigin = new CPos(world.Map.Bounds.Left, world.Map.Bounds.Top);
 
-			return (mapOrigin + (1/previewScale) * (p - viewOrigin)).ToInt2();
+			return (CPos)(mapOrigin.ToFloat2() + (1f / previewScale) * (p - viewOrigin)).ToInt2();
 		}
 	}
 }

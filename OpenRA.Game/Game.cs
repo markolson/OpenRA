@@ -166,7 +166,7 @@ namespace OpenRA
 					{
 						var isNetTick = LocalTick % NetTickScale == 0;
 
-						if (!isNetTick || orderManager.IsReadyForNextFrame)
+						if ((!isNetTick || orderManager.IsReadyForNextFrame) && !orderManager.GamePaused )
 						{
 							++orderManager.LocalFrameNumber;
 
@@ -187,6 +187,8 @@ namespace OpenRA
 						else
 							if (orderManager.NetFrameNumber == 0)
 								orderManager.LastTickTime = Environment.TickCount;
+					
+						viewport.Tick();
 					}
 				}
 		}
@@ -243,7 +245,6 @@ namespace OpenRA
 			AppDomain.CurrentDomain.AssemblyResolve += FileSystem.ResolveAssembly;
 
 			Settings = new Settings(Platform.SupportDir + "settings.yaml", args);
-			Settings.Save();
 
 			Log.LogPath = Platform.SupportDir + "Logs" + Path.DirectorySeparatorChar;
 			Log.AddChannel("perf", "perf.log");
@@ -258,7 +259,7 @@ namespace OpenRA
 			foreach(var mod in Mod.AllMods)
 				Console.WriteLine("\t{0}: {1} ({2})", mod.Key, mod.Value.Title, mod.Value.Version);
 
-			Sound.Create();
+			Sound.Create(Settings.Sound.Engine);
 			InitializeWithMods(Settings.Game.Mods);
 		}
 
@@ -277,11 +278,11 @@ namespace OpenRA
 			if (orderManager != null)
 				orderManager.Dispose();
 
-			// Discard any invalid mods
+			// Discard any invalid mods, set RA as default
 			var mm = mods.Where( m => Mod.AllMods.ContainsKey( m ) ).ToArray();
+			if (mm.Length == 0) mm = new[] { "ra" };
 			Console.WriteLine("Loading mods: {0}", mm.JoinWith(","));
 			Settings.Game.Mods = mm;
-			Settings.Save();
 
 			Sound.StopMusic();
 			Sound.StopVideo();
@@ -300,7 +301,39 @@ namespace OpenRA
 			JoinLocal();
 			viewport = new Viewport(new int2(Renderer.Resolution), Rectangle.Empty, Renderer);
 
-			modData.LoadScreen.StartGame();
+			if (Game.Settings.Server.Dedicated)
+			{
+				while (true)
+				{
+					Game.Settings.Server.Map = WidgetUtils.ChooseInitialMap(Game.Settings.Server.Map);
+					Game.Settings.Save();
+					Game.CreateServer(new ServerSettings(Game.Settings.Server));
+					while(true)
+					{
+						System.Threading.Thread.Sleep(100);
+
+						if((server.GameStarted)&&(server.conns.Count<=1))
+						{
+							Console.WriteLine("No one is playing, shutting down...");
+							server.Shutdown();
+							break;
+						}
+					}
+					if (Game.Settings.Server.DedicatedLoop)
+					{
+						Console.WriteLine("Starting a new server instance...");
+						continue;
+					}
+					else
+						break;
+				}
+				System.Environment.Exit(0);
+			}
+			else
+			{
+				modData.LoadScreen.StartGame();
+				Settings.Save();
+			}
 		}
 
 		public static void LoadShellMap()
@@ -389,6 +422,7 @@ namespace OpenRA
 			// Work around a miscompile in mono 2.6.7:
 			// booleans that default to true cannot be set false by an initializer
 			settings.AdvertiseOnline = false;
+			settings.AllowUPnP = false;
 
 			server = new Server.Server(new IPEndPoint(IPAddress.Loopback, 0),
 				Game.Settings.Game.Mods, settings, modData);
