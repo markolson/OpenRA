@@ -100,15 +100,17 @@ namespace OpenRA.Mods.RA
 
 		public bool IsVisible(Shroud s, Actor self)
 		{			
-			if (s == null) {
-				if (!Cloaked || self.Owner == self.World.LocalPlayer ||
-					self.Owner.Stances[self.World.LocalPlayer] == Stance.Ally)
-					return true;
-			}
-			else {
-				if (!Cloaked || self.Owner == s.Owner ||
-					self.Owner.Stances[s.Owner] == Stance.Ally)
-					return true;
+		    if (self.World.LocalPlayer != null) {
+			    if (s == null) {
+    				if (!Cloaked || self.Owner == self.World.LocalPlayer ||
+    					self.Owner.Stances[self.World.LocalPlayer] == Stance.Ally)
+    					return true;
+    			}
+    			else {
+    				if (!Cloaked || self.Owner == s.Owner ||
+    					self.Owner.Stances[s.Owner] == Stance.Ally)
+    					return true;
+    			}
 			}
 			
 			return self.World.ActorsWithTrait<DetectCloaked>().Any(a =>
