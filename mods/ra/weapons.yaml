@@ -1,6 +1,6 @@
 Colt45:
 	ROF: 5
-	Range: 5.75
+	Range: 7
 	Report: GUN5
 	Projectile: Bullet
 		Speed: 100
@@ -532,7 +532,7 @@ MammothTusk:
 		ContrailLength: 10
 		Inaccuracy: 3
 		Image: DRAGON
-		ROT: 5
+		ROT: 10
 		RangeLimit: 40
 	Warhead:
 		Spread: 6
@@ -1140,6 +1140,23 @@ UnitExplodeSmall:
 		Explosion: large_explosion
 		InfDeath: 4
 		ImpactSound: kaboom15
+		
+BarrelExplode:
+	Warhead:
+		Damage: 500
+		Spread: 10
+		Versus: 
+			None: 120%
+			Wood: 200%
+			Light: 50%
+			Heavy: 25%
+			Concrete: 10%
+		Explosion: napalm
+		InfDeath: 4
+		ImpactSound: firebl3
+		SmudgeType: Scorch
+		Delay: 5
+		Size: 2,1
 
 Crush:
 	Warhead:
@@ -1278,3 +1295,33 @@ Sniper:
 			Light: 5%
 			Heavy: 5%
 		InfDeath: 2
+
+ChronoTusk:
+	ROF: 60
+	Range: 6
+	Report: MISSILE6
+	ValidTargets: Ground
+	Projectile: Missile
+		Speed: 35
+		Arm: 2
+		High: true
+		Shadow: false
+		Proximity: true
+		Trail: smokey
+		ContrailLength: 10
+		Inaccuracy: 3
+		Image: DRAGON
+		ROT: 10
+		RangeLimit: 22
+	Warhead:
+		Spread: 3
+		Versus:
+			None: 25%
+			Wood: 75%
+			Light: 75%
+			Concrete: 50%
+		Explosion: med_explosion
+		WaterExplosion: med_splash
+		InfDeath: 4
+		SmudgeType: Crater
+		Damage: 30

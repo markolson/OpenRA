@@ -1231,6 +1231,7 @@ KENN:
 		Range: 4
 	IronCurtainable:
 	-EmitInfantryOnSell:
+	-AcceptsSupplies:
 
 FIX:
 	Inherits: ^Building

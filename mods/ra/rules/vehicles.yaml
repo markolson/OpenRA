@@ -5,6 +5,7 @@ V2RL:
 		BuildPaletteOrder: 40
 		Prerequisites: dome
 		Owner: soviet
+		Hotkey: v
 	Valued:
 		Cost: 700
 	Tooltip:
@@ -32,6 +33,7 @@ V2RL:
 		Queue: Vehicle
 		BuildPaletteOrder: 40
 		Owner: allies
+		Hotkey: g
 	Valued:
 		Cost: 700
 	Tooltip:
@@ -65,6 +67,7 @@ V2RL:
 		Queue: Vehicle
 		BuildPaletteOrder: 60
 		Owner: allies
+		Hotkey: f
 	Valued:
 		Cost: 850
 	Tooltip:
@@ -101,6 +104,7 @@ V2RL:
 		Queue: Vehicle
 		BuildPaletteOrder: 40
 		Owner: soviet
+		Hotkey: h
 	Valued:
 		Cost: 1150
 	Tooltip:
@@ -139,6 +143,7 @@ V2RL:
 		BuildPaletteOrder: 100
 		Prerequisites: stek
 		Owner: soviet
+		Hotkey: m
 	Valued:
 		Cost: 1800
 	Tooltip:
@@ -185,6 +190,7 @@ ARTY:
 		BuildPaletteOrder: 80
 		Prerequisites: dome
 		Owner: allies
+		Hotkey: r
 	Valued:
 		Cost: 600
 	Tooltip:
@@ -214,6 +220,7 @@ HARV:
 		BuildPaletteOrder: 10
 		Prerequisites: proc
 		Owner: allies,soviet
+		Hotkey: e
 	Valued:
 		Cost: 1100
 	Tooltip:
@@ -256,6 +263,7 @@ MCV:
 		BuildPaletteOrder: 110
 		Prerequisites: fix
 		Owner: allies,soviet
+		Hotkey: b
 	Valued:
 		Cost: 2000
 	Tooltip:
@@ -292,6 +300,7 @@ JEEP:
 		Queue: Vehicle
 		BuildPaletteOrder: 30
 		Owner: allies
+		Hotkey: n
 	Valued:
 		Cost: 500
 	Tooltip:
@@ -326,6 +335,7 @@ APC:
 		Queue: Vehicle
 		BuildPaletteOrder: 50
 		Owner: soviet
+		Hotkey: c
 	Valued:
 		Cost: 850
 	Tooltip:
@@ -358,6 +368,7 @@ MNLY.AP:
 		BuildPaletteOrder: 30
 		Prerequisites: fix
 		Owner: soviet
+		Hotkey: p
 	Valued:
 		Cost: 800
 	Tooltip:
@@ -389,6 +400,7 @@ MNLY.AT:
 		BuildPaletteOrder: 30
 		Prerequisites: fix
 		Owner: allies
+		Hotkey: i
 	Valued:
 		Cost: 800
 	Tooltip:
@@ -420,6 +432,7 @@ TRUK:
 		BuildPaletteOrder: 120
 		Prerequisites: weap
 		Owner: allies, soviet
+		Hotkey: u
 	Valued:
 		Cost: 500
 	Tooltip:
@@ -515,11 +528,12 @@ TTNK:
 		BuildPaletteOrder: 130
 		Prerequisites: stek,tsla
 		Owner: soviet
+		Hotkey: l
 	Valued:
-		Cost: 1500
+		Cost: 1350
 	Tooltip:
 		Name: Tesla Tank
-		Description: Tank with mounted tesla coil.\n Strong vs Infantry.\n Weak vs Tanks
+		Description: Tank with mounted tesla coil.\n  Strong vs Infantry, Light Vehicles\n  and Buildings  \n  Weak vs Tanks, Aircraft
 	Health:
 		HP: 150
 	Armor:
@@ -543,11 +557,12 @@ FTRK:
 		Queue: Vehicle
 		BuildPaletteOrder: 30
 		Owner: soviet
+		Hotkey: k
 	Valued:
 		Cost: 600
 	Tooltip:
 		Name: Flak Truck
-		Description: Flak Truck, good for scouting.\n  Strong vs Aircraft
+		Description: Flak Truck, good for scouting.\n  Strong vs Light Vehicles, Aircraft  \n  Weak vs Tanks
 	Health:
 		HP: 120
 	Armor: 
@@ -578,17 +593,18 @@ DTRK:
 		BuildPaletteOrder: 140
 		Prerequisites: stek
 		Owner: soviet
+		Hotkey: o
 	Valued:
 		Cost: 2500
 	Tooltip:
 		Name: Demolition Truck
-		Description: Demolition Truck, actively armed with explosives.\n  Strong vs Everything,\n Weak vs Everything
+		Description: Demolition Truck, actively armed with explosives.\n  Strong vs Everything\n  Weak vs Everything
 	Health:
 		HP: 50
 	Armor:
 		Type: Light
 	Mobile:
-		Speed: 8
+		Speed: 6
 	RevealsShroud:
 		Range: 3
 	RenderUnit:
@@ -601,3 +617,35 @@ DTRK:
 	-IronCurtainable:
 	Chronoshiftable:
 		ExplodeInstead: yes
+
+CTNK:
+	Inherits: ^Vehicle
+	Buildable:
+		Queue: Vehicle
+		BuildPaletteOrder: 140
+		Prerequisites: atek
+		Owner: allies
+		Hotkey: j
+	Valued:
+		Cost: 1200
+	Tooltip:
+		Name: Chrono Tank
+		Description: Chrono Tank, teleports to areas within range.\n  Strong vs Vehicles, Buildings\n  Weak vs Tanks
+	Selectable:
+		Bounds: 28,28
+	Health:
+		HP: 260
+	Armor:
+		Type: Light
+	Mobile:
+		Speed: 8
+	RevealsShroud:
+		Range: 6
+	RenderUnit:
+	AutoTarget:
+	AttackFrontal:
+		PrimaryWeapon: ChronoTusk
+		SecondaryWeapon: ChronoTusk
+		PrimaryLocalOffset: -4,0,0,0,0, -4,0,0,0,0
+		SecondaryLocalOffset: 4,0,0,0,25, 4,0,0,0,-25
+	ChronoshiftDeploy:
