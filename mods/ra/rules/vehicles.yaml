@@ -201,7 +201,7 @@ ARTY:
 	Armor:
 		Type: Light
 	Mobile:
-		ROT: 2
+		ROT: 3
 		Speed: 6
 	RevealsShroud:
 		Range: 5
