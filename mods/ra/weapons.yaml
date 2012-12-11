@@ -799,8 +799,8 @@ SubMissile:
 		WaterImpactSound: splash9
 
 Stinger:
-	ROF: 60
-	Range: 9
+	ROF: 80
+	Range: 8
 	Report: MISSILE6
 	Burst: 2
 	BurstDelay: 0
@@ -828,7 +828,7 @@ Stinger:
 		WaterExplosion: med_splash
 		InfDeath: 4
 		SmudgeType: Crater
-		Damage: 30
+		Damage: 40
 		
 TorpTube:
 	ROF: 100
@@ -841,9 +841,9 @@ TorpTube:
 	Projectile: Missile
 		Image: MISSILE
 		Arm: 3
-		Speed: 10
+		Speed: 15
 		Trail: bubbles
-		ROT: 1
+		ROT: 5
 		RangeLimit: 160
 	Warhead:
 		Spread: 3
