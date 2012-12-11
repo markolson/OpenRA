@@ -695,7 +695,7 @@ GUN:
 		Power: -40
 	-GivesBuildableArea:
 	Health:
-		HP: 400
+		HP: 500
 	Armor:
 		Type: Heavy
 	RevealsShroud:
