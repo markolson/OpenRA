@@ -1,5 +1,1 @@
-OpenRA is a Libre/Free Real Time Strategy game engine supporting early Westwood games like Command & Conquer and Command & Conquer: Red Alert.
-
-Distributed mods include a reimagining and updating of both the Red Alert and Command & Conquer multiplayer games.
-
-Please read INSTALL on how to install an OpenRA development environment and HACKING for an overview of the engine.
+This branch is to be focused on getting a static fog-of-war layer working, where players without GPS and without visibility do not have their fog-of-war rendering updated until they regain visibility. NO MORE KNOWING WHEN AND WHERE PEOPLE ARE BUILDING STUFF.
