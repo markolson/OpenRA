@@ -843,7 +843,7 @@ TorpTube:
 		Arm: 3
 		Speed: 15
 		Trail: bubbles
-		ROT: 5
+		ROT: 2
 		RangeLimit: 160
 	Warhead:
 		Spread: 3
