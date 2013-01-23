@@ -133,16 +133,6 @@ namespace OpenRA.Traits
 				Dirty();
 		}
 		
-		public void MergeShroud(Shroud s) {
-		    for (int i = map.Bounds.Left; i < map.Bounds.Right; i++) {
-				for (int j = map.Bounds.Top; j < map.Bounds.Bottom; j++) {
-				    if (s.exploredCells[i,j] == true)
-					    exploredCells[i, j] = true;
-				}
-			exploredBounds = Rectangle.Union(exploredBounds.Value, s.exploredBounds.Value);
-		    }
-		}
-
 		public void UnhideActor(Actor a, ActorVisibility v, int range) {
 	 		if (a.Owner.World.LocalPlayer == null
 				|| a.Owner.Stances[a.Owner.World.LocalPlayer] == Stance.Ally) return;
@@ -183,16 +173,6 @@ namespace OpenRA.Traits
 			if (newStance == Stance.Ally)
 				foreach (var a in w.Actors.Where( a => a.Owner == player ))
 					AddActor(a);
-		}
-		
-		public int Explored()
-		{
-			int seen = 0;
-			for (int i = map.Bounds.Left; i < map.Bounds.Right; i++)
-				for (int j = map.Bounds.Top; j < map.Bounds.Bottom; j++)
-					if(exploredCells[i, j]) seen++;
-			
-			return seen;
 		}
 
 		public int Explored()
