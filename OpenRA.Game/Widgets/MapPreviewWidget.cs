@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using OpenRA.FileFormats;
 using OpenRA.Graphics;
 
@@ -21,10 +22,11 @@ namespace OpenRA.Widgets
 		public Func<Map> Map = () => null;
 		public Func<Dictionary<int2, Color>> SpawnColors = () => new Dictionary<int2, Color>();
 		public Action<MouseInput> OnMouseDown = _ => {};
+		public Action<int, int2> OnTooltip = (_, __) => { };
 		public bool IgnoreMouseInput = false;
 		public bool ShowSpawnPoints = true;
 
-		static Cache<Map,Bitmap> PreviewCache = new Cache<Map, Bitmap>(stub => Minimap.RenderMapPreview( new Map( stub.Path )));
+		static readonly Cache<Map,Bitmap> PreviewCache = new Cache<Map, Bitmap>(stub => Minimap.RenderMapPreview( new Map( stub.Path )));
 
 		public MapPreviewWidget() : base() { }
 
@@ -96,7 +98,8 @@ namespace OpenRA.Widgets
 			{
 				var colors = SpawnColors();
 
-				foreach (var p in map.GetSpawnPoints())
+				var spawnPoints = map.GetSpawnPoints().ToList();
+				foreach (var p in spawnPoints)
 				{
 					var owned = colors.ContainsKey(p);
 					var pos = ConvertToPreview(p);
@@ -107,8 +110,24 @@ namespace OpenRA.Widgets
 						WidgetUtils.FillRectWithColor(new Rectangle(pos.X + offset.X + 2, pos.Y + offset.Y + 2, 12, 12), colors[p]);
 
 					Game.Renderer.RgbaSpriteRenderer.DrawSprite(sprite, pos + offset);
+
+					if ((pos - Viewport.LastMousePos).LengthSquared < 64)
+					{
+						OnTooltip(spawnPoints.IndexOf(p) + 1, pos);
+					}
 				}
 			}
+		}
+
+		/// <summary>
+		/// Forces loading the preview into the map cache.
+		/// </summary>
+		public Bitmap LoadMapPreview()
+		{
+			var map = Map();
+			if( map == null ) return null;
+
+			return PreviewCache[map];
 		}
 	}
 }

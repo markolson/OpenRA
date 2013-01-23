@@ -10,11 +10,12 @@ Colt45:
 			Wood: 5%
 			Light: 5%
 			Heavy: 5%
+			Cybernetic: 5%
 			Concrete: 5%
 		Explosion: piff
 		InfDeath: 2
 		Damage: 50
-		
+
 ZSU-23:
 	ROF: 10
 	Range: 10
@@ -32,7 +33,7 @@ ZSU-23:
 			Concrete: 50%
 		Explosion: med_explosion
 		Damage: 25
-		
+
 Vulcan:
 	ROF: 30
 	Range: 6
@@ -45,6 +46,7 @@ Vulcan:
 			Wood: 50%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 25%
 			Concrete: 25%
 		Explosion: piffs
 		InfDeath: 2
@@ -55,6 +57,7 @@ Vulcan:
 			Wood: 50%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 25%
 			Concrete: 25%
 		Explosion: piffs
 		InfDeath: 2
@@ -66,6 +69,7 @@ Vulcan:
 			Wood: 50%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 25%
 			Concrete: 25%
 		Explosion: piffs
 		InfDeath: 2
@@ -77,6 +81,7 @@ Vulcan:
 			Wood: 50%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 25%
 			Concrete: 25%
 		Explosion: piffs
 		InfDeath: 2
@@ -88,6 +93,7 @@ Vulcan:
 			Wood: 50%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 25%
 			Concrete: 25%
 		Explosion: piffs
 		InfDeath: 2
@@ -99,6 +105,7 @@ Vulcan:
 			Wood: 50%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 25%
 			Concrete: 25%
 		Explosion: piffs
 		InfDeath: 2
@@ -131,6 +138,7 @@ MaverickAG:
 			None: 30%
 			Wood: 75%
 			Light: 75%
+			Cybernetic: 70%
 			Concrete: 50%
 		Explosion: med_explosion
 		WaterExplosion: med_splash
@@ -186,6 +194,7 @@ FireballLauncher:
 			None: 90%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 30%
 			Concrete: 50%
 		Explosion: napalm
 		WaterExplosion: napalm
@@ -193,7 +202,7 @@ FireballLauncher:
 		SmudgeType: Scorch
 		ImpactSound: firebl3
 		Damage: 150
-		
+
 Flamer:
 	ROF: 50
 	Range: 5
@@ -212,6 +221,7 @@ Flamer:
 			Wood: 100%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 25%
 			Concrete: 50%
 		Explosion: small_napalm
 		WaterExplosion: small_napalm
@@ -234,6 +244,7 @@ ChainGun:
 			Wood: 50%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 25%
 			Concrete: 25%
 		Explosion: piffs
 		WaterExplosion: small_splash
@@ -254,12 +265,13 @@ ChainGun.Yak:
 			Wood: 50%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 25%
 			Concrete: 25%
 		Explosion: piffs
 		WaterExplosion: small_splash
 		InfDeath: 2
 		Damage: 40
-		
+
 Pistol:
 	ROF: 7
 	Range: 3.9
@@ -272,11 +284,12 @@ Pistol:
 			Wood: 50%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 25%
 			Concrete: 25%
 		Explosion: piffs
 		InfDeath: 2
 		Damage: 1
-		
+
 M1Carbine:
 	ROF: 20
 	Range: 5.9
@@ -289,6 +302,7 @@ M1Carbine:
 			Wood: 25%
 			Light: 30%
 			Heavy: 10%
+			Cybernetic: 30%
 			Concrete: 10%
 		Explosion: piffs
 		InfDeath: 2
@@ -317,6 +331,7 @@ Dragon:
 			None: 10%
 			Wood: 75%
 			Light: 35%
+			Cybernetic: 50%
 			Concrete: 20%
 		Explosion: med_explosion
 		WaterExplosion: med_splash
@@ -350,6 +365,7 @@ HellfireAG:
 			None: 30%
 			Wood: 75%
 			Light: 75%
+			Cybernetic: 75%
 			Concrete: 50%
 		Explosion: med_explosion
 		WaterExplosion: med_splash
@@ -406,6 +422,7 @@ Grenade:
 			Wood: 100%
 			Light: 25%
 			Heavy: 5%
+			Cybernetic: 10%
 		Explosion: med_explosion
 		WaterExplosion: small_splash
 		InfDeath: 3
@@ -426,6 +443,7 @@ Grenade:
 			None: 30%
 			Wood: 40%
 			Heavy: 40%
+			Cybernetic: 40%
 			Concrete: 30%
 		Explosion: small_explosion
 		WaterExplosion: small_splash
@@ -446,7 +464,8 @@ Grenade:
 			None: 20%
 			Wood: 75%
 			Light: 75%
-			Concrete: 65%
+			Cybernetic: 40%
+			Concrete: 50%
 		Explosion: small_explosion
 		WaterExplosion: small_splash
 		InfDeath: 4
@@ -468,7 +487,8 @@ Grenade:
 			None: 20%
 			Wood: 75%
 			Light: 75%
-			Concrete: 65%
+			Cybernetic: 60%
+			Concrete: 50%
 		Explosion: small_explosion
 		WaterExplosion: small_splash
 		InfDeath: 4
@@ -489,7 +509,8 @@ Grenade:
 			None: 20%
 			Wood: 75%
 			Light: 75%
-			Concrete: 65%
+			Cybernetic: 70%
+			Concrete: 50%
 		Explosion: small_explosion
 		WaterExplosion: small_splash
 		InfDeath: 4
@@ -509,6 +530,7 @@ TurretGun:
 			None: 20%
 			Wood: 75%
 			Light: 75%
+			Cybernetic: 50%
 			Concrete: 50%
 		Explosion: small_explosion
 		WaterExplosion: small_splash
@@ -541,6 +563,7 @@ MammothTusk:
 			Wood: 75%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 50%
 		Explosion: med_explosion
 		WaterExplosion: med_splash
 		InfDeath: 3
@@ -566,6 +589,7 @@ MammothTusk:
 			Wood: 75%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 30%
 			Concrete: 50%
 		Explosion: large_explosion
 		WaterExplosion: med_splash
@@ -586,12 +610,13 @@ M60mg:
 			Wood: 10%
 			Light: 30%
 			Heavy: 10%
+			Cybernetic: 60%
 			Concrete: 10%
 		Explosion: piffs
 		WaterExplosion: small_splash
 		InfDeath: 2
 		Damage: 15
-		
+
 Napalm:
 	ROF: 20
 	Range: 4.5
@@ -607,6 +632,7 @@ Napalm:
 			None: 90%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 70%
 			Concrete: 50%
 		Explosion: napalm
 		WaterExplosion: med_splash
@@ -614,7 +640,7 @@ Napalm:
 		SmudgeType: Scorch
 		ImpactSound: firebl3
 		Damage: 100
-		
+
 CrateNapalm:
 	Warhead:
 		Spread: 4
@@ -622,6 +648,7 @@ CrateNapalm:
 			None: 90%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 70%
 			Concrete: 50%
 		Explosion: napalm
 		WaterExplosion: napalm
@@ -629,7 +656,7 @@ CrateNapalm:
 		SmudgeType: Scorch
 		ImpactSound: firebl3
 		Damage: 600
-		
+
 CrateExplosion:
 	Warhead:
 		Damage: 500
@@ -639,6 +666,7 @@ CrateExplosion:
 			Wood: 75%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 30%
 		Explosion: self_destruct
 		WaterExplosion: self_destruct
 		InfDeath: 4
@@ -653,6 +681,7 @@ CrateNuke:
 			None: 90%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 30%
 			Concrete: 50%
 		Explosion: nuke
 		WaterExplosion: nuke
@@ -672,8 +701,7 @@ CrateNuke:
 		Delay: 4
 		InfDeath: 5
 		ImpactSound: kaboom22
-		
-		
+
 TeslaZap:
 	ROF: 3
 	Charges: true
@@ -684,7 +712,7 @@ TeslaZap:
 		Spread: 1
 		InfDeath: 6
 		Damage: 100
-		
+
 Nike:
 	ROF: 15
 	Range: 7.5
@@ -762,6 +790,7 @@ RedEye:
 			Wood: 75%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 30%
 		Explosion: large_explosion
 		WaterExplosion: large_splash
 		InfDeath: 3
@@ -790,6 +819,7 @@ SubMissile:
 			None: 40%,
 			Light: 30%
 			Heavy: 30%
+			Cybernetic: 35%
 		Explosion: large_explosion
 		WaterExplosion: large_splash
 		InfDeath: 3
@@ -823,6 +853,7 @@ Stinger:
 			None: 30%
 			Wood: 75%
 			Light: 75%
+			Cybernetic: 40%
 			Concrete: 50%
 		Explosion: med_explosion
 		WaterExplosion: med_splash
@@ -856,7 +887,7 @@ TorpTube:
 		InfDeath: 4
 		SmudgeType: Crater
 		Damage: 180
-		
+
 2Inch:
 	ROF: 60
 	Range: 5.5
@@ -871,12 +902,13 @@ TorpTube:
 			Wood: 75%
 			Light: 75%
 			Concrete: 50%
+			Cybernetic: 60%
 		Explosion: small_explosion
 		WaterExplosion: med_splash
 		InfDeath: 4
 		SmudgeType: Crater
 		Damage: 25
-		
+
 DepthCharge:
 	ROF: 60
 	Range: 5
@@ -898,7 +930,7 @@ DepthCharge:
 		InfDeath: 4
 		SmudgeType: Crater
 		Damage: 80
-		
+
 ParaBomb:
 	ROF: 10
 	Range: 4.5
@@ -912,13 +944,14 @@ ParaBomb:
 			Wood: 75%
 			Light: 75%
 			Concrete: 50%
+			Cybernetic: 40%
 		Explosion: self_destruct
 		WaterExplosion: small_splash
 		InfDeath: 4
 		SmudgeType: Crater
 		Damage: 500
 		ImpactSound: kaboom15
-		
+
 DogJaw:
 	ROF: 10
 	Range: 3
@@ -930,9 +963,10 @@ DogJaw:
 			Light: 0%
 			Heavy: 0%
 			Concrete: 0%
+			Cybernetic: 0%
 		InfDeath: 1
 		Damage: 100
-		
+
 Heal:
 	ROF: 80
 	Range: 4
@@ -946,8 +980,27 @@ Heal:
 			Light: 0%
 			Heavy: 0%
 			Concrete: 0%
+			Cybernetic: 0%
 		InfDeath: 1
 		Damage: -50
+
+Repair:
+	ROF: 80
+	Range: 4
+	Report: FIXIT1
+	Projectile: Bullet
+		Speed: 100
+	Warhead:
+		Spread: 5
+		Versus: 
+			None: 0%
+			Wood: 0%
+			Light: 40%
+			Heavy: 100%
+			Concrete: 0%
+			Cybernetic: 40%
+		InfDeath: 1
+		Damage: -10
 
 SilencedPPK:
 	ROF: 80
@@ -962,10 +1015,11 @@ SilencedPPK:
 			Light: 0%
 			Heavy: 0%
 			Concrete: 0%
+			Cybernetic: 90%
 		Explosion: piffs
 		InfDeath: 2
 		Damage: 150
-		
+
 SCUD:
 	ROF: 280
 	Range: 10
@@ -988,6 +1042,7 @@ SCUD:
 			Wood: 75%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 30%
 		Explosion: napalm
 		WaterExplosion: large_splash
 		InfDeath: 3
@@ -1006,6 +1061,7 @@ Atomic:
 			Light: 60%
 			Heavy: 25%
 			Concrete: 50%
+			Cybernetic: 40%
 		Explosion: nuke
 		WaterExplosion: nuke
 		InfDeath: 5
@@ -1020,6 +1076,7 @@ Atomic:
 			Light: 60%
 			Heavy: 25%
 			Concrete: 50%
+			Cybernetic: 40%
 		Delay: 5
 		InfDeath: 5
 		ImpactSound: kaboom22
@@ -1033,6 +1090,7 @@ Atomic:
 			Light: 60%
 			Heavy: 25%
 			Concrete: 50%
+			Cybernetic: 40%
 		Delay: 10
 		InfDeath: 5
 	Warhead@areanuke3:
@@ -1045,6 +1103,7 @@ Atomic:
 			Light: 60%
 			Heavy: 25%
 			Concrete: 50%
+			Cybernetic: 40%
 		Delay: 15
 		InfDeath: 5
 	Warhead@areanuke4:
@@ -1058,6 +1117,7 @@ Atomic:
 			Light: 60%
 			Heavy: 25%
 			Concrete: 50%
+			Cybernetic: 40%
 		Delay: 20
 		InfDeath: 5
 
@@ -1071,6 +1131,7 @@ MiniNuke:
 			Light: 60%
 			Heavy: 25%
 			Concrete: 50%
+			Cybernetic: 40%
 		Explosion: nuke
 		WaterExplosion: nuke
 		InfDeath: 5
@@ -1085,6 +1146,7 @@ MiniNuke:
 			Light: 60%
 			Heavy: 25%
 			Concrete: 50%
+			Cybernetic: 40%
 		Delay: 5
 		InfDeath: 5
 		ImpactSound: kaboom22
@@ -1098,6 +1160,7 @@ MiniNuke:
 			Light: 60%
 			Heavy: 25%
 			Concrete: 50%
+			Cybernetic: 40%
 		Delay: 10
 		InfDeath: 5
 	Warhead@areanuke3:
@@ -1111,6 +1174,7 @@ MiniNuke:
 			Light: 60%
 			Heavy: 25%
 			Concrete: 50%
+			Cybernetic: 40%
 		Delay: 15
 		InfDeath: 5
 
@@ -1123,6 +1187,7 @@ UnitExplode:
 			Wood: 75%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 60%
 		Explosion: self_destruct
 		WaterExplosion: large_splash
 		InfDeath: 4
@@ -1137,10 +1202,11 @@ UnitExplodeSmall:
 			Wood: 75%
 			Light: 60%
 			Heavy: 25%
+			Cybernetic: 50%
 		Explosion: large_explosion
 		InfDeath: 4
 		ImpactSound: kaboom15
-		
+
 BarrelExplode:
 	Warhead:
 		Damage: 500
@@ -1151,6 +1217,7 @@ BarrelExplode:
 			Light: 50%
 			Heavy: 25%
 			Concrete: 10%
+			Cybernetic: 30%
 		Explosion: napalm
 		InfDeath: 4
 		ImpactSound: firebl3
@@ -1170,6 +1237,7 @@ ATMine:
 			None: 0%
 			Wood: 0%
 			Concrete: 0%
+			Cybernetic: 60%
 		ImpactSound: mineblo1
 		Explosion: large_explosion
 
@@ -1181,10 +1249,11 @@ APMine:
 			Light: 0%
 			Heavy: 0%
 			Concrete: 0%
+			Cybernetic: 0%
 		ImpactSound: mine1
 		InfDeath: 3
 		Explosion: napalm
-		
+
 Demolish:
 	Warhead:
 		ImpactSound: kaboom25
@@ -1229,6 +1298,7 @@ FLAK-23:
 			Light: 60%
 			Heavy: 10%
 			Concrete: 20%
+			Cybernetic: 20%
 		Explosion: med_explosion
 		Damage: 20
 
@@ -1249,6 +1319,7 @@ VolkAT:
 			Light: 75%
 			Heavy: 90%
 			Concrete: 50%
+			Cybernetic: 0%
 		Explosion: small_explosion
 		WaterExplosion: small_splash
 		InfDeath: 3
@@ -1273,6 +1344,7 @@ VolkNapalm:
 			Light: 0%
 			Heavy: 0%
 			Concrete: 0%
+			Cybernetic: 70%
 		Explosion: napalm
 		WaterExplosion: small_napalm
 		InfDeath: 4
@@ -1294,6 +1366,7 @@ Sniper:
 			Wood: 5%
 			Light: 5%
 			Heavy: 5%
+			Cybernetic: 10%
 		InfDeath: 2
 
 ChronoTusk:
@@ -1320,6 +1393,7 @@ ChronoTusk:
 			Wood: 75%
 			Light: 75%
 			Concrete: 50%
+			Cybernetic: 30%
 		Explosion: med_explosion
 		WaterExplosion: med_splash
 		InfDeath: 4

@@ -42,7 +42,7 @@ namespace OpenRA.Traits
 		{
 			get { return world.IsShellmap || (world.LocalPlayer == null && Owner == null);; }
 		}
-
+		
 		public Rectangle? Bounds
 		{
 			get { return Disabled ? null : exploredBounds; }
@@ -93,7 +93,7 @@ namespace OpenRA.Traits
 			if (!a.HasTrait<RevealsShroud>()) return;
 			if (a.Owner == null || Owner == null) return;
 			if(a.Owner.Stances[Owner] != Stance.Ally) return;
-
+			
 			ActorVisibility v = a.Sight;
 
 			if (v.range == 0) return;		// don't bother for things that can't see
@@ -131,6 +131,16 @@ namespace OpenRA.Traits
 
 			if (!Disabled)
 				Dirty();
+		}
+		
+		public void MergeShroud(Shroud s) {
+		    for (int i = map.Bounds.Left; i < map.Bounds.Right; i++) {
+				for (int j = map.Bounds.Top; j < map.Bounds.Bottom; j++) {
+				    if (s.exploredCells[i,j] == true)
+					    exploredCells[i, j] = true;
+				}
+			exploredBounds = Rectangle.Union(exploredBounds.Value, s.exploredBounds.Value);
+		    }
 		}
 
 		public void UnhideActor(Actor a, ActorVisibility v, int range) {
@@ -173,6 +183,16 @@ namespace OpenRA.Traits
 			if (newStance == Stance.Ally)
 				foreach (var a in w.Actors.Where( a => a.Owner == player ))
 					AddActor(a);
+		}
+		
+		public int Explored()
+		{
+			int seen = 0;
+			for (int i = map.Bounds.Left; i < map.Bounds.Right; i++)
+				for (int j = map.Bounds.Top; j < map.Bounds.Bottom; j++)
+					if(exploredCells[i, j]) seen++;
+			
+			return seen;
 		}
 
 		public int Explored()
@@ -305,10 +325,10 @@ namespace OpenRA.Traits
 				return false;
 
 			if(Owner == null) return true;
-
+			
 			return Disabled || Observing || a.Owner.Stances[Owner] == Stance.Ally || GetVisOrigins(a).Any(o => IsExplored(o));
 		}
-
+		
 		public bool IsTargetable(Actor a) {
 			if (a.TraitsImplementing<IVisibilityModifier>().Any(t => !t.IsVisible(this, a)))
 				return false;

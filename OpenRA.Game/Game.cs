@@ -29,6 +29,8 @@ namespace OpenRA
 	{
 		public static int CellSize { get { return modData.Manifest.TileSize; } }
 
+		public static MouseButtonPreference mouseButtonPreference = new MouseButtonPreference();
+
 		public static ModData modData;
 		static WorldRenderer worldRenderer;
 
@@ -312,7 +314,8 @@ namespace OpenRA
 					{
 						System.Threading.Thread.Sleep(100);
 
-						if((server.GameStarted)&&(server.conns.Count<=1))
+						if((server.State == Server.ServerState.GameStarted)
+						    && (server.conns.Count<=1))
 						{
 							Console.WriteLine("No one is playing, shutting down...");
 							server.Shutdown();
