@@ -140,18 +140,16 @@ namespace OpenRA.Server
 
 			randomSeed = (int)DateTime.Now.ToBinary();
 
+			Console.WriteLine("{0}",IPAddress.Loopback);
 			NetPeerConfiguration config = new NetPeerConfiguration("OpenRA");
 			config.EnableMessageType(NetIncomingMessageType.DiscoveryRequest);
 			config.Port = 14242;
+			config.PingInterval = 0.1f;
 			announcer = new NetServer(config);
-			var context = new SynchronizationContext();
-			SynchronizationContext.SetSynchronizationContext(context);
 			announcer.RegisterReceivedCallback(new SendOrPostCallback(this.GotMessage)); 
 			announcer.Start();
 
-
-			SynchronizationContext.SetSynchronizationContext(null);
-			Console.Write("Announcer is up?");
+			Console.Write("Announcer is up? #{0}", announcer);
 
 			if (Settings.AllowPortForward)
 				UPnP.ForwardPort(3600);
@@ -240,16 +238,44 @@ namespace OpenRA.Server
 
 		public void GotMessage(object peer)
 		{
-			Console.Write("Testing testing");
-			Log.Write("debug", "hey, a thing!");
 			NetIncomingMessage im;
 			while ((im = announcer.ReadMessage()) != null)
 			{
+				// handle incoming message
 				switch (im.MessageType)
-			  {
-			  	case NetIncomingMessageType.DiscoveryRequest:
-			  		Console.WriteLine("ugh");
-					break;
+				{
+					case NetIncomingMessageType.VerboseDebugMessage:
+	        case NetIncomingMessageType.DebugMessage:
+	        case NetIncomingMessageType.WarningMessage:
+	        case NetIncomingMessageType.ErrorMessage:
+            Console.WriteLine(im.ReadString());
+            break;
+
+					case NetIncomingMessageType.DiscoveryRequest:
+						NetOutgoingMessage response = announcer.CreateMessage();
+
+						var nodes = new List<MiniYamlNode>();
+						nodes.Add( new MiniYamlNode("Id", LobbyInfo.GlobalSettings.RandomSeed.ToString() ) );
+						nodes.Add( new MiniYamlNode("Name", LobbyInfo.GlobalSettings.ServerName) );
+						nodes.Add( new MiniYamlNode("Address", "{0}:{1}".F(Ip, Port) ) ) ;
+						nodes.Add( new MiniYamlNode("State", "1") );
+						nodes.Add( new MiniYamlNode("Players", LobbyInfo.Clients.Count.ToString()) );
+						nodes.Add( new MiniYamlNode("Map", LobbyInfo.GlobalSettings.Map) );
+						//nodes.Add( new MiniYamlNode("Mods",Game.CurrentMods.Select(f => "{0}@{1}".F(f.Key, f.Value.Version)).JoinWith(",")) );
+						nodes.Add( new MiniYamlNode("TTL", "0") );
+						var clientData = new List<MiniYamlNode>();
+						clientData.Add(new MiniYamlNode("Game@0", new MiniYaml( null, nodes ) ));
+						var s = clientData.WriteToString();
+						s = s.Replace("{", "{{").Replace("}", "}}"); //hahaha so dumb. I am so dumb. This is so dumb.
+						response.Write(s);
+
+						Console.WriteLine(s);
+						// Send the response to the sender of the request
+						//announcer.SendDiscoveryResponse(response, im.SenderEndpoint);
+						break;
+	        default:
+	          Console.WriteLine("Unhandled type: " + im.MessageType);
+	          break;
 				}
 			}
 		}
