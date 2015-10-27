@@ -70,6 +70,9 @@ cp thirdparty/download/RestSharp.dll packaging/built
 # global chat
 cp thirdparty/download/SmarIrc4net.dll packaging/built
 
+# LAN Discovery
+cp thirdparty/download/Lidgren.Network.dll packaging/built
+
 # Copy game icon for windows package
 cp OpenRA.Game/OpenRA.ico packaging/built
 

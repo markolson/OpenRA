@@ -84,6 +84,7 @@ if (!(Test-Path "Mono.Nat.dll"))
 	rmdir Mono.Nat -Recurse
 }
 
+
 if (!(Test-Path "windows/lua51.dll"))
 {
 	echo "Fetching Lua 5.1 from NuGet."
@@ -145,4 +146,11 @@ if (!(Test-Path "SmarIrc4net.dll"))
 	rmdir SmartIrc4net -Recurse
 }
 
+if (!(Test-Path "Lidgren.Network.dll"))
+{
+	echo "Fetching Lidgren.Network from NuGet."
+	./nuget.exe install Lidgren.Network -Version 1.0.0-CI00005 -ExcludeVersion
+	cp Lidgren.Network/lib/net40/Lidgren.Network.* .
+	rmdir Lidgren.Network -Recurse
+}
 cd ..

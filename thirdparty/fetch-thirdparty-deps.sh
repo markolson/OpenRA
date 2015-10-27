@@ -84,7 +84,6 @@ if [ ! -f Mono.Nat.dll ]; then
 	cp ./Mono.Nat/lib/net40/Mono.Nat.dll .
 	rm -rf Mono.Nat
 fi
-
 if [ ! -f FuzzyLogicLibrary.dll ]; then
 	echo "Fetching FuzzyLogicLibrary from NuGet."
 	get FuzzyLogicLibrary 1.2.0
@@ -107,4 +106,11 @@ if [ ! -f SmarIrc4net.dll ]; then
 	get SmartIrc4net 0.4.5.1
 	cp ./SmartIrc4net/lib/net40/SmarIrc4net* .
 	rm -rf SmartIrc4net
+fi
+
+if [ ! -f Lidgren.Network.dll ]; then
+	echo "Fetching Lidgren.Network from NuGet."
+	get Lidgren.Network 1.0.0-CI00005
+	cp ./Lidgren.Network/lib/net451/Lidgren.Network* .
+	rm -rf Lidgren.Network
 fi

@@ -88,6 +88,10 @@
       <HintPath>..\thirdparty\download\SmarIrc4net.dll</HintPath>
       <Private>False</Private>
     </Reference>
+     <Reference Include="Lidgren.Network">
+      <HintPath>..\thirdparty\download\Lidgren.Network.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Activities\Activity.cs" />
