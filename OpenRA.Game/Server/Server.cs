@@ -21,6 +21,8 @@ using OpenRA.Network;
 using OpenRA.Primitives;
 using OpenRA.Support;
 
+using Lidgren.Network;
+
 using XTimer = System.Timers.Timer;
 
 namespace OpenRA.Server
@@ -44,6 +46,8 @@ namespace OpenRA.Server
 		// Pre-verified player connections
 		public List<Connection> PreConns = new List<Connection>();
 
+		public NetServer announcer;
+
 		public Session LobbyInfo;
 		public ServerSettings Settings;
 		public ModData ModData;
@@ -66,6 +70,7 @@ namespace OpenRA.Server
 			get { return internalState; }
 			protected set { internalState = value; }
 		}
+
 
 		public static void SyncClientToPlayerReference(Session.Client c, PlayerReference pr)
 		{
@@ -134,6 +139,19 @@ namespace OpenRA.Server
 			ModData = modData;
 
 			randomSeed = (int)DateTime.Now.ToBinary();
+
+			NetPeerConfiguration config = new NetPeerConfiguration("OpenRA");
+			config.EnableMessageType(NetIncomingMessageType.DiscoveryRequest);
+			config.Port = 14242;
+			announcer = new NetServer(config);
+			var context = new SynchronizationContext();
+			SynchronizationContext.SetSynchronizationContext(context);
+			announcer.RegisterReceivedCallback(new SendOrPostCallback(this.GotMessage)); 
+			announcer.Start();
+
+
+			SynchronizationContext.SetSynchronizationContext(null);
+			Console.Write("Announcer is up?");
 
 			if (Settings.AllowPortForward)
 				UPnP.ForwardPort(3600);
@@ -213,10 +231,29 @@ namespace OpenRA.Server
 
 				PreConns.Clear();
 				Conns.Clear();
-				try { listener.Stop(); }
+				
+				try { listener.Stop(); announcer.Shutdown("Done announcing. Go away"); }
 				catch { }
 			}) { IsBackground = true }.Start();
 		}
+
+
+		public void GotMessage(object peer)
+		{
+			Console.Write("Testing testing");
+			Log.Write("debug", "hey, a thing!");
+			NetIncomingMessage im;
+			while ((im = announcer.ReadMessage()) != null)
+			{
+				switch (im.MessageType)
+			  {
+			  	case NetIncomingMessageType.DiscoveryRequest:
+			  		Console.WriteLine("ugh");
+					break;
+				}
+			}
+		}
+
 
 		/* lobby rework TODO:
 		 *	- "teams together" option for team games -- will eliminate most need
